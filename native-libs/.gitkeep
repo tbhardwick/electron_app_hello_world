@@ -1,0 +1,15 @@
+# Native Libraries Directory
+
+This directory is reserved for native library files (DLLs/LIBs) that provide the UA2430 hardware integration.
+
+## Expected Files
+
+- `ua2430.dll` - Windows DLL for UA2430 hardware
+- `ua2430.lib` - Windows LIB for UA2430 hardware
+- Additional supporting DLLs or configuration files needed by the UA2430 libraries
+
+## Notes
+
+- These libraries are loaded by the native bridge processes, not directly by Electron
+- Do not place executable files here; those belong in the native-bridge directory
+- Ensure platform-specific libraries are organized appropriately if supporting multiple platforms 

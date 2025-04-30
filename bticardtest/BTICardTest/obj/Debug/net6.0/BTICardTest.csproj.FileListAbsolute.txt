@@ -1,0 +1,17 @@
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\bin\Debug\net6.0\lib\BTI42964.DLL
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\bin\Debug\net6.0\lib\BTICARD64.DLL
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\bin\Debug\net6.0\BTICardTest.exe
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\bin\Debug\net6.0\BTICardTest.deps.json
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\bin\Debug\net6.0\BTICardTest.runtimeconfig.json
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\bin\Debug\net6.0\BTICardTest.dll
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\bin\Debug\net6.0\BTICardTest.pdb
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.AssemblyInfoInputs.cache
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.AssemblyInfo.cs
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.csproj.CoreCompileInputs.cache
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.sourcelink.json
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.dll
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\refint\BTICardTest.dll
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.pdb
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\BTICardTest.genruntimeconfig.cache
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\bticardtest\BTICardTest\obj\Debug\net6.0\ref\BTICardTest.dll

@@ -1,0 +1,5 @@
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\obj\Debug\net6.0\UA2430_Test.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\obj\Debug\net6.0\UA2430_Test.AssemblyInfoInputs.cache
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\obj\Debug\net6.0\UA2430_Test.AssemblyInfo.cs
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\obj\Debug\net6.0\UA2430_Test.csproj.CoreCompileInputs.cache
+C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\obj\Debug\net6.0\UA2430_Test.sourcelink.json
