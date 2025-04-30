@@ -1,4 +1,4 @@
-# Gemini Electron App Test
+# Electron App Hello World
 
 A simple Electron application demonstrating how to build a cross-platform desktop application using Electron.js, HTML, CSS, and JavaScript.
 
@@ -24,10 +24,10 @@ Clone the repository and install dependencies:
 
 ```bash
 # Clone this repository
-git clone https://github.com/yourusername/gemini_electron_app_test.git
+git clone https://github.com/yourusername/electron_app_hello_world.git
 
 # Go into the repository
-cd gemini_electron_app_test
+cd electron_app_hello_world
 
 # Install dependencies
 npm install

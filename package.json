@@ -1,5 +1,5 @@
 {
-  "name": "gemini_electron_app_test",
+  "name": "electron_app_hello_world",
   "version": "1.0.0",
   "description": "Brad's Test Electron App",
   "main": "main.js",
