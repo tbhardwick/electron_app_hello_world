@@ -1,0 +1,48 @@
+/* General Styles */
+body {
+  font-family: sans-serif;
+}
+
+pre {
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  padding: 10px;
+  white-space: pre-wrap; /* Wrap long lines */
+  word-wrap: break-word; /* Break words if necessary */
+}
+
+/* Results Formatting */
+.results-list {
+  list-style: none;
+  padding: 0;
+}
+
+.results-list li {
+  margin-bottom: 5px;
+}
+
+.test-name {
+  font-weight: bold;
+}
+
+.status-passed {
+  color: green;
+  font-weight: bold;
+}
+
+.status-failed {
+  color: red;
+  font-weight: bold;
+}
+
+.error-message {
+    color: red;
+}
+
+.warning-message {
+    color: orange;
+}
+
+.stderr-output {
+    /* Add specific styles for stderr if needed */
+} 
