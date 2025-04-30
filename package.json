@@ -1,0 +1,17 @@
+{
+  "name": "gemini_electron_app_test",
+  "version": "1.0.0",
+  "description": "Brad's Test Electron App",
+  "main": "main.js",
+  "scripts": {
+    "start": "npx electron .",
+    "dev": "electronmon .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brad Hardwick",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^36.0.0",
+    "electronmon": "^2.0.2"
+  }
+}
