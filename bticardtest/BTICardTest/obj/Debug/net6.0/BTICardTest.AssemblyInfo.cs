@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BTICardTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4acd41050216656210c50411bf741095140e38f3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+568f45506eeaa7f1784e0939fcb78c80ed7377f3")]
 [assembly: System.Reflection.AssemblyProductAttribute("BTICardTest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BTICardTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

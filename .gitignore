@@ -28,4 +28,26 @@ coverage
 
 # Compiled binary addons
 dist
-build 
+build
+
+# Electron
+.electron
+
+# C# / .NET Build Artifacts (BTICardTest)
+BTICardTest/BTICardTest/bin/
+BTICardTest/BTICardTest/obj/
+
+# Operating System Files
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build Folders (General)
+/build
+/out 

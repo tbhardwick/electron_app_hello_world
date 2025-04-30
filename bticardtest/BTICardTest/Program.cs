@@ -258,7 +258,7 @@ namespace BTICardTest
             }
 
             Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
+            // Console.ReadKey(); // Commented out: Not needed when run programmatically
         }
 
         // ReportTestResult needs access to BTICard_ErrDescStr
