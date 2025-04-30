@@ -11,10 +11,17 @@
       http-equiv="X-Content-Security-Policy"
       content="default-src 'self'; script-src 'self'"
     />
-    <title>Hello from Electron renderer!</title>
+    <title>UA2430 Test Interface</title>
   </head>
   <body>
-    <h1>Hello from Electron renderer!</h1>
-    <p>👋</p>
+    <h1>UA2430 Test Interface</h1>
+    
+    <button id="runTestBtn">Run UA2430 Test</button>
+
+    <h2>Results:</h2>
+    <pre id="resultsOutput">Click the button to run the test.</pre>
+
+    <!-- Added script link to renderer.js -->
+    <script defer src="renderer.js"></script>
   </body>
 </html>
