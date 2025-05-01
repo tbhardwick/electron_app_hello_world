@@ -504,7 +504,7 @@ namespace Cargo_Door_Base.BTI
             public static extern int BTI429_SchedBuildEx(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int channum, nint handleval);
             [DllImport(LIBNAME32, EntryPoint = "_BTI429_SchedBuildExx@40", ExactSpelling = true, CharSet = CharSet.Ansi, SetLastError = true)]
             public static extern int BTI429_SchedBuildExx(int basevalmsgnum, int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, nint buf, uint bufsize, int channum, nint handleval);
-            [DllImport(LIBNAME32, EntryPoint = "_BTI429_SchedBuildExxx@40", ExactSpelling = true, CharSet = CharSet.Ansi, SetLastError = true)]
+            [DllImport(LIBNAME32, EntryPoint = "_BTI429_SchedBuildExxx@44", ExactSpelling = true, CharSet = CharSet.Ansi, SetLastError = true)]
             public static extern int BTI429_SchedBuildExxx(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int channum, int debugval, int microflag, int algorithm, nint handleval);
             [DllImport(LIBNAME32, EntryPoint = "_BTI429_SchedBuildExxxx@44", ExactSpelling = true, CharSet = CharSet.Ansi, SetLastError = true)]
             public static extern int BTI429_SchedBuildExxxx(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int channum, int debugval, int microflag, int algorithm, int interceptflag, nint handleval);
@@ -1121,1799 +1121,1799 @@ namespace Cargo_Door_Base.BTI
 
         public static uint BTI429_BCDGetData(uint msg, ushort msb, ushort lsb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDGetData(msg, msb, lsb);
             else
                 return BTI429_64.BTI429_BCDGetData(msg, msb, lsb);
         }
         public static uint BTI429_BCDGetMant(uint msg, ushort sigdig)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDGetMant(msg, sigdig);
             else
                 return BTI429_64.BTI429_BCDGetMant(msg, sigdig);
         }
         public static ushort BTI429_BCDGetSign(uint msg)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDGetSign(msg);
             else
                 return BTI429_64.BTI429_BCDGetSign(msg);
         }
         public static ushort BTI429_BCDGetSSM(uint msg)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDGetSSM(msg);
             else
                 return BTI429_64.BTI429_BCDGetSSM(msg);
         }
         public static double BTI429_BCDGetValue(uint msg, ushort sigdig, double resolstr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDGetValue(msg, sigdig, resolstr);
             else
                 return BTI429_64.BTI429_BCDGetValue(msg, sigdig, resolstr);
         }
         public static uint BTI429_BCDPutData(uint msg, uint value, ushort msb, ushort lsb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDPutData(msg, value, msb, lsb);
             else
                 return BTI429_64.BTI429_BCDPutData(msg, value, msb, lsb);
         }
         public static uint BTI429_BCDPutMant(uint msg, uint value, ushort sigdig, ushort sign)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDPutMant(msg, value, sigdig, sign);
             else
                 return BTI429_64.BTI429_BCDPutMant(msg, value, sigdig, sign);
         }
         public static uint BTI429_BCDPutSign(uint msg, ushort sign)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDPutSign(msg, sign);
             else
                 return BTI429_64.BTI429_BCDPutSign(msg, sign);
         }
         public static uint BTI429_BCDPutSSM(uint msg, ushort value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDPutSSM(msg, value);
             else
                 return BTI429_64.BTI429_BCDPutSSM(msg, value);
         }
         public static uint BTI429_BCDPutValue(double dblvalue, uint msg, ushort sigdig, double dblresolution)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDPutValue(dblvalue, msg, sigdig, dblresolution);
             else
                 return BTI429_64.BTI429_BCDPutValue(dblvalue, msg, sigdig, dblresolution);
         }
         public static double BTI429_BNRAngularGetValue(uint msg, ushort sigbit, int bplusminus180)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRAngularGetValue(msg, sigbit, bplusminus180);
             else
                 return BTI429_64.BTI429_BNRAngularGetValue(msg, sigbit, bplusminus180);
         }
         public static uint BTI429_BNRAngularPutValue(double dblvalue, uint msg, ushort sigbit)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRAngularPutValue(dblvalue, msg, sigbit);
             else
                 return BTI429_64.BTI429_BNRAngularPutValue(dblvalue, msg, sigbit);
         }
         public static uint BTI429_BNRGetData(uint msg, ushort msb, ushort lsb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRGetData(msg, msb, lsb);
             else
                 return BTI429_64.BTI429_BNRGetData(msg, msb, lsb);
         }
         public static uint BTI429_BNRGetMant(uint msg, ushort sigbit)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRGetMant(msg, sigbit);
             else
                 return BTI429_64.BTI429_BNRGetMant(msg, sigbit);
         }
         public static ushort BTI429_BNRGetSign(uint msg)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRGetSign(msg);
             else
                 return BTI429_64.BTI429_BNRGetSign(msg);
         }
         public static ushort BTI429_BNRGetSSM(uint msg)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRGetSSM(msg);
             else
                 return BTI429_64.BTI429_BNRGetSSM(msg);
         }
         public static double BTI429_BNRGetValue(uint msg, ushort sigbit, double dblresolution)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRGetValue(msg, sigbit, dblresolution);
             else
                 return BTI429_64.BTI429_BNRGetValue(msg, sigbit, dblresolution);
         }
         public static uint BTI429_BNRPutData(uint msg, uint value, ushort msb, ushort lsb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRPutData(msg, value, msb, lsb);
             else
                 return BTI429_64.BTI429_BNRPutData(msg, value, msb, lsb);
         }
         public static uint BTI429_BNRPutMant(uint msg, uint value, ushort sigbit, ushort twos)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRPutMant(msg, value, sigbit, twos);
             else
                 return BTI429_64.BTI429_BNRPutMant(msg, value, sigbit, twos);
         }
         public static uint BTI429_BNRPutSign(uint msg, ushort twos)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRPutSign(msg, twos);
             else
                 return BTI429_64.BTI429_BNRPutSign(msg, twos);
         }
         public static uint BTI429_BNRPutSSM(uint msg, ushort value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRPutSSM(msg, value);
             else
                 return BTI429_64.BTI429_BNRPutSSM(msg, value);
         }
         public static uint BTI429_BNRPutValue(double dblvalue, uint msg, ushort sigbit, double dblresolution)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRPutValue(dblvalue, msg, sigbit, dblresolution);
             else
                 return BTI429_64.BTI429_BNRPutValue(dblvalue, msg, sigbit, dblresolution);
         }
         public static int BTI429_ChClear(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChClear(channum, handleval);
             else
                 return BTI429_64.BTI429_ChClear(channum, handleval);
         }
         public static int BTI429_ChConfig(uint configval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChConfig(configval, channum, handleval);
             else
                 return BTI429_64.BTI429_ChConfig(configval, channum, handleval);
         }
         public static void BTI429_ChGetCount(ref int rcvcount, ref int xmtcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ChGetCount(ref rcvcount, ref xmtcount, handleval);
             else
                 BTI429_64.BTI429_ChGetCount(ref rcvcount, ref xmtcount, handleval);
         }
         public static uint BTI429_ChGetInfo(ushort infotype, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChGetInfo(infotype, channum, handleval);
             else
                 return BTI429_64.BTI429_ChGetInfo(infotype, channum, handleval);
         }
         public static int BTI429_ChIs429(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChIs429(channum, handleval);
             else
                 return BTI429_64.BTI429_ChIs429(channum, handleval);
         }
         public static int BTI429_ChIsRcv(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChIsRcv(channum, handleval);
             else
                 return BTI429_64.BTI429_ChIsRcv(channum, handleval);
         }
         public static int BTI429_ChIsXmt(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChIsXmt(channum, handleval);
             else
                 return BTI429_64.BTI429_ChIsXmt(channum, handleval);
         }
         public static void BTI429_ChPause(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ChPause(channum, handleval);
             else
                 BTI429_64.BTI429_ChPause(channum, handleval);
         }
         public static int BTI429_ChPauseCheck(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChPauseCheck(channum, handleval);
             else
                 return BTI429_64.BTI429_ChPauseCheck(channum, handleval);
         }
         public static void BTI429_ChResume(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ChResume(channum, handleval);
             else
                 BTI429_64.BTI429_ChResume(channum, handleval);
         }
         public static int BTI429_ChStart(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChStart(channum, handleval);
             else
                 return BTI429_64.BTI429_ChStart(channum, handleval);
         }
         public static int BTI429_ChStop(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChStop(channum, handleval);
             else
                 return BTI429_64.BTI429_ChStop(channum, handleval);
         }
         public static int BTI429_ChSyncDefine(int enableflag, ushort syncmask, ushort pinpolarity, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChSyncDefine(enableflag, syncmask, pinpolarity, channum, handleval);
             else
                 return BTI429_64.BTI429_ChSyncDefine(enableflag, syncmask, pinpolarity, channum, handleval);
         }
         public static int BTI429_ChTriggerDefine(int enableflag, ushort trigmask, ushort trigval, ushort pinpolarity, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChTriggerDefine(enableflag, trigmask, trigval, pinpolarity, channum, handleval);
             else
                 return BTI429_64.BTI429_ChTriggerDefine(enableflag, trigmask, trigval, pinpolarity, channum, handleval);
         }
         public static unsafe string BTI429_DriverInfoStr()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_DriverInfoStr();
             else
                 return BTI429_64.BTI429_DriverInfoStr();
         }
         public static int BTI429_FilterClear(uint basevaladdr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterClear(basevaladdr, handleval);
             else
                 return BTI429_64.BTI429_FilterClear(basevaladdr, handleval);
         }
         public static uint BTI429_FilterDefault(uint configval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterDefault(configval, channum, handleval);
             else
                 return BTI429_64.BTI429_FilterDefault(configval, channum, handleval);
         }
         public static uint BTI429_FilterRd(int labelval, int sdival, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterRd(labelval, sdival, channum, handleval);
             else
                 return BTI429_64.BTI429_FilterRd(labelval, sdival, channum, handleval);
         }
         public static uint BTI429_FilterSet(uint configval, int labelval, int sdimask, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterSet(configval, labelval, sdimask, channum, handleval);
             else
                 return BTI429_64.BTI429_FilterSet(configval, labelval, sdimask, channum, handleval);
         }
         public static int BTI429_FilterWr(uint msgaddr, int labelval, int sdival, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterWr(msgaddr, labelval, sdival, channum, handleval);
             else
                 return BTI429_64.BTI429_FilterWr(msgaddr, labelval, sdival, channum, handleval);
         }
         public static uint BTI429_FldGetData(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldGetData(msgval);
             else
                 return BTI429_64.BTI429_FldGetData(msgval);
         }
         public static ushort BTI429_FldGetLabel(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldGetLabel(msgval);
             else
                 return BTI429_64.BTI429_FldGetLabel(msgval);
         }
         public static ushort BTI429_FldGetParity(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldGetParity(msgval);
             else
                 return BTI429_64.BTI429_FldGetParity(msgval);
         }
         public static ushort BTI429_FldGetSDI(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldGetSDI(msgval);
             else
                 return BTI429_64.BTI429_FldGetSDI(msgval);
         }
         public static uint BTI429_FldGetValue(uint msgval, ushort startbit, ushort endbit)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldGetValue(msgval, startbit, endbit);
             else
                 return BTI429_64.BTI429_FldGetValue(msgval, startbit, endbit);
         }
         public static uint BTI429_FldPutData(uint msgval, uint data)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldPutData(msgval, data);
             else
                 return BTI429_64.BTI429_FldPutData(msgval, data);
         }
         public static uint BTI429_FldPutLabel(uint msgval, ushort label)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldPutLabel(msgval, label);
             else
                 return BTI429_64.BTI429_FldPutLabel(msgval, label);
         }
         public static uint BTI429_FldPutSDI(uint msgval, ushort sdi)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldPutSDI(msgval, sdi);
             else
                 return BTI429_64.BTI429_FldPutSDI(msgval, sdi);
         }
         public static uint BTI429_FldPutValue(uint msgval, uint dataval, ushort startbit, ushort endbit)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldPutValue(msgval, dataval, startbit, endbit);
             else
                 return BTI429_64.BTI429_FldPutValue(msgval, dataval, startbit, endbit);
         }
         public static uint BTI429_ListAsyncCreate(uint listconfigval, int count, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListAsyncCreate(listconfigval, count, channum, handleval);
             else
                 return BTI429_64.BTI429_ListAsyncCreate(listconfigval, count, channum, handleval);
         }
         public static uint BTI429_ListDataRd(uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListDataRd(listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListDataRd(listaddr, handleval);
         }
         public static int BTI429_ListDataWr(uint value, uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListDataWr(value, listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListDataWr(value, listaddr, handleval);
         }
         public static uint BTI429_ListRcvCreate(uint listconfigval, int count, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListRcvCreate(listconfigval, count, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_ListRcvCreate(listconfigval, count, msgaddr, handleval);
         }
         public static int BTI429_ListStatus(uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListStatus(listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListStatus(listaddr, handleval);
         }
         public static uint BTI429_ListXmtCreate(uint listconfigval, int count, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListXmtCreate(listconfigval, count, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_ListXmtCreate(listconfigval, count, msgaddr, handleval);
         }
         public static uint BTI429_MsgBlockRd(ref MSGFIELDS429 msgfields, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgBlockRd(ref msgfields, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgBlockRd(ref msgfields, msgaddr, handleval);
         }
         public static uint BTI429_MsgBlockWr(ref MSGFIELDS429 msgfields, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgBlockWr(ref msgfields, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgBlockWr(ref msgfields, msgaddr, handleval);
         }
         public static int BTI429_MsgCountRd(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgCountRd(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgCountRd(msgaddr, handleval);
         }
         public static int BTI429_MsgCountWr(int bitcount, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgCountWr(bitcount, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgCountWr(bitcount, msgaddr, handleval);
         }
         public static uint BTI429_MsgCreate(uint configval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgCreate(configval, handleval);
             else
                 return BTI429_64.BTI429_MsgCreate(configval, handleval);
         }
         public static int BTI429_MsgDataCountWr(uint dataval, int bitcount, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgDataCountWr(dataval, bitcount, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgDataCountWr(dataval, bitcount, msgaddr, handleval);
         }
         public static uint BTI429_MsgDataRd(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgDataRd(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgDataRd(msgaddr, handleval);
         }
         public static void BTI429_MsgDataWr(uint value, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgDataWr(value, msgaddr, handleval);
             else
                 BTI429_64.BTI429_MsgDataWr(value, msgaddr, handleval);
         }
         public static void BTI429_MsgGroupBlockRd([In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] MSGFIELDS429[] msgfields, uint[] msgaddrptr, int nummsgs, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgGroupBlockRd(msgfields, msgaddrptr, nummsgs, handleval);
             else
                 BTI429_64.BTI429_MsgGroupBlockRd(msgfields, msgaddrptr, nummsgs, handleval);
         }
         public static void BTI429_MsgGroupBlockWr([In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] MSGFIELDS429[] msgfields, uint[] msgaddrptr, int nummsgs, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgGroupBlockWr(msgfields, msgaddrptr, nummsgs, handleval);
             else
                 BTI429_64.BTI429_MsgGroupBlockWr(msgfields, msgaddrptr, nummsgs, handleval);
         }
         public static void BTI429_MsgGroupRd(uint[] msgdataptr, uint[] msgaddrptr, int nummsgs, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgGroupRd(msgdataptr, msgaddrptr, nummsgs, handleval);
             else
                 BTI429_64.BTI429_MsgGroupRd(msgdataptr, msgaddrptr, nummsgs, handleval);
         }
         public static void BTI429_MsgGroupWr(uint[] msgdataptr, uint[] msgaddrptr, int nummsgs, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgGroupWr(msgdataptr, msgaddrptr, nummsgs, handleval);
             else
                 BTI429_64.BTI429_MsgGroupWr(msgdataptr, msgaddrptr, nummsgs, handleval);
         }
         public static int BTI429_MsgIsAccessed(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgIsAccessed(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgIsAccessed(msgaddr, handleval);
         }
         public static int BTI429_MsgSkipRd(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgSkipRd(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgSkipRd(msgaddr, handleval);
         }
         public static void BTI429_MsgSkipWr(int skip, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgSkipWr(skip, msgaddr, handleval);
             else
                 BTI429_64.BTI429_MsgSkipWr(skip, msgaddr, handleval);
         }
         public static int BTI429_MsgSyncDefine(int enableflag, ushort syncmask, ushort pinpolarity, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgSyncDefine(enableflag, syncmask, pinpolarity, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgSyncDefine(enableflag, syncmask, pinpolarity, msgaddr, handleval);
         }
         public static int BTI429_MsgTriggerDefine(int enableflag, ushort trigmask, ushort trigval, ushort pinpolarity, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgTriggerDefine(enableflag, trigmask, trigval, pinpolarity, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgTriggerDefine(enableflag, trigmask, trigval, pinpolarity, msgaddr, handleval);
         }
         public static int BTI429_ParamAmplitudeConfig(uint configval, ushort dacval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ParamAmplitudeConfig(configval, dacval, channum, handleval);
             else
                 return BTI429_64.BTI429_ParamAmplitudeConfig(configval, dacval, channum, handleval);
         }
         public static int BTI429_ParamAmplitudeGet(ref ushort dacval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ParamAmplitudeGet(ref dacval, channum, handleval);
             else
                 return BTI429_64.BTI429_ParamAmplitudeGet(ref dacval, channum, handleval);
         }
         public static ushort BTI429_ParamBitCountBuild(int bitcount)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ParamBitCountBuild(bitcount);
             else
                 return BTI429_64.BTI429_ParamBitCountBuild(bitcount);
         }
         public static int BTI429_ParamBitRateConfig(uint configval, ushort divval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ParamBitRateConfig(configval, divval, channum, handleval);
             else
                 return BTI429_64.BTI429_ParamBitRateConfig(configval, divval, channum, handleval);
         }
         public static int BTI429_ParamBitRateGet(ref ushort divval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ParamBitRateGet(ref divval, channum, handleval);
             else
                 return BTI429_64.BTI429_ParamBitRateGet(ref divval, channum, handleval);
         }
         public static int BTI429_PlayBlockWr(ushort[] playbuf, int count, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayBlockWr(playbuf, count, channum, handleval);
             else
                 return BTI429_64.BTI429_PlayBlockWr(playbuf, count, channum, handleval);
         }
         public static int BTI429_PlayPutData(uint dataval, int bitcount, ushort gapval, int offset, ushort[] playbuf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayPutData(dataval, bitcount, gapval, offset, playbuf);
             else
                 return BTI429_64.BTI429_PlayPutData(dataval, bitcount, gapval, offset, playbuf);
         }
         public static int BTI429_PlayPutGap(ushort gapval, int offset, ushort[] playbuf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayPutGap(gapval, offset, playbuf);
             else
                 return BTI429_64.BTI429_PlayPutGap(gapval, offset, playbuf);
         }
         public static int BTI429_PlayPutLog(uint condition, ushort tagval, int offset, ushort[] playbuf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayPutLog(condition, tagval, offset, playbuf);
             else
                 return BTI429_64.BTI429_PlayPutLog(condition, tagval, offset, playbuf);
         }
         public static int BTI429_PlayPutPulse0(int dionum, int offset, ushort[] playbuf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayPutPulse0(dionum, offset, playbuf);
             else
                 return BTI429_64.BTI429_PlayPutPulse0(dionum, offset, playbuf);
         }
         public static int BTI429_PlayPutPulse1(int dionum, int offset, ushort[] playbuf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayPutPulse1(dionum, offset, playbuf);
             else
                 return BTI429_64.BTI429_PlayPutPulse1(dionum, offset, playbuf);
         }
         public static int BTI429_PlayStatus(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayStatus(channum, handleval);
             else
                 return BTI429_64.BTI429_PlayStatus(channum, handleval);
         }
         public static int BTI429_SchedBranch(uint condition, int destindex, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBranch(condition, destindex, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBranch(condition, destindex, channum, handleval);
         }
         public static int BTI429_SchedBranchUpdate(int destindex, int opcodeindex, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBranchUpdate(destindex, opcodeindex, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBranchUpdate(destindex, opcodeindex, channum, handleval);
         }
         public static int BTI429_SchedBuild(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBuild(nummsgs, msgaddr, minperiod, maxperiod, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBuild(nummsgs, msgaddr, minperiod, maxperiod, channum, handleval);
         }
         public static int BTI429_SchedCall(uint condition, int destindex, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedCall(condition, destindex, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedCall(condition, destindex, channum, handleval);
         }
         public static int BTI429_SchedCallUpdate(int destindex, int opcodeindex, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedCallUpdate(destindex, opcodeindex, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedCallUpdate(destindex, opcodeindex, channum, handleval);
         }
         public static int BTI429_SchedData(uint dataval, int bitcount, ushort gapval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedData(dataval, bitcount, gapval, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedData(dataval, bitcount, gapval, channum, handleval);
         }
         public static int BTI429_SchedEntry(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedEntry(channum, handleval);
             else
                 return BTI429_64.BTI429_SchedEntry(channum, handleval);
         }
         public static int BTI429_SchedGap(ushort gapval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedGap(gapval, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedGap(gapval, channum, handleval);
         }
         public static int BTI429_SchedGapFixed(ushort gapval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedGapFixed(gapval, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedGapFixed(gapval, channum, handleval);
         }
         public static int BTI429_SchedGapList(ushort gapval, uint listaddr, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedGapList(gapval, listaddr, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedGapList(gapval, listaddr, channum, handleval);
         }
         public static int BTI429_SchedHalt(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedHalt(channum, handleval);
             else
                 return BTI429_64.BTI429_SchedHalt(channum, handleval);
         }
         public static int BTI429_SchedLog(uint condition, ushort tagval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedLog(condition, tagval, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedLog(condition, tagval, channum, handleval);
         }
         public static int BTI429_SchedMode(uint modeval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedMode(modeval);
             else
                 return BTI429_64.BTI429_SchedMode(modeval);
         }
         public static int BTI429_SchedMsg(uint msgaddr, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedMsg(msgaddr, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedMsg(msgaddr, channum, handleval);
         }
         public static int BTI429_SchedMsgEx(uint msgaddr, ushort gapval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedMsgEx(msgaddr, gapval, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedMsgEx(msgaddr, gapval, channum, handleval);
         }
         public static int BTI429_SchedPause(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedPause(channum, handleval);
             else
                 return BTI429_64.BTI429_SchedPause(channum, handleval);
         }
         public static int BTI429_SchedPulse(int dionum, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedPulse(dionum, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedPulse(dionum, channum, handleval);
         }
         public static int BTI429_SchedRestart(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedRestart(channum, handleval);
             else
                 return BTI429_64.BTI429_SchedRestart(channum, handleval);
         }
         public static int BTI429_SchedReturn(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedReturn(channum, handleval);
             else
                 return BTI429_64.BTI429_SchedReturn(channum, handleval);
         }
         public static void BTI429_BCDGetVal(System.Text.StringBuilder buf, uint msg, ushort sigdig, string resolstr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_BCDGetVal(buf, msg, sigdig, resolstr);
             else
                 BTI429_64.BTI429_BCDGetVal(buf, msg, sigdig, resolstr);
         }
         public static uint BTI429_BCDPutVal(string buf, uint msg, ushort sigdig, string resolstr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BCDPutVal(buf, msg, sigdig, resolstr);
             else
                 return BTI429_64.BTI429_BCDPutVal(buf, msg, sigdig, resolstr);
         }
         public static void BTI429_BNRGetVal(System.Text.StringBuilder buf, uint msg, ushort sigbit, string resolstr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_BNRGetVal(buf, msg, sigbit, resolstr);
             else
                 BTI429_64.BTI429_BNRGetVal(buf, msg, sigbit, resolstr);
         }
         public static uint BTI429_BNRPutVal(string buf, uint msg, ushort sigbit, string resolstr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_BNRPutVal(buf, msg, sigbit, resolstr);
             else
                 return BTI429_64.BTI429_BNRPutVal(buf, msg, sigbit, resolstr);
         }
         public static int BTI429_ChConfigEx(uint configval, ushort count, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChConfigEx(configval, count, channum, handleval);
             else
                 return BTI429_64.BTI429_ChConfigEx(configval, count, channum, handleval);
         }
         public static int BTI429_ChOutputStateSet(uint pos, uint neg, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ChOutputStateSet(pos, neg, channum, handleval);
             else
                 return BTI429_64.BTI429_ChOutputStateSet(pos, neg, channum, handleval);
         }
         public static uint BTI429_CmdAddr(int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdAddr(index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdAddr(index, channum, handleval);
         }
         public static uint BTI429_CmdAlloc(int count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdAlloc(count, handleval);
             else
                 return BTI429_64.BTI429_CmdAlloc(count, handleval);
         }
         public static uint BTI429_CmdAllocEx(uint configval, int count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdAllocEx(configval, count, handleval);
             else
                 return BTI429_64.BTI429_CmdAllocEx(configval, count, handleval);
         }
         public static uint BTI429_CmdBaseRd(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdBaseRd(channum, handleval);
             else
                 return BTI429_64.BTI429_CmdBaseRd(channum, handleval);
         }
         public static void BTI429_CmdBaseWr(uint addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdBaseWr(addrval, channum, handleval);
             else
                 BTI429_64.BTI429_CmdBaseWr(addrval, channum, handleval);
         }
         public static int BTI429_CmdClear(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdClear(channum, handleval);
             else
                 return BTI429_64.BTI429_CmdClear(channum, handleval);
         }
         public static ushort BTI429_CmdCountRd(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdCountRd(channum, handleval);
             else
                 return BTI429_64.BTI429_CmdCountRd(channum, handleval);
         }
         public static void BTI429_CmdCountWr(ushort countval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdCountWr(countval, channum, handleval);
             else
                 BTI429_64.BTI429_CmdCountWr(countval, channum, handleval);
         }
         public static ushort BTI429_CmdCtrlRd(int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdCtrlRd(index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdCtrlRd(index, channum, handleval);
         }
         public static void BTI429_CmdCtrlWr(ushort ctrlval, int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdCtrlWr(ctrlval, index, channum, handleval);
             else
                 BTI429_64.BTI429_CmdCtrlWr(ctrlval, index, channum, handleval);
         }
         public static ushort BTI429_CmdCurrRd(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdCurrRd(channum, handleval);
             else
                 return BTI429_64.BTI429_CmdCurrRd(channum, handleval);
         }
         public static void BTI429_CmdCurrWr(ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdCurrWr(addrval, channum, handleval);
             else
                 BTI429_64.BTI429_CmdCurrWr(addrval, channum, handleval);
         }
         public static void BTI429_CmdInit(ushort opcode, ref ushort block)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdInit(opcode, ref block);
             else
                 BTI429_64.BTI429_CmdInit(opcode, ref block);
         }
         public static int BTI429_CmdInsert(ref ushort block, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdInsert(ref block, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdInsert(ref block, channum, handleval);
         }
         public static ushort BTI429_CmdMaxLoopRd(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdMaxLoopRd(channum, handleval);
             else
                 return BTI429_64.BTI429_CmdMaxLoopRd(channum, handleval);
         }
         public static void BTI429_CmdMaxLoopWr(ushort countval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdMaxLoopWr(countval, channum, handleval);
             else
                 BTI429_64.BTI429_CmdMaxLoopWr(countval, channum, handleval);
         }
         public static int BTI429_CmdRd(ref ushort block, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdRd(ref block, addrval, handleval);
             else
                 return BTI429_64.BTI429_CmdRd(ref block, addrval, handleval);
         }
         public static void BTI429_CmdRestart(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdRestart(channum, handleval);
             else
                 BTI429_64.BTI429_CmdRestart(channum, handleval);
         }
         public static int BTI429_CmdShotRd(int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdShotRd(index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdShotRd(index, channum, handleval);
         }
         public static int BTI429_CmdShotWr(int value, int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdShotWr(value, index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdShotWr(value, index, channum, handleval);
         }
         public static int BTI429_CmdSkipRd(int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdSkipRd(index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdSkipRd(index, channum, handleval);
         }
         public static int BTI429_CmdSkipWr(int value, int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdSkipWr(value, index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdSkipWr(value, index, channum, handleval);
         }
         public static void BTI429_CmdStackClr(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdStackClr(channum, handleval);
             else
                 BTI429_64.BTI429_CmdStackClr(channum, handleval);
         }
         public static ushort BTI429_CmdStartRd(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdStartRd(channum, handleval);
             else
                 return BTI429_64.BTI429_CmdStartRd(channum, handleval);
         }
         public static void BTI429_CmdStartWr(ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdStartWr(addrval, channum, handleval);
             else
                 BTI429_64.BTI429_CmdStartWr(addrval, channum, handleval);
         }
         public static int BTI429_CmdStepRd(int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdStepRd(index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdStepRd(index, channum, handleval);
         }
         public static int BTI429_CmdStepWr(int value, int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdStepWr(value, index, channum, handleval);
             else
                 return BTI429_64.BTI429_CmdStepWr(value, index, channum, handleval);
         }
         public static int BTI429_CmdTotalRd(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdTotalRd(channum, handleval);
             else
                 return BTI429_64.BTI429_CmdTotalRd(channum, handleval);
         }
         public static void BTI429_CmdTotalWr(int countval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_CmdTotalWr(countval, channum, handleval);
             else
                 BTI429_64.BTI429_CmdTotalWr(countval, channum, handleval);
         }
         public static int BTI429_CmdWr(ref ushort block, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_CmdWr(ref block, addrval, handleval);
             else
                 return BTI429_64.BTI429_CmdWr(ref block, addrval, handleval);
         }
         public static uint BTI429_ConvFromArinc(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ConvFromArinc(msgval);
             else
                 return BTI429_64.BTI429_ConvFromArinc(msgval);
         }
         public static uint BTI429_ConvToArinc(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ConvToArinc(msgval);
             else
                 return BTI429_64.BTI429_ConvToArinc(msgval);
         }
         public static int BTI429_DllUsageCount()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_DllUsageCount();
             else
                 return BTI429_64.BTI429_DllUsageCount();
         }
         public static uint BTI429_FilterAddr(int labelval, int sdival, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterAddr(labelval, sdival, channum, handleval);
             else
                 return BTI429_64.BTI429_FilterAddr(labelval, sdival, channum, handleval);
         }
         public static uint BTI429_FilterCreate(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterCreate(handleval);
             else
                 return BTI429_64.BTI429_FilterCreate(handleval);
         }
         public static int BTI429_FilterFill(uint msgaddr, uint basevaladdr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FilterFill(msgaddr, basevaladdr, handleval);
             else
                 return BTI429_64.BTI429_FilterFill(msgaddr, basevaladdr, handleval);
         }
         public static ushort BTI429_FldGetParBit(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldGetParBit(msgval);
             else
                 return BTI429_64.BTI429_FldGetParBit(msgval);
         }
         public static uint BTI429_FldPutParBit(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_FldPutParBit(msgval);
             else
                 return BTI429_64.BTI429_FldPutParBit(msgval);
         }
         public static void BTI429_GetChanCount(ref int rcvcount, ref int xmtcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_GetChanCount(ref rcvcount, ref xmtcount, handleval);
             else
                 BTI429_64.BTI429_GetChanCount(ref rcvcount, ref xmtcount, handleval);
         }
         public static int BTI429_IsChan(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_IsChan(channum, handleval);
             else
                 return BTI429_64.BTI429_IsChan(channum, handleval);
         }
         public static int BTI429_IsRcvChan(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_IsRcvChan(channum, handleval);
             else
                 return BTI429_64.BTI429_IsRcvChan(channum, handleval);
         }
         public static int BTI429_IsXmtChan(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_IsXmtChan(channum, handleval);
             else
                 return BTI429_64.BTI429_IsXmtChan(channum, handleval);
         }
         public static uint BTI429_LabelReverse(uint msgval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_LabelReverse(msgval);
             else
                 return BTI429_64.BTI429_LabelReverse(msgval);
         }
         public static uint BTI429_ListAddr(int index, uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListAddr(index, listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListAddr(index, listaddr, handleval);
         }
         public static uint BTI429_ListAddrEx(int index, uint listaddr, ref ushort header, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListAddrEx(index, listaddr, ref header, handleval);
             else
                 return BTI429_64.BTI429_ListAddrEx(index, listaddr, ref header, handleval);
         }
         public static int BTI429_ListAdvance(uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListAdvance(listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListAdvance(listaddr, handleval);
         }
         public static int BTI429_ListClear(uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListClear(listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListClear(listaddr, handleval);
         }
         public static uint BTI429_ListConfig(uint configval, int count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListConfig(configval, count, handleval);
             else
                 return BTI429_64.BTI429_ListConfig(configval, count, handleval);
         }
         public static uint BTI429_ListConfigEx(uint configval, int count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListConfigEx(configval, count, handleval);
             else
                 return BTI429_64.BTI429_ListConfigEx(configval, count, handleval);
         }
         public static int BTI429_ListDataBlkRd(uint[] dataptr, ref ushort datacountptr, uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListDataBlkRd(dataptr, ref datacountptr, listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListDataBlkRd(dataptr, ref datacountptr, listaddr, handleval);
         }
         public static int BTI429_ListDataBlkWr(uint[] dataptr, ushort datacount, uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListDataBlkWr(dataptr, datacount, listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListDataBlkWr(dataptr, datacount, listaddr, handleval);
         }
         public static int BTI429_ListDataBlkWrEx(uint[] dataptr, ref ushort datacountptr, uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListDataBlkWrEx(dataptr, ref datacountptr, listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListDataBlkWrEx(dataptr, ref datacountptr, listaddr, handleval);
         }
         public static uint BTI429_ListDataRdEx(int index, uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListDataRdEx(index, listaddr, handleval);
             else
                 return BTI429_64.BTI429_ListDataRdEx(index, listaddr, handleval);
         }
         public static void BTI429_ListDataWrEx(uint value, int index, uint listaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ListDataWrEx(value, index, listaddr, handleval);
             else
                 BTI429_64.BTI429_ListDataWrEx(value, index, listaddr, handleval);
         }
         public static int BTI429_ListInit(uint listaddr, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListInit(listaddr, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_ListInit(listaddr, msgaddr, handleval);
         }
         public static uint BTI429_ListNextRd(uint listaddr, ref ushort header, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListNextRd(listaddr, ref header, handleval);
             else
                 return BTI429_64.BTI429_ListNextRd(listaddr, ref header, handleval);
         }
         public static uint BTI429_ListNextWr(uint listaddr, ref ushort header, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ListNextWr(listaddr, ref header, handleval);
             else
                 return BTI429_64.BTI429_ListNextWr(listaddr, ref header, handleval);
         }
         public static void BTI429_ListPostRd(uint listaddr, ref ushort header, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ListPostRd(listaddr, ref header, handleval);
             else
                 BTI429_64.BTI429_ListPostRd(listaddr, ref header, handleval);
         }
         public static void BTI429_ListPostWr(uint listaddr, ref ushort header, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ListPostWr(listaddr, ref header, handleval);
             else
                 BTI429_64.BTI429_ListPostWr(listaddr, ref header, handleval);
         }
         public static void BTI429_ListPreRd(uint listaddr, ref ushort header, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ListPreRd(listaddr, ref header, handleval);
             else
                 BTI429_64.BTI429_ListPreRd(listaddr, ref header, handleval);
         }
         public static void BTI429_ListPreWr(uint listaddr, ref ushort header, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_ListPreWr(listaddr, ref header, handleval);
             else
                 BTI429_64.BTI429_ListPreWr(listaddr, ref header, handleval);
         }
         public static ushort BTI429_MsgActivityRd(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgActivityRd(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgActivityRd(msgaddr, handleval);
         }
         public static void BTI429_MsgActivityWr(ushort value, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgActivityWr(value, msgaddr, handleval);
             else
                 BTI429_64.BTI429_MsgActivityWr(value, msgaddr, handleval);
         }
         public static ushort BTI429_MsgCheck(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgCheck(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgCheck(msgaddr, handleval);
         }
         public static uint BTI429_MsgCommRd(ref MSGFIELDS429 msgfields, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgCommRd(ref msgfields, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgCommRd(ref msgfields, msgaddr, handleval);
         }
         public static uint BTI429_MsgCommWr(ref MSGFIELDS429 msgfields, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgCommWr(ref msgfields, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgCommWr(ref msgfields, msgaddr, handleval);
         }
         public static int BTI429_MsgConfig(uint configval, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgConfig(configval, msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgConfig(configval, msgaddr, handleval);
         }
         public static int BTI429_MsgMultiSkipWr(int[] skip, uint[] msgaddr, int msgcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgMultiSkipWr(skip, msgaddr, msgcount, handleval);
             else
                 return BTI429_64.BTI429_MsgMultiSkipWr(skip, msgaddr, msgcount, handleval);
         }
         public static ushort BTI429_MsgOptRd(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgOptRd(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgOptRd(msgaddr, handleval);
         }
         public static void BTI429_MsgOptWr(ushort msgopt, uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_MsgOptWr(msgopt, msgaddr, handleval);
             else
                 BTI429_64.BTI429_MsgOptWr(msgopt, msgaddr, handleval);
         }
         public static uint BTI429_MsgReset(uint msgaddr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_MsgReset(msgaddr, handleval);
             else
                 return BTI429_64.BTI429_MsgReset(msgaddr, handleval);
         }
         public static int BTI429_PlayPutUser(uint useraddr, int offset, ushort[] playbuf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_PlayPutUser(useraddr, offset, playbuf);
             else
                 return BTI429_64.BTI429_PlayPutUser(useraddr, offset, playbuf);
         }
         public static int BTI429_ParamWaveformConfig(uint configval, int highvolt, int lowvolt, int nullvolt, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ParamWaveformConfig(configval, highvolt, lowvolt, nullvolt, channum, handleval);
             else
                 return BTI429_64.BTI429_ParamWaveformConfig(configval, highvolt, lowvolt, nullvolt, channum, handleval);
         }
         public static int BTI429_ParamWaveformConfigEx(uint configval, ref PARAMFIELDS429 paramflds, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_ParamWaveformConfigEx(configval, ref paramflds, channum, handleval);
             else
                 return BTI429_64.BTI429_ParamWaveformConfigEx(configval, ref paramflds, channum, handleval);
         }
         public static int BTI429_Sched1Build(int basevalmsgnum, int nummsgs, uint[] msgaddr, int[] minperiodin, int[] maxperiodin, int speed, int microflag, int debugvalflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched1Build(basevalmsgnum, nummsgs, msgaddr, minperiodin, maxperiodin, speed, microflag, debugvalflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched1Build(basevalmsgnum, nummsgs, msgaddr, minperiodin, maxperiodin, speed, microflag, debugvalflag, interceptflag, channum, handleval);
         }
         public static int BTI429_Sched2AdvanceMessage(int entries, int panicindex, int nummsgs, nint infoptr, ref int nextdeltaptr, int ulmastertimer, ref uint msgaddrptr, int debugvalflag, int tryflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched2AdvanceMessage(entries, panicindex, nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched2AdvanceMessage(entries, panicindex, nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
         }
         public static int BTI429_Sched2AdvanceNoMessage(int nummsgs, nint infoptr, ref int nextdeltaptr, int ulmastertimer, ref uint msgaddrptr, int debugvalflag, int tryflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched2AdvanceNoMessage(nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched2AdvanceNoMessage(nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
         }
         public static void BTI429_Sched2Analyze(int nummsgs, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_Sched2Analyze(nummsgs, infoptr);
             else
                 BTI429_64.BTI429_Sched2Analyze(nummsgs, infoptr);
         }
         public static int BTI429_Sched2Build(int nummsgs, uint[] msgaddrptr, int[] minlist, int[] maxlist, int speedflag, int microflag, int debugvalflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched2Build(nummsgs, msgaddrptr, minlist, maxlist, speedflag, microflag, debugvalflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched2Build(nummsgs, msgaddrptr, minlist, maxlist, speedflag, microflag, debugvalflag, interceptflag, channum, handleval);
         }
         public static int BTI429_Sched2BuildEx(ref int styleptr, int nummsgs, int[] minlist, int[] maxlist, int speedflag, int microflag, int interceptflag)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched2BuildEx(ref styleptr, nummsgs, minlist, maxlist, speedflag, microflag, interceptflag);
             else
                 return BTI429_64.BTI429_Sched2BuildEx(ref styleptr, nummsgs, minlist, maxlist, speedflag, microflag, interceptflag);
         }
         public static int BTI429_Sched2BuildExx(int style, int speedflag, int microflag, int debugvalflag, int tryflag, int nummsgs, int[] minlist, int[] maxlist, ref int entriesptr, ref int maxentriesptr, nint infoptr, uint[] msgaddrptr, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched2BuildExx(style, speedflag, microflag, debugvalflag, tryflag, nummsgs, minlist, maxlist, ref entriesptr, ref maxentriesptr, infoptr, msgaddrptr, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched2BuildExx(style, speedflag, microflag, debugvalflag, tryflag, nummsgs, minlist, maxlist, ref entriesptr, ref maxentriesptr, infoptr, msgaddrptr, interceptflag, channum, handleval);
         }
         public static int BTI429_Sched3Build(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int microflag, int debugvalflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched3Build(nummsgs, msgaddr, minperiod, maxperiod, speed, microflag, debugvalflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched3Build(nummsgs, msgaddr, minperiod, maxperiod, speed, microflag, debugvalflag, interceptflag, channum, handleval);
         }
         public static int BTI429_Sched3BuildEx(int basevalmsgnum, int nummsgs, uint[] msgaddr, int[] minperiodin, int[] maxperiodin, int speed, int microflag, int debugvalflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched3BuildEx(basevalmsgnum, nummsgs, msgaddr, minperiodin, maxperiodin, speed, microflag, debugvalflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched3BuildEx(basevalmsgnum, nummsgs, msgaddr, minperiodin, maxperiodin, speed, microflag, debugvalflag, interceptflag, channum, handleval);
         }
         public static uint BTI429_Sched3Calc(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched3Calc(infoptr);
             else
                 return BTI429_64.BTI429_Sched3Calc(infoptr);
         }
         public static int BTI429_Sched3Check(ref int minperiod, ref int maxperiod, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched3Check(ref minperiod, ref maxperiod, infoptr);
             else
                 return BTI429_64.BTI429_Sched3Check(ref minperiod, ref maxperiod, infoptr);
         }
         public static uint BTI429_Sched3ToBit(uint value, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched3ToBit(value, infoptr);
             else
                 return BTI429_64.BTI429_Sched3ToBit(value, infoptr);
         }
         public static int BTI429_Sched4AdvanceMessage(int entries, int panicindex, int nummsgs, nint infoptr, ref int nextdeltaptr, int ulmastertimer, ref uint msgaddrptr, int debugvalflag, int tryflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched4AdvanceMessage(entries, panicindex, nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched4AdvanceMessage(entries, panicindex, nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
         }
         public static int BTI429_Sched4AdvanceNoMessage(int nummsgs, nint infoptr, ref int nextdeltaptr, int ulmastertimer, ref uint msgaddrptr, int debugvalflag, int tryflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched4AdvanceNoMessage(nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched4AdvanceNoMessage(nummsgs, infoptr, ref nextdeltaptr, ulmastertimer, ref msgaddrptr, debugvalflag, tryflag, interceptflag, channum, handleval);
         }
         public static void BTI429_Sched4Analyze(int nummsgs, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_Sched4Analyze(nummsgs, infoptr);
             else
                 BTI429_64.BTI429_Sched4Analyze(nummsgs, infoptr);
         }
         public static int BTI429_Sched4Build(int nummsgs, uint[] msgaddrptr, int[] minlist, int[] maxlist, int speedflag, int microflag, int debugvalflag, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched4Build(nummsgs, msgaddrptr, minlist, maxlist, speedflag, microflag, debugvalflag, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched4Build(nummsgs, msgaddrptr, minlist, maxlist, speedflag, microflag, debugvalflag, interceptflag, channum, handleval);
         }
         public static int BTI429_Sched4BuildEx(ref int styleptr, int nummsgs, int minorframetime, int majorframetime, int[] targetlist, int[] minlist, int[] maxlist, int speedflag, int microflag, int interceptflag)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched4BuildEx(ref styleptr, nummsgs, minorframetime, majorframetime, targetlist, minlist, maxlist, speedflag, microflag, interceptflag);
             else
                 return BTI429_64.BTI429_Sched4BuildEx(ref styleptr, nummsgs, minorframetime, majorframetime, targetlist, minlist, maxlist, speedflag, microflag, interceptflag);
         }
         public static int BTI429_Sched4BuildExx(int style, int speedflag, int microflag, int debugvalflag, int tryflag, int nummsgs, int minorframetime, int majorframetime, int[] targetlist, int[] minlist, int[] maxlist, ref int entriesptr, ref int maxentriesptr, nint infoptr, uint[] msgaddrptr, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Sched4BuildExx(style, speedflag, microflag, debugvalflag, tryflag, nummsgs, minorframetime, majorframetime, targetlist, minlist, maxlist, ref entriesptr, ref maxentriesptr, infoptr, msgaddrptr, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_Sched4BuildExx(style, speedflag, microflag, debugvalflag, tryflag, nummsgs, minorframetime, majorframetime, targetlist, minlist, maxlist, ref entriesptr, ref maxentriesptr, infoptr, msgaddrptr, interceptflag, channum, handleval);
         }
         public static uint BTI429_SchedAdvance(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedAdvance(infoptr);
             else
                 return BTI429_64.BTI429_SchedAdvance(infoptr);
         }
         public static int BTI429_SchedAgain(int index, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedAgain(index, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedAgain(index, channum, handleval);
         }
         public static int BTI429_SchedBranchEx(ushort condition1, ushort condition2, int destindex, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBranchEx(condition1, condition2, destindex, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBranchEx(condition1, condition2, destindex, channum, handleval);
         }
         public static int BTI429_SchedBuildBuf(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int bufcount, ref byte bufptr, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBuildBuf(nummsgs, msgaddr, minperiod, maxperiod, bufcount, ref bufptr, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBuildBuf(nummsgs, msgaddr, minperiod, maxperiod, bufcount, ref bufptr, channum, handleval);
         }
         public static int BTI429_SchedBuildBufEx(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int debugval, int microflag, int algorithm, int bufcount, ref byte bufptr, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBuildBufEx(nummsgs, msgaddr, minperiod, maxperiod, speed, debugval, microflag, algorithm, bufcount, ref bufptr, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBuildBufEx(nummsgs, msgaddr, minperiod, maxperiod, speed, debugval, microflag, algorithm, bufcount, ref bufptr, channum, handleval);
         }
         public static int BTI429_SchedBuildEx(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBuildEx(nummsgs, msgaddr, minperiod, maxperiod, speed, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBuildEx(nummsgs, msgaddr, minperiod, maxperiod, speed, channum, handleval);
         }
         public static int BTI429_SchedBuildExx(int basevalmsgnum, int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, nint buf, uint bufsize, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBuildExx(basevalmsgnum, nummsgs, msgaddr, minperiod, maxperiod, speed, buf, bufsize, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedBuildExx(basevalmsgnum, nummsgs, msgaddr, minperiod, maxperiod, speed, buf, bufsize, channum, handleval);
         }
         public static int BTI429_SchedBuildExxx(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int channum, int debugval, int microflag, int algorithm, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBuildExxx(nummsgs, msgaddr, minperiod, maxperiod, speed, channum, debugval, microflag, algorithm, handleval);
             else
                 return BTI429_64.BTI429_SchedBuildExxx(nummsgs, msgaddr, minperiod, maxperiod, speed, channum, debugval, microflag, algorithm, handleval);
         }
         public static int BTI429_SchedBuildExxxx(int nummsgs, uint[] msgaddr, int[] minperiod, int[] maxperiod, int speed, int channum, int debugval, int microflag, int algorithm, int interceptflag, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedBuildExxxx(nummsgs, msgaddr, minperiod, maxperiod, speed, channum, debugval, microflag, algorithm, interceptflag, handleval);
             else
                 return BTI429_64.BTI429_SchedBuildExxxx(nummsgs, msgaddr, minperiod, maxperiod, speed, channum, debugval, microflag, algorithm, interceptflag, handleval);
         }
         public static uint BTI429_SchedCalc(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedCalc(infoptr);
             else
                 return BTI429_64.BTI429_SchedCalc(infoptr);
         }
         public static int BTI429_SchedCallEx(ushort condition1, ushort condition2, int destindex, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedCallEx(condition1, condition2, destindex, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedCallEx(condition1, condition2, destindex, channum, handleval);
         }
         public static int BTI429_SchedCheck(int[] minperiod, int[] maxperiod, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedCheck(minperiod, maxperiod, infoptr);
             else
                 return BTI429_64.BTI429_SchedCheck(minperiod, maxperiod, infoptr);
         }
         public static void BTI429_SchedCheckEnd()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedCheckEnd();
             else
                 BTI429_64.BTI429_SchedCheckEnd();
         }
         public static void BTI429_SchedCheckMiddle(uint msgnum, uint minlen, uint midlen, uint maxlen)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedCheckMiddle(msgnum, minlen, midlen, maxlen);
             else
                 BTI429_64.BTI429_SchedCheckMiddle(msgnum, minlen, midlen, maxlen);
         }
         public static void BTI429_SchedCheckReal(uint msgnum, uint minlen, uint midlen, uint maxlen)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedCheckReal(msgnum, minlen, midlen, maxlen);
             else
                 BTI429_64.BTI429_SchedCheckReal(msgnum, minlen, midlen, maxlen);
         }
         public static void BTI429_SchedCheckStart()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedCheckStart();
             else
                 BTI429_64.BTI429_SchedCheckStart();
         }
         public static uint BTI429_SchedConflicts(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedConflicts(infoptr);
             else
                 return BTI429_64.BTI429_SchedConflicts(infoptr);
         }
         unsafe public static void BTI429_SchedDisplay(uint nummsgs, ref uint count, ref uint* data)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedDisplay(nummsgs, ref count, ref data);
             else
                 BTI429_64.BTI429_SchedDisplay(nummsgs, ref count, ref data);
         }
         public static int BTI429_SchedDivide(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedDivide(infoptr);
             else
                 return BTI429_64.BTI429_SchedDivide(infoptr);
         }
         public static uint BTI429_SchedFix(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedFix(infoptr);
             else
                 return BTI429_64.BTI429_SchedFix(infoptr);
         }
         public static void BTI429_SchedFixEnd()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedFixEnd();
             else
                 BTI429_64.BTI429_SchedFixEnd();
         }
         public static void BTI429_SchedFixMiddle(uint conflicts)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedFixMiddle(conflicts);
             else
                 BTI429_64.BTI429_SchedFixMiddle(conflicts);
         }
         public static void BTI429_SchedFixStart()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedFixStart();
             else
                 BTI429_64.BTI429_SchedFixStart();
         }
         public static void BTI429_SchedHook(int index, nint ptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedHook(index, ptr);
             else
                 BTI429_64.BTI429_SchedHook(index, ptr);
         }
         public static int BTI429_SchedInsert(uint eventvals, uint index, uint msgnum, ref uint msgaddr, uint gapval, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedInsert(eventvals, index, msgnum, ref msgaddr, gapval, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedInsert(eventvals, index, msgnum, ref msgaddr, gapval, interceptflag, channum, handleval);
         }
         public static int BTI429_SchedInsert2(uint eventvals, uint index, int msgnum, ref uint msgaddr, uint gapval, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedInsert2(eventvals, index, msgnum, ref msgaddr, gapval, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedInsert2(eventvals, index, msgnum, ref msgaddr, gapval, interceptflag, channum, handleval);
         }
         public static int BTI429_SchedInsertEnd(uint eventvals, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedInsertEnd(eventvals, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedInsertEnd(eventvals, interceptflag, channum, handleval);
         }
         public static int BTI429_SchedInsertStart(uint eventvals, int interceptflag, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedInsertStart(eventvals, interceptflag, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedInsertStart(eventvals, interceptflag, channum, handleval);
         }
         public static int BTI429_SchedIntercept(int typeval, uint msgaddr, uint gapval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedIntercept(typeval, msgaddr, gapval, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedIntercept(typeval, msgaddr, gapval, channum, handleval);
         }
         public static void BTI429_SchedLayout(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedLayout(infoptr);
             else
                 BTI429_64.BTI429_SchedLayout(infoptr);
         }
         public static int BTI429_SchedLogEx(ushort condition1, ushort condition2, ushort tagval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedLogEx(condition1, condition2, tagval, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedLogEx(condition1, condition2, tagval, channum, handleval);
         }
         public static uint BTI429_SchedMaxval(uint[] arrayval, uint arrayvalcount)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedMaxval(arrayval, arrayvalcount);
             else
                 return BTI429_64.BTI429_SchedMaxval(arrayval, arrayvalcount);
         }
         public static uint BTI429_SchedMinval(uint[] arrayval, uint arrayvalcount)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedMinval(arrayval, arrayvalcount);
             else
                 return BTI429_64.BTI429_SchedMinval(arrayval, arrayvalcount);
         }
         public static int BTI429_SchedNop(int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedNop(channum, handleval);
             else
                 return BTI429_64.BTI429_SchedNop(channum, handleval);
         }
         public static int BTI429_SchedParse(int basevalmsgnum, ref uint msgaddr, int channum, nint infoptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedParse(basevalmsgnum, ref msgaddr, channum, infoptr, handleval);
             else
                 return BTI429_64.BTI429_SchedParse(basevalmsgnum, ref msgaddr, channum, infoptr, handleval);
         }
         public static int BTI429_SchedPreprocess(int nummsgs, int speedflag, uint[] msgaddrptr, int[] minlist, int[] maxlist, int debugvalflag, int[] targetlist, ref int minorframetime, ref int majorframetime)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedPreprocess(nummsgs, speedflag, msgaddrptr, minlist, maxlist, debugvalflag, targetlist, ref minorframetime, ref majorframetime);
             else
                 return BTI429_64.BTI429_SchedPreprocess(nummsgs, speedflag, msgaddrptr, minlist, maxlist, debugvalflag, targetlist, ref minorframetime, ref majorframetime);
         }
         public static int BTI429_SchedPulse0(int dionum, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedPulse0(dionum, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedPulse0(dionum, channum, handleval);
         }
         public static int BTI429_SchedPulse1(int dionum, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedPulse1(dionum, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedPulse1(dionum, channum, handleval);
         }
         public static int BTI429_SchedReset(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedReset(infoptr);
             else
                 return BTI429_64.BTI429_SchedReset(infoptr);
         }
         public static uint BTI429_SchedRotate(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedRotate(infoptr);
             else
                 return BTI429_64.BTI429_SchedRotate(infoptr);
         }
         public static int BTI429_SchedShift(int msgnum, int value, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedShift(msgnum, value, infoptr);
             else
                 return BTI429_64.BTI429_SchedShift(msgnum, value, infoptr);
         }
         public static int BTI429_SchedSlide(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedSlide(infoptr);
             else
                 return BTI429_64.BTI429_SchedSlide(infoptr);
         }
         public static void BTI429_SchedSlideEnd()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedSlideEnd();
             else
                 BTI429_64.BTI429_SchedSlideEnd();
         }
         public static void BTI429_SchedSlideMiddle(uint index, uint count, uint conflicts)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedSlideMiddle(index, count, conflicts);
             else
                 BTI429_64.BTI429_SchedSlideMiddle(index, count, conflicts);
         }
         public static void BTI429_SchedSlideStart(uint factor)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedSlideStart(factor);
             else
                 BTI429_64.BTI429_SchedSlideStart(factor);
         }
         public static void BTI429_SchedSort(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedSort(infoptr);
             else
                 BTI429_64.BTI429_SchedSort(infoptr);
         }
         public static uint BTI429_SchedToBit(uint value, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedToBit(value, infoptr);
             else
                 return BTI429_64.BTI429_SchedToBit(value, infoptr);
         }
         public static uint BTI429_SchedToMsec(uint value, nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedToMsec(value, infoptr);
             else
                 return BTI429_64.BTI429_SchedToMsec(value, infoptr);
         }
         public static void BTI429_SchedUnsort(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTI429_32.BTI429_SchedUnsort(infoptr);
             else
                 BTI429_64.BTI429_SchedUnsort(infoptr);
         }
         public static int BTI429_SchedUser(uint useraddr, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedUser(useraddr, channum, handleval);
             else
                 return BTI429_64.BTI429_SchedUser(useraddr, channum, handleval);
         }
         public static uint BTI429_SchedWalk(nint infoptr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedWalk(infoptr);
             else
                 return BTI429_64.BTI429_SchedWalk(infoptr);
         }
         public static int BTI429_SchedWriteBuf(ref byte bufptr, int bufcount, uint schaddr, int schedcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_SchedWriteBuf(ref bufptr, bufcount, schaddr, schedcount, handleval);
             else
                 return BTI429_64.BTI429_SchedWriteBuf(ref bufptr, bufcount, schaddr, schedcount, handleval);
         }
         public static int BTI429_TestProtocol(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_TestProtocol(handleval);
             else
                 return BTI429_64.BTI429_TestProtocol(handleval);
         }
         public static ushort BTI429_Transpose12(ushort val)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTI429_32.BTI429_Transpose12(val);
             else
                 return BTI429_64.BTI429_Transpose12(val);

@@ -7,7 +7,10 @@ const createWindow = () => {
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      // Recommended for security: disable nodeIntegration and enable contextIsolation
+      // nodeIntegration: false, // Default in Electron 12+
+      // contextIsolation: true, // Default in Electron 12+
     }
   })
 
@@ -30,72 +33,101 @@ app.on('window-all-closed', () => {
   }
 })
 
-// Added: Function to parse the C# output
-const parseTestOutput = (stdout) => {
-  const lines = stdout.trim().split(/\r?\n/); // Split into lines, handling Windows/Unix endings
-  const results = {
-    deviceInfo: { type: null, product: null },
-    tests: [],
-    warnings: [],
-    errors: [], // Parsing errors
-    raw: stdout // Keep raw output for debugging/fallback
-  };
+// IPC Listener updated to run the executable with arguments and parse JSON output
+ipcMain.on('run-test', (event) => {
+  // Define arguments for the C# executable
+  const args = ['--action', 'testCard']; // Add more args here if needed in the future
+  // Construct the path to the executable within the workspace
+  const executablePath = path.join(__dirname, 'bin', 'Debug', 'net6.0', 'BTICardTest.exe');
 
-  // Regex for test results (captures name and status)
-  const testResultRegex = /^(.+?): (PASSED|FAILED.*)$/;
+  console.log(`Attempting to run: ${executablePath} ${args.join(' ')}`);
 
-  lines.forEach(line => {
-    line = line.trim(); // Trim whitespace
-    if (!line) return; // Skip empty lines
+  let fullStdout = '';
+  let fullStderr = '';
 
-    if (line.startsWith('Card Type:')) {
-      results.deviceInfo.type = line.substring('Card Type:'.length).trim();
-    } else if (line.startsWith('Product:')) {
-      results.deviceInfo.product = line.substring('Product:'.length).trim();
-    } else if (line.startsWith('Warning:')) {
-      results.warnings.push(line);
-    } else {
-      const match = line.match(testResultRegex);
-      if (match) {
-        results.tests.push({ name: match[1].trim(), status: match[2].trim() });
-      }
-      // Add other parsing logic here if needed (e.g., Driver Info)
-    }
+  const child = execFile(executablePath, args);
+
+  child.stdout.on('data', (data) => {
+    fullStdout += data;
   });
 
-  return results;
-};
+  child.stderr.on('data', (data) => {
+    fullStderr += data;
+    console.error(`stderr chunk: ${data}`);
+  });
 
-// Modified: IPC Listener to run the test executable and parse output
-ipcMain.on('run-test', (event) => {
-  const executablePath = path.join(__dirname, 'BTICardTest', 'BTICardTest', 'bin', 'Debug', 'net6.0', 'BTICardTest.exe');
-
-  console.log(`Attempting to run: ${executablePath}`);
-
-  execFile(executablePath, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`execFile error: ${error}`);
-      // Send error details back as an object
-      event.sender.send('test-results', {
-        error: `Error executing file: ${error.message}`,
-        stderr: stderr,
-        stdout: stdout // Include stdout even on error if available
-      });
-      return;
+  child.on('close', (code) => {
+    console.log(`C# executable exited with code ${code}`);
+    console.log(`Full stdout:\n${fullStdout}`);
+    if (fullStderr) {
+      console.error(`Full stderr:\n${fullStderr}`);
     }
 
-    console.log(`stdout:\n${stdout}`);
-    if (stderr) { // Only log stderr if it's not empty
-      console.error(`stderr:\n${stderr}`);
+    const resultsData = {
+      executionError: null,
+      parseError: null,
+      csOutput: null, // This will hold the parsed JSON object from C#
+      stderr: fullStderr || null, // Store stderr, ensure it's null if empty
+      rawStdout: fullStdout || null // Store raw stdout
+    };
+
+    if (code !== 0) {
+      resultsData.executionError = `C# executable exited with code ${code}. Check stderr for details.`;
     }
 
-    // Parse the stdout
-    const parsedResults = parseTestOutput(stdout);
-    parsedResults.stderr = stderr; // Add stderr to the results object
+    // Attempt to parse the JSON part of stdout
+    if (fullStdout) {
+      try {
+        // Use regex to find the largest JSON block starting with { and ending with }
+        const jsonMatch = fullStdout.match(/(\{.*\})/s); // Use 's' flag for dotAll if needed, find largest block
+        
+        if (jsonMatch && jsonMatch[1]) {
+          const jsonString = jsonMatch[1]; // The captured JSON string
+          
+          // --- Add detailed logging here ---
+          console.log(`Attempting to parse JSON substring via Regex (length ${jsonString.length}):`);
+          console.log(`>>>${jsonString}<<<`); 
+          // --- End detailed logging ---
 
-    console.log('Parsed Results:', JSON.stringify(parsedResults, null, 2));
+          resultsData.csOutput = JSON.parse(jsonString); 
+          
+          if (resultsData.csOutput && resultsData.csOutput.Success === false && !resultsData.executionError) {
+            console.warn('C# process reported failure:', resultsData.csOutput.ErrorMessage || 'No specific error message provided.');
+            resultsData.executionError = `C# logic reported failure: ${resultsData.csOutput.ErrorMessage || 'Unknown C# error'}`;
+          }
+        } else {
+           // If regex fails, fall back to the brace finding method for logging
+           const jsonStartIndex = fullStdout.lastIndexOf('{');
+           const jsonEndIndex = fullStdout.lastIndexOf('}');
+           throw new Error(`Could not find JSON pattern using regex. Last braces found at start: ${jsonStartIndex}, end: ${jsonEndIndex}.`);
+        }
+      } catch (parseErr) {
+        console.error(`JSON parse error: ${parseErr}`);
+        resultsData.parseError = `Failed to parse JSON output from C# executable. ${parseErr.message}`;
+      }
+    } else {
+        console.log('stdout was empty.');
+        if (!resultsData.executionError) {
+            resultsData.parseError = 'C# executable produced no output.';
+            resultsData.executionError = resultsData.parseError; // Treat no output as an error if exit code was 0
+        }
+    }
 
-    // Send the parsed object back to the renderer process
-    event.sender.send('test-results', parsedResults);
+    console.log('Sending results to renderer:', JSON.stringify(resultsData, null, 2));
+
+    // Send the structured results object back to the renderer process
+    event.sender.send('test-results', resultsData);
+  });
+
+  child.on('error', (err) => {
+    console.error(`Failed to start subprocess: ${err}`);
+    // Send error back immediately if the process couldn't even start
+    event.sender.send('test-results', {
+      executionError: `Failed to start C# executable: ${err.message}`,
+      parseError: null,
+      csOutput: null,
+      stderr: null,
+      rawStdout: null
+    });
   });
 });

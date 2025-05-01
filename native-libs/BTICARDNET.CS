@@ -1666,2548 +1666,2548 @@ namespace Cargo_Door_Base.BTI
 
         public static void BTICard_Add64(ref uint resulth, ref uint resultl, uint valah, uint valal, uint valbh, uint valbl)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_Add64(ref resulth, ref resultl, valah, valal, valbh, valbl);
             else
                 BTICARD_64.BTICard_Add64(ref resulth, ref resultl, valah, valal, valbh, valbl);
         }
         public static uint BTICard_AddrDSP(uint addr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_AddrDSP(addr, handleval);
             else
                 return BTICARD_64.BTICard_AddrDSP(addr, handleval);
         }
         public static uint BTICard_AddrHost(uint addr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_AddrHost(addr, handleval);
             else
                 return BTICARD_64.BTICard_AddrHost(addr, handleval);
         }
         public static int BTICard_AsciiToMant(string str, ref uint mant, ref int exp)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_AsciiToMant(str, ref mant, ref exp);
             else
                 return BTICARD_64.BTICard_AsciiToMant(str, ref mant, ref exp);
         }
         public static uint BTICard_BCDToBin(uint bcdval, int msb, int lsb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_BCDToBin(bcdval, msb, lsb);
             else
                 return BTICARD_64.BTICard_BCDToBin(bcdval, msb, lsb);
         }
         public static uint BTICard_BinToBCD(uint oldbcdval, uint binval, int msb, int lsb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_BinToBCD(oldbcdval, binval, msb, lsb);
             else
                 return BTICARD_64.BTICard_BinToBCD(oldbcdval, binval, msb, lsb);
         }
         public static int BTICard_BITConfig(uint configval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_BITConfig(configval, handleval);
             else
                 return BTICARD_64.BTICard_BITConfig(configval, handleval);
         }
         public static int BTICard_BITInitiate(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_BITInitiate(handleval);
             else
                 return BTICARD_64.BTICard_BITInitiate(handleval);
         }
         public static int BTICard_BITStatusClear(uint statval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_BITStatusClear(statval, handleval);
             else
                 return BTICARD_64.BTICard_BITStatusClear(statval, handleval);
         }
         public static uint BTICard_BITStatusRd(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_BITStatusRd(handleval);
             else
                 return BTICARD_64.BTICard_BITStatusRd(handleval);
         }
         public static int BTICard_CardClose(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardClose(handleval);
             else
                 return BTICARD_64.BTICard_CardClose(handleval);
         }
         public static int BTICard_CardCloseAll()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardCloseAll();
             else
                 return BTICARD_64.BTICard_CardCloseAll();
         }
         public static uint BTICard_CardGetInfo(ushort infotype, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardGetInfo(infotype, channum, handleval);
             else
                 return BTICARD_64.BTICard_CardGetInfo(infotype, channum, handleval);
         }
         public static int BTICard_CardGetInfoEx(ref ushort bufmodel, ushort bufmodelcount, ref ushort buffeature, ushort buffeaturecount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardGetInfoEx(ref bufmodel, bufmodelcount, ref buffeature, buffeaturecount, handleval);
             else
                 return BTICARD_64.BTICard_CardGetInfoEx(ref bufmodel, bufmodelcount, ref buffeature, buffeaturecount, handleval);
         }
         public static int BTICard_CardIsRunning(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardIsRunning(handleval);
             else
                 return BTICARD_64.BTICard_CardIsRunning(handleval);
         }
         public static int BTICard_CardNop(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardNop(handleval);
             else
                 return BTICARD_64.BTICard_CardNop(handleval);
         }
         public static int BTICard_CardOpen(ref nint lphandle, int cardnum)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardOpen(ref lphandle, cardnum);
             else
                 return BTICARD_64.BTICard_CardOpen(ref lphandle, cardnum);
         }
         public static int BTICard_CardOpenStr(ref nint lphandle, string cardstr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardOpenStr(ref lphandle, cardstr);
             else
                 return BTICARD_64.BTICard_CardOpenStr(ref lphandle, cardstr);
         }
         public static unsafe string BTICard_CardProductStr(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardProductStr(handleval);
             else
                 return BTICARD_64.BTICard_CardProductStr(handleval);
         }
         public static unsafe string BTICard_CardReserveRd(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardReserveRd(handleval);
             else
                 return BTICARD_64.BTICard_CardReserveRd(handleval);
         }
         public static int BTICard_CardReserveWr(string str, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardReserveWr(str, handleval);
             else
                 return BTICARD_64.BTICard_CardReserveWr(str, handleval);
         }
         public static void BTICard_CardReset(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CardReset(handleval);
             else
                 BTICARD_64.BTICard_CardReset(handleval);
         }
         public static void BTICard_CardResetEx(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CardResetEx(handleval);
             else
                 BTICARD_64.BTICard_CardResetEx(handleval);
         }
         public static int BTICard_CardResume(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardResume(handleval);
             else
                 return BTICARD_64.BTICard_CardResume(handleval);
         }
         public static int BTICard_CardShadow(int shadowval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardShadow(shadowval, handleval);
             else
                 return BTICARD_64.BTICard_CardShadow(shadowval, handleval);
         }
         public static int BTICard_CardStart(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardStart(handleval);
             else
                 return BTICARD_64.BTICard_CardStart(handleval);
         }
         public static int BTICard_CardStop(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardStop(handleval);
             else
                 return BTICARD_64.BTICard_CardStop(handleval);
         }
         public static void BTICard_CardSyncEnable(int enableflag, ushort syncmask, ushort pinpolarity, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CardSyncEnable(enableflag, syncmask, pinpolarity, handleval);
             else
                 BTICARD_64.BTICard_CardSyncEnable(enableflag, syncmask, pinpolarity, handleval);
         }
         public static ushort BTICard_CardSyncValid(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardSyncValid(handleval);
             else
                 return BTICARD_64.BTICard_CardSyncValid(handleval);
         }
         public static int BTICard_CardSyncValidEx(ref ushort maskout, ushort maskin, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardSyncValidEx(ref maskout, maskin, handleval);
             else
                 return BTICARD_64.BTICard_CardSyncValidEx(ref maskout, maskin, handleval);
         }
         public static int BTICard_CardTest(ushort level, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTest(level, handleval);
             else
                 return BTICARD_64.BTICard_CardTest(level, handleval);
         }
         public static int BTICard_CardTest0(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTest0(handleval);
             else
                 return BTICARD_64.BTICard_CardTest0(handleval);
         }
         public static int BTICard_CardTest1(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTest1(handleval);
             else
                 return BTICARD_64.BTICard_CardTest1(handleval);
         }
         public static int BTICard_CardTest2(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTest2(handleval);
             else
                 return BTICARD_64.BTICard_CardTest2(handleval);
         }
         public static int BTICard_CardTest3(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTest3(handleval);
             else
                 return BTICARD_64.BTICard_CardTest3(handleval);
         }
         public static void BTICard_CardTrigger(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CardTrigger(handleval);
             else
                 BTICARD_64.BTICard_CardTrigger(handleval);
         }
         public static void BTICard_CardTriggerEnable(int enableflag, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CardTriggerEnable(enableflag, handleval);
             else
                 BTICARD_64.BTICard_CardTriggerEnable(enableflag, handleval);
         }
         public static void BTICard_CardTriggerEnableEx(int enableflag, ushort trigmask, ushort pinpolarity, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CardTriggerEnableEx(enableflag, trigmask, pinpolarity, handleval);
             else
                 BTICARD_64.BTICard_CardTriggerEnableEx(enableflag, trigmask, pinpolarity, handleval);
         }
         public static void BTICard_CardTriggerEx(ushort trigmask, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CardTriggerEx(trigmask, handleval);
             else
                 BTICARD_64.BTICard_CardTriggerEx(trigmask, handleval);
         }
         public static ushort BTICard_CardTriggerValid(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTriggerValid(handleval);
             else
                 return BTICARD_64.BTICard_CardTriggerValid(handleval);
         }
         public static int BTICard_CardTriggerValidEx(ref ushort maskout, ushort maskin, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTriggerValidEx(ref maskout, maskin, handleval);
             else
                 return BTICARD_64.BTICard_CardTriggerValidEx(ref maskout, maskin, handleval);
         }
         public static unsafe string BTICard_CardTypeStr(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CardTypeStr(handleval);
             else
                 return BTICARD_64.BTICard_CardTypeStr(handleval);
         }
         public static void BTICard_ChDARClr(ushort maskval, ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ChDARClr(maskval, addrval, channum, handleval);
             else
                 BTICARD_64.BTICard_ChDARClr(maskval, addrval, channum, handleval);
         }
         public static int BTICard_ChDARGet(ushort maskval, ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ChDARGet(maskval, addrval, channum, handleval);
             else
                 return BTICARD_64.BTICard_ChDARGet(maskval, addrval, channum, handleval);
         }
         public static uint BTICard_ChDARRdL(ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ChDARRdL(addrval, channum, handleval);
             else
                 return BTICARD_64.BTICard_ChDARRdL(addrval, channum, handleval);
         }
         public static void BTICard_ChDARRdsW(ushort[] valueptr, ushort addrval, int countval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ChDARRdsW(valueptr, addrval, countval, channum, handleval);
             else
                 BTICARD_64.BTICard_ChDARRdsW(valueptr, addrval, countval, channum, handleval);
         }
         public static ushort BTICard_ChDARRdW(ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ChDARRdW(addrval, channum, handleval);
             else
                 return BTICARD_64.BTICard_ChDARRdW(addrval, channum, handleval);
         }
         public static void BTICard_ChDARSet(ushort maskval, ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ChDARSet(maskval, addrval, channum, handleval);
             else
                 BTICARD_64.BTICard_ChDARSet(maskval, addrval, channum, handleval);
         }
         public static void BTICard_ChDARWrL(uint value, ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ChDARWrL(value, addrval, channum, handleval);
             else
                 BTICARD_64.BTICard_ChDARWrL(value, addrval, channum, handleval);
         }
         public static void BTICard_ChDARWrsW(ushort[] valueptr, ushort addrval, int countval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ChDARWrsW(valueptr, addrval, countval, channum, handleval);
             else
                 BTICARD_64.BTICard_ChDARWrsW(valueptr, addrval, countval, channum, handleval);
         }
         public static void BTICard_ChDARWrW(ushort value, ushort addrval, int channum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ChDARWrW(value, addrval, channum, handleval);
             else
                 BTICARD_64.BTICard_ChDARWrW(value, addrval, channum, handleval);
         }
         public static int BTICard_CISRd(ushort[] buf, ushort bufcount, int cistype, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CISRd(buf, bufcount, cistype, handleval);
             else
                 return BTICARD_64.BTICard_CISRd(buf, bufcount, cistype, handleval);
         }
         public static int BTICard_CISWr(ushort[] buf, ushort bufcount, int cistype, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CISWr(buf, bufcount, cistype, handleval);
             else
                 return BTICARD_64.BTICard_CISWr(buf, bufcount, cistype, handleval);
         }
         public static ushort BTICard_CommBufRd(ushort offset, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommBufRd(offset, handleval);
             else
                 return BTICARD_64.BTICard_CommBufRd(offset, handleval);
         }
         public static void BTICard_CommBufWr(ushort value, ushort offset, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CommBufWr(value, offset, handleval);
             else
                 BTICARD_64.BTICard_CommBufWr(value, offset, handleval);
         }
         public static int BTICard_CommCall(uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommCall(addrval, handleval);
             else
                 return BTICARD_64.BTICard_CommCall(addrval, handleval);
         }
         public static int BTICard_CommChannelReconfig(uint chmask, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommChannelReconfig(chmask, handleval);
             else
                 return BTICARD_64.BTICard_CommChannelReconfig(chmask, handleval);
         }
         public static int BTICard_CommCheck(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommCheck(handleval);
             else
                 return BTICARD_64.BTICard_CommCheck(handleval);
         }
         public static int BTICard_CommDisable(ushort command, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommDisable(command, handleval);
             else
                 return BTICARD_64.BTICard_CommDisable(command, handleval);
         }
         public static int BTICard_CommDisableEx(ushort command, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommDisableEx(command, handleval);
             else
                 return BTICARD_64.BTICard_CommDisableEx(command, handleval);
         }
         public static int BTICard_CommEnable(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommEnable(handleval);
             else
                 return BTICARD_64.BTICard_CommEnable(handleval);
         }
         public static int BTICard_CommExternSRQ(uint chmask, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommExternSRQ(chmask, handleval);
             else
                 return BTICARD_64.BTICard_CommExternSRQ(chmask, handleval);
         }
         public static int BTICard_CommFillW(ushort value, uint addrval, ushort count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommFillW(value, addrval, count, handleval);
             else
                 return BTICARD_64.BTICard_CommFillW(value, addrval, count, handleval);
         }
         public static int BTICard_CommProtocolFunc(ushort opcode, ushort argcount, ref ushort argbuf, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommProtocolFunc(opcode, argcount, ref argbuf, handleval);
             else
                 return BTICARD_64.BTICard_CommProtocolFunc(opcode, argcount, ref argbuf, handleval);
         }
         public static uint BTICard_CommRdL(uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommRdL(addrval, handleval);
             else
                 return BTICARD_64.BTICard_CommRdL(addrval, handleval);
         }
         public static int BTICard_CommRdsW(ushort[] valueptr, uint addrval, ushort count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommRdsW(valueptr, addrval, count, handleval);
             else
                 return BTICARD_64.BTICard_CommRdsW(valueptr, addrval, count, handleval);
         }
         public static ushort BTICard_CommRdW(uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_CommRdW(addrval, handleval);
         }
         public static int BTICard_CommRun(ref ushort dataptr, ushort datacount, ref ushort codeptr, ushort codecount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommRun(ref dataptr, datacount, ref codeptr, codecount, handleval);
             else
                 return BTICARD_64.BTICard_CommRun(ref dataptr, datacount, ref codeptr, codecount, handleval);
         }
         public static void BTICard_CommWrL(uint value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CommWrL(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_CommWrL(value, addrval, handleval);
         }
         public static int BTICard_CommWrsW(ushort[] valueptr, uint addrval, ushort count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CommWrsW(valueptr, addrval, count, handleval);
             else
                 return BTICARD_64.BTICard_CommWrsW(valueptr, addrval, count, handleval);
         }
         public static void BTICard_CommWrW(ushort value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_CommWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_CommWrW(value, addrval, handleval);
         }
         public static int BTICard_CoProcCheck(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcCheck(handleval);
             else
                 return BTICARD_64.BTICard_CoProcCheck(handleval);
         }
         public static int BTICard_CoProcGetInfo(ref uint valueptr, ushort infotype, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcGetInfo(ref valueptr, infotype, handleval);
             else
                 return BTICARD_64.BTICard_CoProcGetInfo(ref valueptr, infotype, handleval);
         }
         public static int BTICard_CoProcMemRdL(ref uint valueptr, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemRdL(ref valueptr, addrval, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemRdL(ref valueptr, addrval, handleval);
         }
         public static int BTICard_CoProcMemRdsL(uint[] valueptr, uint addrval, uint count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemRdsL(valueptr, addrval, count, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemRdsL(valueptr, addrval, count, handleval);
         }
         public static int BTICard_CoProcMemRdsW(ushort[] valueptr, uint addrval, uint count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemRdsW(valueptr, addrval, count, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemRdsW(valueptr, addrval, count, handleval);
         }
         public static int BTICard_CoProcMemRdW(ref ushort valueptr, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemRdW(ref valueptr, addrval, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemRdW(ref valueptr, addrval, handleval);
         }
         public static int BTICard_CoProcMemWrL(uint value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemWrL(value, addrval, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemWrL(value, addrval, handleval);
         }
         public static int BTICard_CoProcMemWrsL(uint[] valueptr, uint addrval, uint count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemWrsL(valueptr, addrval, count, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemWrsL(valueptr, addrval, count, handleval);
         }
         public static int BTICard_CoProcMemWrsW(ushort[] valueptr, uint addrval, uint count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemWrsW(valueptr, addrval, count, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemWrsW(valueptr, addrval, count, handleval);
         }
         public static int BTICard_CoProcMemWrW(ushort value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoProcMemWrW(value, addrval, handleval);
             else
                 return BTICARD_64.BTICard_CoProcMemWrW(value, addrval, handleval);
         }
         public static int BTICard_CoreOpen(ref nint lphcore, int corenum, nint hcard)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_CoreOpen(ref lphcore, corenum, hcard);
             else
                 return BTICARD_64.BTICard_CoreOpen(ref lphcore, corenum, hcard);
         }
         public static void BTICard_DARClr(ushort maskval, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_DARClr(maskval, addrval, handleval);
             else
                 BTICARD_64.BTICard_DARClr(maskval, addrval, handleval);
         }
         public static int BTICard_DARGet(ushort maskval, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DARGet(maskval, addrval, handleval);
             else
                 return BTICARD_64.BTICard_DARGet(maskval, addrval, handleval);
         }
         public static uint BTICard_DARRdL(ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DARRdL(addrval, handleval);
             else
                 return BTICARD_64.BTICard_DARRdL(addrval, handleval);
         }
         public static void BTICard_DARRdsW(ushort[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_DARRdsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_DARRdsW(valueptr, addrval, countval, handleval);
         }
         public static ushort BTICard_DARRdW(ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DARRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_DARRdW(addrval, handleval);
         }
         public static void BTICard_DARSet(ushort maskval, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_DARSet(maskval, addrval, handleval);
             else
                 BTICARD_64.BTICard_DARSet(maskval, addrval, handleval);
         }
         public static void BTICard_DARWrL(uint value, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_DARWrL(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_DARWrL(value, addrval, handleval);
         }
         public static void BTICard_DARWrsW(ushort[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_DARWrsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_DARWrsW(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_DARWrW(ushort value, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_DARWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_DARWrW(value, addrval, handleval);
         }
         public static uint BTICard_Div(uint diva, uint divb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_Div(diva, divb);
             else
                 return BTICARD_64.BTICard_Div(diva, divb);
         }
         public static void BTICard_Div64(ref uint resulth, ref uint resultl, uint valah, uint valal, uint valbh, uint valbl)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_Div64(ref resulth, ref resultl, valah, valal, valbh, valbl);
             else
                 BTICARD_64.BTICard_Div64(ref resulth, ref resultl, valah, valal, valbh, valbl);
         }
         public static int BTICard_DllUsageCount()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DllUsageCount();
             else
                 return BTICARD_64.BTICard_DllUsageCount();
         }
         public static unsafe string BTICard_DriverInfoStr()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DriverInfoStr();
             else
                 return BTICARD_64.BTICard_DriverInfoStr();
         }
         public static int BTICard_DspBioClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspBioClear(handleval);
             else
                 return BTICARD_64.BTICard_DspBioClear(handleval);
         }
         public static int BTICard_DspBioRd(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspBioRd(handleval);
             else
                 return BTICARD_64.BTICard_DspBioRd(handleval);
         }
         public static int BTICard_DspBioSet(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspBioSet(handleval);
             else
                 return BTICARD_64.BTICard_DspBioSet(handleval);
         }
         public static int BTICard_DspIntfClear(ushort intmask, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspIntfClear(intmask, handleval);
             else
                 return BTICARD_64.BTICard_DspIntfClear(intmask, handleval);
         }
         public static int BTICard_DspIntfRd(ushort intmask, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspIntfRd(intmask, handleval);
             else
                 return BTICARD_64.BTICard_DspIntfRd(intmask, handleval);
         }
         public static int BTICard_DspIntmClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspIntmClear(handleval);
             else
                 return BTICARD_64.BTICard_DspIntmClear(handleval);
         }
         public static int BTICard_DspIntmSet(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspIntmSet(handleval);
             else
                 return BTICARD_64.BTICard_DspIntmSet(handleval);
         }
         public static int BTICard_DspXfClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspXfClear(handleval);
             else
                 return BTICARD_64.BTICard_DspXfClear(handleval);
         }
         public static int BTICard_DspXfRd(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspXfRd(handleval);
             else
                 return BTICARD_64.BTICard_DspXfRd(handleval);
         }
         public static int BTICard_DspXfSet(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_DspXfSet(handleval);
             else
                 return BTICARD_64.BTICard_DspXfSet(handleval);
         }
         public static unsafe string BTICard_ErrDesc(int errval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ErrDesc(errval, handleval);
             else
                 return BTICARD_64.BTICard_ErrDesc(errval, handleval);
         }
         public static unsafe string BTICard_ErrDescStr(int errval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ErrDescStr(errval, handleval);
             else
                 return BTICARD_64.BTICard_ErrDescStr(errval, handleval);
         }
         public static unsafe string BTICard_ErrName(int errval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ErrName(errval, handleval);
             else
                 return BTICARD_64.BTICard_ErrName(errval, handleval);
         }
         public static int BTICard_EventLogClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_EventLogClear(handleval);
             else
                 return BTICARD_64.BTICard_EventLogClear(handleval);
         }
         public static int BTICard_EventLogConfig(ushort configval, ushort count, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_EventLogConfig(configval, count, handleval);
             else
                 return BTICARD_64.BTICard_EventLogConfig(configval, count, handleval);
         }
         public static uint BTICard_EventLogRd(ref ushort typevalval, ref uint infoval, ref int channel, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_EventLogRd(ref typevalval, ref infoval, ref channel, handleval);
             else
                 return BTICARD_64.BTICard_EventLogRd(ref typevalval, ref infoval, ref channel, handleval);
         }
         public static int BTICard_EventLogStatus(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_EventLogStatus(handleval);
             else
                 return BTICARD_64.BTICard_EventLogStatus(handleval);
         }
         public static void BTICard_ExpandMant(ref uint mant, ref int exp)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExpandMant(ref mant, ref exp);
             else
                 BTICARD_64.BTICard_ExpandMant(ref mant, ref exp);
         }
         public static int BTICard_ExtDinRd(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ExtDinRd(handleval);
             else
                 return BTICARD_64.BTICard_ExtDinRd(handleval);
         }
         public static void BTICard_ExtDinWr(int dinval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExtDinWr(dinval, handleval);
             else
                 BTICARD_64.BTICard_ExtDinWr(dinval, handleval);
         }
         public static void BTICard_ExtDIODirSet(int dionum, int dirval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExtDIODirSet(dionum, dirval, handleval);
             else
                 BTICARD_64.BTICard_ExtDIODirSet(dionum, dirval, handleval);
         }
         public static void BTICard_ExtDIOEnWr(int dionum, int dioval, int dioen, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExtDIOEnWr(dionum, dioval, dioen, handleval);
             else
                 BTICARD_64.BTICard_ExtDIOEnWr(dionum, dioval, dioen, handleval);
         }
         public static int BTICard_ExtDIOBankConfig(uint configtype, ushort configmask, int banknum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ExtDIOBankConfig(configtype, configmask, banknum, handleval);
             else
                 return BTICARD_64.BTICard_ExtDIOBankConfig(configtype, configmask, banknum, handleval);
         }
         public static int BTICard_ExtDIOMonConfig(ushort rise_edge, ushort fall_edge, int banknum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ExtDIOMonConfig(rise_edge, fall_edge, banknum, handleval);
             else
                 return BTICARD_64.BTICard_ExtDIOMonConfig(rise_edge, fall_edge, banknum, handleval);
         }
         public static int BTICard_ExtDIORd(int dionum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ExtDIORd(dionum, handleval);
             else
                 return BTICARD_64.BTICard_ExtDIORd(dionum, handleval);
         }
         public static void BTICard_ExtDIOWr(int dionum, int dioval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExtDIOWr(dionum, dioval, handleval);
             else
                 BTICARD_64.BTICard_ExtDIOWr(dionum, dioval, handleval);
         }
         public static int BTICard_ExtLEDRd(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ExtLEDRd(handleval);
             else
                 return BTICARD_64.BTICard_ExtLEDRd(handleval);
         }
         public static void BTICard_ExtLEDWr(int ledval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExtLEDWr(ledval, handleval);
             else
                 BTICARD_64.BTICard_ExtLEDWr(ledval, handleval);
         }
         public static void BTICard_ExtStatusLEDRd(ref int ledon, ref int ledcolor, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExtStatusLEDRd(ref ledon, ref ledcolor, handleval);
             else
                 BTICARD_64.BTICard_ExtStatusLEDRd(ref ledon, ref ledcolor, handleval);
         }
         public static void BTICard_ExtStatusLEDWr(int ledon, int ledcolor, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ExtStatusLEDWr(ledon, ledcolor, handleval);
             else
                 BTICARD_64.BTICard_ExtStatusLEDWr(ledon, ledcolor, handleval);
         }
         public static void BTICard_FileClose(nint handle)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_FileClose(handle);
             else
                 BTICARD_64.BTICard_FileClose(handle);
         }
         public static int BTICard_FileErr()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_FileErr();
             else
                 return BTICARD_64.BTICard_FileErr();
         }
         public static void BTICard_FileErrClr()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_FileErrClr();
             else
                 BTICARD_64.BTICard_FileErrClr();
         }
         public static void BTICard_FileErrSet()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_FileErrSet();
             else
                 BTICARD_64.BTICard_FileErrSet();
         }
         public static nint BTICard_FileOpenRead(string filename)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_FileOpenRead(filename);
             else
                 return BTICARD_64.BTICard_FileOpenRead(filename);
         }
         public static nint BTICard_FileOpenWrite(string filename)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_FileOpenWrite(filename);
             else
                 return BTICARD_64.BTICard_FileOpenWrite(filename);
         }
         public static int BTICard_FileRead(nint handle, nint buffer, ushort count)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_FileRead(handle, buffer, count);
             else
                 return BTICARD_64.BTICard_FileRead(handle, buffer, count);
         }
         public static int BTICard_FileSeek(nint handle, uint offset)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_FileSeek(handle, offset);
             else
                 return BTICARD_64.BTICard_FileSeek(handle, offset);
         }
         public static uint BTICard_FileTell(nint handle)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_FileTell(handle);
             else
                 return BTICARD_64.BTICard_FileTell(handle);
         }
         public static int BTICard_FileWrite(nint handle, nint buffer, ushort count)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_FileWrite(handle, buffer, count);
             else
                 return BTICARD_64.BTICard_FileWrite(handle, buffer, count);
         }
         public static ushort BTICard_GetHigh(uint val)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_GetHigh(val);
             else
                 return BTICARD_64.BTICard_GetHigh(val);
         }
         public static uint BTICard_GetHighL(ulong val)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_GetHighL(val);
             else
                 return BTICARD_64.BTICard_GetHighL(val);
         }
         public static ushort BTICard_GetLow(uint val)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_GetLow(val);
             else
                 return BTICARD_64.BTICard_GetLow(val);
         }
         public static uint BTICard_GetLowL(ulong val)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_GetLowL(val);
             else
                 return BTICARD_64.BTICard_GetLowL(val);
         }
         public static uint BTICard_GetTickCount()
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_GetTickCount();
             else
                 return BTICARD_64.BTICard_GetTickCount();
         }
         public static ushort BTICard_GlobalRdW(ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_GlobalRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_GlobalRdW(addrval, handleval);
         }
         public static void BTICard_GlobalWrW(ushort value, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_GlobalWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_GlobalWrW(value, addrval, handleval);
         }
         unsafe public static int BTICard_HandleInfo(System.Text.StringBuilder cardstr, ref int cardnum, ref uint sizval, nint* vxdptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleInfo(cardstr, ref cardnum, ref sizval, vxdptr, handleval);
             else
                 return BTICARD_64.BTICard_HandleInfo(cardstr, ref cardnum, ref sizval, vxdptr, handleval);
         }
         public static int BTICard_HandleInfoEx(ref uint valueptr, uint typeval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleInfoEx(ref valueptr, typeval, handleval);
             else
                 return BTICARD_64.BTICard_HandleInfoEx(ref valueptr, typeval, handleval);
         }
         public static int BTICard_HandleIsCard(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleIsCard(handleval);
             else
                 return BTICARD_64.BTICard_HandleIsCard(handleval);
         }
         public static int BTICard_HandleIsCore(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleIsCore(handleval);
             else
                 return BTICARD_64.BTICard_HandleIsCore(handleval);
         }
         public static int BTICard_HandleMakeCard(ref nint lphcard, ref int lpcorenum, nint hcore)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleMakeCard(ref lphcard, ref lpcorenum, hcore);
             else
                 return BTICARD_64.BTICard_HandleMakeCard(ref lphcard, ref lpcorenum, hcore);
         }
         public static int BTICard_HandleMakeCore(ref nint lphcore, int corenum, nint hcard)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleMakeCore(ref lphcore, corenum, hcard);
             else
                 return BTICARD_64.BTICard_HandleMakeCore(ref lphcore, corenum, hcard);
         }
         public static int BTICard_HandleMakeRPC(ref nint hcard_remote, ref uint lphrpc, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleMakeRPC(ref hcard_remote, ref lphrpc, handleval);
             else
                 return BTICARD_64.BTICard_HandleMakeRPC(ref hcard_remote, ref lphrpc, handleval);
         }
         public static int BTICard_HandleOkay(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HandleOkay(handleval);
             else
                 return BTICARD_64.BTICard_HandleOkay(handleval);
         }
         public static uint BTICard_HeapAlloc(int section, uint wordcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HeapAlloc(section, wordcount, handleval);
             else
                 return BTICARD_64.BTICard_HeapAlloc(section, wordcount, handleval);
         }
         public static uint BTICard_HeapAllocAll(int section, ref uint wordcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HeapAllocAll(section, ref wordcount, handleval);
             else
                 return BTICARD_64.BTICard_HeapAllocAll(section, ref wordcount, handleval);
         }
         public static uint BTICard_HeapAllocEx(ushort configval, int section, uint wordcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HeapAllocEx(configval, section, wordcount, handleval);
             else
                 return BTICARD_64.BTICard_HeapAllocEx(configval, section, wordcount, handleval);
         }
         public static uint BTICard_HeapWipe(int section, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HeapWipe(section, handleval);
             else
                 return BTICARD_64.BTICard_HeapWipe(section, handleval);
         }
         public static void BTICard_HPIFill(ushort value, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_HPIFill(value, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_HPIFill(value, addrval, countval, handleval);
         }
         public static uint BTICard_HPIRdL(ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HPIRdL(addrval, handleval);
             else
                 return BTICARD_64.BTICard_HPIRdL(addrval, handleval);
         }
         public static void BTICard_HPIRdsL(uint[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_HPIRdsL(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_HPIRdsL(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_HPIRdsW(ushort[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_HPIRdsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_HPIRdsW(valueptr, addrval, countval, handleval);
         }
         public static ushort BTICard_HPIRdW(ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_HPIRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_HPIRdW(addrval, handleval);
         }
         public static void BTICard_HPIWrL(uint value, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_HPIWrL(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_HPIWrL(value, addrval, handleval);
         }
         public static void BTICard_HPIWrsL(uint[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_HPIWrsL(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_HPIWrsL(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_HPIWrsW(ushort[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_HPIWrsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_HPIWrsW(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_HPIWrW(ushort value, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_HPIWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_HPIWrW(value, addrval, handleval);
         }
         public static ushort BTICard_IDRegRd(int gate_array_num, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IDRegRd(gate_array_num, handleval);
             else
                 return BTICARD_64.BTICard_IDRegRd(gate_array_num, handleval);
         }
         public static void BTICard_IDRegWr(ushort value, int gate_array_num, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IDRegWr(value, gate_array_num, handleval);
             else
                 BTICARD_64.BTICard_IDRegWr(value, gate_array_num, handleval);
         }
         public static void BTICard_IntClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IntClear(handleval);
             else
                 BTICARD_64.BTICard_IntClear(handleval);
         }
         public static int BTICard_IntDisable(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IntDisable(handleval);
             else
                 return BTICARD_64.BTICard_IntDisable(handleval);
         }
         public static int BTICard_IntEnable(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IntEnable(handleval);
             else
                 return BTICARD_64.BTICard_IntEnable(handleval);
         }
         public static int BTICard_IntEnableCond(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IntEnableCond(handleval);
             else
                 return BTICARD_64.BTICard_IntEnableCond(handleval);
         }
         public static nint BTICard_IntGet(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IntGet(handleval);
             else
                 return BTICARD_64.BTICard_IntGet(handleval);
         }
         public static int BTICard_IntInstall(nint hevent, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IntInstall(hevent, handleval);
             else
                 return BTICARD_64.BTICard_IntInstall(hevent, handleval);
         }
         public static void BTICard_IntReset(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IntReset(handleval);
             else
                 BTICARD_64.BTICard_IntReset(handleval);
         }
         public static int BTICard_IntUninstall(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IntUninstall(handleval);
             else
                 return BTICARD_64.BTICard_IntUninstall(handleval);
         }
         public static uint BTICard_IORdL(int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IORdL(addrval, handleval);
             else
                 return BTICARD_64.BTICard_IORdL(addrval, handleval);
         }
         public static void BTICard_IORdsL(uint[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IORdsL(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_IORdsL(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_IORdsW(ushort[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IORdsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_IORdsW(valueptr, addrval, countval, handleval);
         }
         public static ushort BTICard_IORdW(int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IORdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_IORdW(addrval, handleval);
         }
         public static ushort BTICard_IOWINRdW(int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IOWINRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_IOWINRdW(addrval, handleval);
         }
         public static void BTICard_IOWINWrW(ushort value, int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IOWINWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_IOWINWrW(value, addrval, handleval);
         }
         public static void BTICard_IOWrL(uint value, int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IOWrL(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_IOWrL(value, addrval, handleval);
         }
         public static void BTICard_IOWrsL(uint[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IOWrsL(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_IOWrsL(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_IOWrsW(ushort[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IOWrsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_IOWrsW(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_IOWrW(ushort value, int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IOWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_IOWrW(value, addrval, handleval);
         }
         public static int BTICard_IRIGConfig(uint configval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGConfig(configval, handleval);
             else
                 return BTICARD_64.BTICard_IRIGConfig(configval, handleval);
         }
         public static uint BTICard_IRIGFieldGetDays(uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGFieldGetDays(irigvalh, irigvall);
             else
                 return BTICARD_64.BTICard_IRIGFieldGetDays(irigvalh, irigvall);
         }
         public static uint BTICard_IRIGFieldGetHours(uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGFieldGetHours(irigvalh, irigvall);
             else
                 return BTICARD_64.BTICard_IRIGFieldGetHours(irigvalh, irigvall);
         }
         public static uint BTICard_IRIGFieldGetMicrosec(uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGFieldGetMicrosec(irigvalh, irigvall);
             else
                 return BTICARD_64.BTICard_IRIGFieldGetMicrosec(irigvalh, irigvall);
         }
         public static uint BTICard_IRIGFieldGetMillisec(uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGFieldGetMillisec(irigvalh, irigvall);
             else
                 return BTICARD_64.BTICard_IRIGFieldGetMillisec(irigvalh, irigvall);
         }
         public static uint BTICard_IRIGFieldGetMin(uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGFieldGetMin(irigvalh, irigvall);
             else
                 return BTICARD_64.BTICard_IRIGFieldGetMin(irigvalh, irigvall);
         }
         public static uint BTICard_IRIGFieldGetSec(uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGFieldGetSec(irigvalh, irigvall);
             else
                 return BTICARD_64.BTICard_IRIGFieldGetSec(irigvalh, irigvall);
         }
         public static void BTICard_IRIGFieldPutDays(uint value, ref uint irigvalh, ref uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGFieldPutDays(value, ref irigvalh, ref irigvall);
             else
                 BTICARD_64.BTICard_IRIGFieldPutDays(value, ref irigvalh, ref irigvall);
         }
         public static void BTICard_IRIGFieldPutHours(uint value, ref uint irigvalh, ref uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGFieldPutHours(value, ref irigvalh, ref irigvall);
             else
                 BTICARD_64.BTICard_IRIGFieldPutHours(value, ref irigvalh, ref irigvall);
         }
         public static void BTICard_IRIGFieldPutMicrosec(uint value, ref uint irigvalh, ref uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGFieldPutMicrosec(value, ref irigvalh, ref irigvall);
             else
                 BTICARD_64.BTICard_IRIGFieldPutMicrosec(value, ref irigvalh, ref irigvall);
         }
         public static void BTICard_IRIGFieldPutMillisec(uint value, ref uint irigvalh, ref uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGFieldPutMillisec(value, ref irigvalh, ref irigvall);
             else
                 BTICARD_64.BTICard_IRIGFieldPutMillisec(value, ref irigvalh, ref irigvall);
         }
         public static void BTICard_IRIGFieldPutMin(uint value, ref uint irigvalh, ref uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGFieldPutMin(value, ref irigvalh, ref irigvall);
             else
                 BTICARD_64.BTICard_IRIGFieldPutMin(value, ref irigvalh, ref irigvall);
         }
         public static void BTICard_IRIGFieldPutSec(uint value, ref uint irigvalh, ref uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGFieldPutSec(value, ref irigvalh, ref irigvall);
             else
                 BTICARD_64.BTICard_IRIGFieldPutSec(value, ref irigvalh, ref irigvall);
         }
         public static int BTICard_IRIGInputThresholdGet(ref ushort dacval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGInputThresholdGet(ref dacval, handleval);
             else
                 return BTICARD_64.BTICard_IRIGInputThresholdGet(ref dacval, handleval);
         }
         public static int BTICard_IRIGInputThresholdSet(ushort dacval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGInputThresholdSet(dacval, handleval);
             else
                 return BTICARD_64.BTICard_IRIGInputThresholdSet(dacval, handleval);
         }
         public static int BTICard_IRIGRd(ref BTIIRIGTIME irigtime, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGRd(ref irigtime, handleval);
             else
                 return BTICARD_64.BTICard_IRIGRd(ref irigtime, handleval);
         }
         public static int BTICard_IRIGRdEx(ref ushort timebuf, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGRdEx(ref timebuf, handleval);
             else
                 return BTICARD_64.BTICard_IRIGRdEx(ref timebuf, handleval);
         }
         public static int BTICard_IRIGSyncStatus(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGSyncStatus(handleval);
             else
                 return BTICARD_64.BTICard_IRIGSyncStatus(handleval);
         }
         public static void BTICard_IRIGTimeBCDToBin(ref uint timevalh, ref uint timevall, uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGTimeBCDToBin(ref timevalh, ref timevall, irigvalh, irigvall);
             else
                 BTICARD_64.BTICard_IRIGTimeBCDToBin(ref timevalh, ref timevall, irigvalh, irigvall);
         }
         public static void BTICard_IRIGTimeBCDToNanoBin(ref uint timevalh, ref uint timevall, uint irigvalh, uint irigvall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGTimeBCDToNanoBin(ref timevalh, ref timevall, irigvalh, irigvall);
             else
                 BTICARD_64.BTICard_IRIGTimeBCDToNanoBin(ref timevalh, ref timevall, irigvalh, irigvall);
         }
         public static void BTICard_IRIGTimeBinToBCD(ref uint irigvalh, ref uint irigvall, uint timevalh, uint timevall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGTimeBinToBCD(ref irigvalh, ref irigvall, timevalh, timevall);
             else
                 BTICARD_64.BTICard_IRIGTimeBinToBCD(ref irigvalh, ref irigvall, timevalh, timevall);
         }
         public static void BTICard_IRIGTimeNanoBinToBCD(ref uint irigvalh, ref uint irigvall, uint timevalh, uint timevall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_IRIGTimeNanoBinToBCD(ref irigvalh, ref irigvall, timevalh, timevall);
             else
                 BTICARD_64.BTICard_IRIGTimeNanoBinToBCD(ref irigvalh, ref irigvall, timevalh, timevall);
         }
         public static int BTICard_IRIGWr(ref BTIIRIGTIME irigtime, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGWr(ref irigtime, handleval);
             else
                 return BTICARD_64.BTICard_IRIGWr(ref irigtime, handleval);
         }
         public static int BTICard_IRIGWrEx(ref ushort timebuf, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_IRIGWrEx(ref timebuf, handleval);
             else
                 return BTICARD_64.BTICard_IRIGWrEx(ref timebuf, handleval);
         }
         public static int BTICard_KernIntStatus(ref int valueptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_KernIntStatus(ref valueptr, handleval);
             else
                 return BTICARD_64.BTICard_KernIntStatus(ref valueptr, handleval);
         }
         public static int BTICard_KernStatus(ref uint valueptr, uint typeval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_KernStatus(ref valueptr, typeval, handleval);
             else
                 return BTICARD_64.BTICard_KernStatus(ref valueptr, typeval, handleval);
         }
         public static int BTICard_KernStatusEx(ref uint valueptr, uint typeval, uint index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_KernStatusEx(ref valueptr, typeval, index, handleval);
             else
                 return BTICARD_64.BTICard_KernStatusEx(ref valueptr, typeval, index, handleval);
         }
         public static uint BTICard_MakeLong(ushort valh, ushort vall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_MakeLong(valh, vall);
             else
                 return BTICARD_64.BTICard_MakeLong(valh, vall);
         }
         public static ulong BTICard_MakeQuad(uint valh, uint vall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_MakeQuad(valh, vall);
             else
                 return BTICARD_64.BTICard_MakeQuad(valh, vall);
         }
         public static ushort BTICard_MakeWord(byte valh, byte vall)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_MakeWord(valh, vall);
             else
                 return BTICARD_64.BTICard_MakeWord(valh, vall);
         }
         public static unsafe string BTICard_MantToAscii(System.Text.StringBuilder buf, int mant, int exp)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_MantToAscii(buf, mant, exp);
             else
                 return BTICARD_64.BTICard_MantToAscii(buf, mant, exp);
         }
         public static uint BTICard_Mask(uint dataval, ushort cntval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_Mask(dataval, cntval);
             else
                 return BTICARD_64.BTICard_Mask(dataval, cntval);
         }
         public static void BTICard_MaxMant(ref uint mant, ref int exp)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_MaxMant(ref mant, ref exp);
             else
                 BTICARD_64.BTICard_MaxMant(ref mant, ref exp);
         }
         public static uint BTICard_Mod(uint moda, uint modb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_Mod(moda, modb);
             else
                 return BTICARD_64.BTICard_Mod(moda, modb);
         }
         public static void BTICard_Mod64(ref uint resulth, ref uint resultl, uint valah, uint valal, uint valbh, uint valbl)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_Mod64(ref resulth, ref resultl, valah, valal, valbh, valbl);
             else
                 BTICARD_64.BTICard_Mod64(ref resulth, ref resultl, valah, valal, valbh, valbl);
         }
         public static uint BTICard_Mul(uint mula, uint mulb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_Mul(mula, mulb);
             else
                 return BTICARD_64.BTICard_Mul(mula, mulb);
         }
         public static void BTICard_Mul64(ref uint resulth, ref uint resultl, uint valah, uint valal, uint valbh, uint valbl)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_Mul64(ref resulth, ref resultl, valah, valal, valbh, valbl);
             else
                 BTICARD_64.BTICard_Mul64(ref resulth, ref resultl, valah, valal, valbh, valbl);
         }
         public static void BTICard_NormalMant(ref uint mant, ref int exp)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_NormalMant(ref mant, ref exp);
             else
                 BTICARD_64.BTICard_NormalMant(ref mant, ref exp);
         }
         public static ushort BTICard_PortRd(int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_PortRd(addrval, handleval);
             else
                 return BTICARD_64.BTICard_PortRd(addrval, handleval);
         }
         public static void BTICard_PortWr(ushort value, int addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_PortWr(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_PortWr(value, addrval, handleval);
         }
         public static ushort BTICard_ProgRdW(uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ProgRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_ProgRdW(addrval, handleval);
         }
         public static void BTICard_ProgWrW(ushort value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ProgWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_ProgWrW(value, addrval, handleval);
         }
         public static int BTICard_PXIStatus(ref uint infoptr, ushort infotype, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_PXIStatus(ref infoptr, infotype, handleval);
             else
                 return BTICARD_64.BTICard_PXIStatus(ref infoptr, infotype, handleval);
         }
         public static void BTICard_RAMFill(ushort value, uint addrval, uint countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMFill(value, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMFill(value, addrval, countval, handleval);
         }
         public static ushort BTICard_RAMRdB(uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_RAMRdB(addrval, handleval);
             else
                 return BTICARD_64.BTICard_RAMRdB(addrval, handleval);
         }
         public static uint BTICard_RAMRdL(uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_RAMRdL(addrval, handleval);
             else
                 return BTICARD_64.BTICard_RAMRdL(addrval, handleval);
         }
         public static void BTICard_RAMRdmL(uint[] valueptr, uint[] addrptr, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMRdmL(valueptr, addrptr, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMRdmL(valueptr, addrptr, countval, handleval);
         }
         public static void BTICard_RAMRdmW(ushort[] valueptr, uint[] addrptr, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMRdmW(valueptr, addrptr, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMRdmW(valueptr, addrptr, countval, handleval);
         }
         public static void BTICard_RAMRdsL(uint[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMRdsL(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMRdsL(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_RAMRdsW(ushort[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMRdsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMRdsW(valueptr, addrval, countval, handleval);
         }
         public static ushort BTICard_RAMRdW(uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_RAMRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_RAMRdW(addrval, handleval);
         }
         public static void BTICard_RAMWipe(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWipe(handleval);
             else
                 BTICARD_64.BTICard_RAMWipe(handleval);
         }
         public static void BTICard_RAMWipeEx(ushort value, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWipeEx(value, handleval);
             else
                 BTICARD_64.BTICard_RAMWipeEx(value, handleval);
         }
         public static void BTICard_RAMWrB(ushort value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWrB(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_RAMWrB(value, addrval, handleval);
         }
         public static void BTICard_RAMWrL(uint value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWrL(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_RAMWrL(value, addrval, handleval);
         }
         public static void BTICard_RAMWrmL(uint[] valueptr, uint[] addrptr, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWrmL(valueptr, addrptr, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMWrmL(valueptr, addrptr, countval, handleval);
         }
         public static void BTICard_RAMWrmW(ushort[] valueptr, uint[] addrptr, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWrmW(valueptr, addrptr, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMWrmW(valueptr, addrptr, countval, handleval);
         }
         public static void BTICard_RAMWrsL(uint[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWrsL(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMWrsL(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_RAMWrsW(ushort[] valueptr, uint addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWrsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_RAMWrsW(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_RAMWrW(ushort value, uint addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_RAMWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_RAMWrW(value, addrval, handleval);
         }
         public static uint BTICard_ReverseLong(uint value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ReverseLong(value);
             else
                 return BTICARD_64.BTICard_ReverseLong(value);
         }
         public static ushort BTICard_ReverseWord(ushort value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ReverseWord(value);
             else
                 return BTICARD_64.BTICard_ReverseWord(value);
         }
         public static uint BTICard_SeqBlkRd(ushort[] buf, uint bufcount, ref uint blkcnt, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqBlkRd(buf, bufcount, ref blkcnt, handleval);
             else
                 return BTICARD_64.BTICard_SeqBlkRd(buf, bufcount, ref blkcnt, handleval);
         }
         public static uint BTICard_SeqBlkRdEx(ushort[] buf, uint bufcount, uint maxblkcnt, ref uint blkcnt, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqBlkRdEx(buf, bufcount, maxblkcnt, ref blkcnt, handleval);
             else
                 return BTICARD_64.BTICard_SeqBlkRdEx(buf, bufcount, maxblkcnt, ref blkcnt, handleval);
         }
         public static int BTICard_SeqClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqClear(handleval);
             else
                 return BTICARD_64.BTICard_SeqClear(handleval);
         }
         public static ushort BTICard_SeqCommRd(ushort[] buf, ushort bufcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqCommRd(buf, bufcount, handleval);
             else
                 return BTICARD_64.BTICard_SeqCommRd(buf, bufcount, handleval);
         }
         public static int BTICard_SeqConfig(uint configval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqConfig(configval, handleval);
             else
                 return BTICARD_64.BTICard_SeqConfig(configval, handleval);
         }
         public static int BTICard_SeqConfigEx(uint configval, uint seqcount, ushort cardnum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqConfigEx(configval, seqcount, cardnum, handleval);
             else
                 return BTICARD_64.BTICard_SeqConfigEx(configval, seqcount, cardnum, handleval);
         }
         public static int BTICard_SeqConfigExx(uint configval, uint seqaddr, uint seqcount, ushort cardnum, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqConfigExx(configval, seqaddr, seqcount, cardnum, handleval);
             else
                 return BTICARD_64.BTICard_SeqConfigExx(configval, seqaddr, seqcount, cardnum, handleval);
         }
         public static uint BTICard_SeqDMARd(ushort[] buf, uint bufcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqDMARd(buf, bufcount, handleval);
             else
                 return BTICARD_64.BTICard_SeqDMARd(buf, bufcount, handleval);
         }
         public static int BTICard_SeqFindCheckVersion(ref ushort precord, ushort version)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindCheckVersion(ref precord, version);
             else
                 return BTICARD_64.BTICard_SeqFindCheckVersion(ref precord, version);
         }
         public static int BTICard_SeqFindInit(ushort[] seqbuf, uint seqbufsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindInit(seqbuf, seqbufsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindInit(seqbuf, seqbufsize, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindMore1553(ref SEQRECORDMORE1553* precmore, ref SEQRECORD1553 precbase)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindMore1553(ref precmore, ref precbase);
             else
                 return BTICARD_64.BTICard_SeqFindMore1553(ref precmore, ref precbase);
         }
         public static int BTICard_SeqFindMore1553Ex(ref SEQRECORDMORE1553 precmore, ushort recordsize, ref SEQRECORD1553 precbase)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindMore1553Ex(ref precmore, recordsize, ref precbase);
             else
                 return BTICARD_64.BTICard_SeqFindMore1553Ex(ref precmore, recordsize, ref precbase);
         }
         unsafe public static int BTICard_SeqFindNext(ref ushort* precord, ref ushort seqtype, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext(ref precord, ref seqtype, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext(ref precord, ref seqtype, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindNext1553(ref SEQRECORD1553* precord, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext1553(ref precord, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext1553(ref precord, ref sfinfo);
         }
         public static int BTICard_SeqFindNext1553Ex(ref SEQRECORD1553 precord, ushort recordsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext1553Ex(ref precord, recordsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext1553Ex(ref precord, recordsize, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindNext429(ref SEQRECORD429* precord, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext429(ref precord, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext429(ref precord, ref sfinfo);
         }
         public static int BTICard_SeqFindNext429Ex(ref SEQRECORD429 precord, ushort recordsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext429Ex(ref precord, recordsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext429Ex(ref precord, recordsize, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindNext708(ref SEQRECORD708* precord, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext708(ref precord, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext708(ref precord, ref sfinfo);
         }
         public static int BTICard_SeqFindNext708Ex(ref SEQRECORD708 precord, ushort recordsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext708Ex(ref precord, recordsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext708Ex(ref precord, recordsize, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindNext717(ref SEQRECORD717* precord, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext717(ref precord, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext717(ref precord, ref sfinfo);
         }
         public static int BTICard_SeqFindNext717Ex(ref SEQRECORD717 precord, ushort recordsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNext717Ex(ref precord, recordsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNext717Ex(ref precord, recordsize, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindNextCSDB(ref SEQRECORDCSDB* precord, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNextCSDB(ref precord, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNextCSDB(ref precord, ref sfinfo);
         }
         public static int BTICard_SeqFindNextCSDBEx(ref SEQRECORDCSDB precord, ushort recordsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNextCSDBEx(ref precord, recordsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNextCSDBEx(ref precord, recordsize, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindNextDIO(ref SEQRECORDDIO* precord, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNextDIO(ref precord, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNextDIO(ref precord, ref sfinfo);
         }
         public static int BTICard_SeqFindNextDIOEx(ref SEQRECORDDIO precord, ushort recordsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNextDIOEx(ref precord, recordsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNextDIOEx(ref precord, recordsize, ref sfinfo);
         }
         unsafe public static int BTICard_SeqFindNextEBR(ref SEQRECORDEBR* precord, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNextEBR(ref precord, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNextEBR(ref precord, ref sfinfo);
         }
         public static int BTICard_SeqFindNextEBREx(ref SEQRECORDEBR precord, ushort recordsize, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNextEBREx(ref precord, recordsize, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNextEBREx(ref precord, recordsize, ref sfinfo);
         }
         public static int BTICard_SeqFindNextEx(ushort[] precord, ushort recordcount, ref ushort seqtype, ref SEQFINDINFO sfinfo)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqFindNextEx(precord, recordcount, ref seqtype, ref sfinfo);
             else
                 return BTICARD_64.BTICard_SeqFindNextEx(precord, recordcount, ref seqtype, ref sfinfo);
         }
         public static int BTICard_SeqInterval(int interval, int mode, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqInterval(interval, mode, handleval);
             else
                 return BTICARD_64.BTICard_SeqInterval(interval, mode, handleval);
         }
         public static ushort BTICard_SeqIntervalEx(ushort shiftval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqIntervalEx(shiftval, handleval);
             else
                 return BTICARD_64.BTICard_SeqIntervalEx(shiftval, handleval);
         }
         public static int BTICard_SeqIsRunning(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqIsRunning(handleval);
             else
                 return BTICARD_64.BTICard_SeqIsRunning(handleval);
         }
         public static ushort BTICard_SeqLogFrequency(ushort logfreq, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqLogFrequency(logfreq, handleval);
             else
                 return BTICARD_64.BTICard_SeqLogFrequency(logfreq, handleval);
         }
         public static ushort BTICard_SeqRd(ushort[] buf, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqRd(buf, handleval);
             else
                 return BTICARD_64.BTICard_SeqRd(buf, handleval);
         }
         public static ushort BTICard_SeqRdEx(ushort[] buf, ushort bufcount, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqRdEx(buf, bufcount, handleval);
             else
                 return BTICARD_64.BTICard_SeqRdEx(buf, bufcount, handleval);
         }
         public static int BTICard_SeqResume(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqResume(handleval);
             else
                 return BTICARD_64.BTICard_SeqResume(handleval);
         }
         public static int BTICard_SeqStart(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqStart(handleval);
             else
                 return BTICARD_64.BTICard_SeqStart(handleval);
         }
         public static int BTICard_SeqStatus(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqStatus(handleval);
             else
                 return BTICARD_64.BTICard_SeqStatus(handleval);
         }
         public static int BTICard_SeqStop(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SeqStop(handleval);
             else
                 return BTICARD_64.BTICard_SeqStop(handleval);
         }
         public static uint BTICard_Shl(uint dataval, ushort cntval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_Shl(dataval, cntval);
             else
                 return BTICARD_64.BTICard_Shl(dataval, cntval);
         }
         public static uint BTICard_Shr(uint dataval, ushort cntval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_Shr(dataval, cntval);
             else
                 return BTICARD_64.BTICard_Shr(dataval, cntval);
         }
         public static ushort BTICard_SignMant(string str)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SignMant(str);
             else
                 return BTICARD_64.BTICard_SignMant(str);
         }
         public static void BTICard_Sub64(ref uint resulth, ref uint resultl, uint valah, uint valal, uint valbh, uint valbl)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_Sub64(ref resulth, ref resultl, valah, valal, valbh, valbl);
             else
                 BTICARD_64.BTICard_Sub64(ref resulth, ref resultl, valah, valal, valbh, valbl);
         }
         public static void BTICard_SwapEndianL(ref uint value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_SwapEndianL(ref value);
             else
                 BTICARD_64.BTICard_SwapEndianL(ref value);
         }
         public static void BTICard_SwapEndianW(ref ushort valuea, ref ushort valueb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_SwapEndianW(ref valuea, ref valueb);
             else
                 BTICARD_64.BTICard_SwapEndianW(ref valuea, ref valueb);
         }
         public static void BTICard_SwapIfBigEndianL(ref uint value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_SwapIfBigEndianL(ref value);
             else
                 BTICARD_64.BTICard_SwapIfBigEndianL(ref value);
         }
         public static void BTICard_SwapIfBigEndianW(ref ushort valuea, ref ushort valueb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_SwapIfBigEndianW(ref valuea, ref valueb);
             else
                 BTICARD_64.BTICard_SwapIfBigEndianW(ref valuea, ref valueb);
         }
         public static void BTICard_SwapIfLittleEndianL(ref uint value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_SwapIfLittleEndianL(ref value);
             else
                 BTICARD_64.BTICard_SwapIfLittleEndianL(ref value);
         }
         public static void BTICard_SwapIfLittleEndianW(ref ushort valuea, ref ushort valueb)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_SwapIfLittleEndianW(ref valuea, ref valueb);
             else
                 BTICARD_64.BTICard_SwapIfLittleEndianW(ref valuea, ref valueb);
         }
         public static int BTICard_SysMonClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonClear(handleval);
             else
                 return BTICARD_64.BTICard_SysMonClear(handleval);
         }
         public static int BTICard_SysMonDACToVal(ushort dacval, int rangemin, int rangemax, ushort dacval_max, int scalefactor, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonDACToVal(dacval, rangemin, rangemax, dacval_max, scalefactor, handleval);
             else
                 return BTICARD_64.BTICard_SysMonDACToVal(dacval, rangemin, rangemax, dacval_max, scalefactor, handleval);
         }
         public static unsafe string BTICard_SysMonDescGet(int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonDescGet(index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonDescGet(index, handleval);
         }
         public static int BTICard_SysMonInit(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonInit(handleval);
             else
                 return BTICARD_64.BTICard_SysMonInit(handleval);
         }
         public static int BTICard_SysMonMaxRd(int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonMaxRd(index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonMaxRd(index, handleval);
         }
         public static int BTICard_SysMonMinRd(int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonMinRd(index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonMinRd(index, handleval);
         }
         public static int BTICard_SysMonNomRd(int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonNomRd(index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonNomRd(index, handleval);
         }
         public static int BTICard_SysMonThresholdGet(ref int enable, ref int min, ref int max, int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonThresholdGet(ref enable, ref min, ref max, index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonThresholdGet(ref enable, ref min, ref max, index, handleval);
         }
         public static int BTICard_SysMonThresholdSet(int enable, int min, int max, int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonThresholdSet(enable, min, max, index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonThresholdSet(enable, min, max, index, handleval);
         }
         public static uint BTICard_SysMonTypeGet(int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonTypeGet(index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonTypeGet(index, handleval);
         }
         public static unsafe string BTICard_SysMonUserStr(int value, int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonUserStr(value, index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonUserStr(value, index, handleval);
         }
         public static int BTICard_SysMonValRd(int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonValRd(index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonValRd(index, handleval);
         }
         public static unsafe string BTICard_SysMonValStr(int index, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonValStr(index, handleval);
             else
                 return BTICARD_64.BTICard_SysMonValStr(index, handleval);
         }
         public static ushort BTICard_SysMonValToDAC(int val, int rangemin, int rangemax, ushort dacval_max, int scalefactor, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_SysMonValToDAC(val, rangemin, rangemax, dacval_max, scalefactor, handleval);
             else
                 return BTICARD_64.BTICard_SysMonValToDAC(val, rangemin, rangemax, dacval_max, scalefactor, handleval);
         }
         public static int BTICard_TickTimerRemaining(int timer)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TickTimerRemaining(timer);
             else
                 return BTICARD_64.BTICard_TickTimerRemaining(timer);
         }
         public static int BTICard_TickTimerStart(int milliseconds)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TickTimerStart(milliseconds);
             else
                 return BTICARD_64.BTICard_TickTimerStart(milliseconds);
         }
         public static int BTICard_TickTimerValid(int timer)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TickTimerValid(timer);
             else
                 return BTICARD_64.BTICard_TickTimerValid(timer);
         }
         public static int BTICard_Timer64Rd(ref uint valueh, ref uint valuel, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_Timer64Rd(ref valueh, ref valuel, handleval);
             else
                 return BTICARD_64.BTICard_Timer64Rd(ref valueh, ref valuel, handleval);
         }
         public static void BTICard_Timer64Wr(uint valueh, uint valuel, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_Timer64Wr(valueh, valuel, handleval);
             else
                 BTICARD_64.BTICard_Timer64Wr(valueh, valuel, handleval);
         }
         public static void BTICard_TimerClear(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_TimerClear(handleval);
             else
                 BTICARD_64.BTICard_TimerClear(handleval);
         }
         public static uint BTICard_TimerRd(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TimerRd(handleval);
             else
                 return BTICARD_64.BTICard_TimerRd(handleval);
         }
         public static int BTICard_TimerResolution(int timerresol, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TimerResolution(timerresol, handleval);
             else
                 return BTICARD_64.BTICard_TimerResolution(timerresol, handleval);
         }
         public static ushort BTICard_TimerResolutionEx(ushort timershift, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TimerResolutionEx(timershift, handleval);
             else
                 return BTICARD_64.BTICard_TimerResolutionEx(timershift, handleval);
         }
         public static int BTICard_TimerStatus(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TimerStatus(handleval);
             else
                 return BTICARD_64.BTICard_TimerStatus(handleval);
         }
         public static void BTICard_TimerWr(uint value, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_TimerWr(value, handleval);
             else
                 BTICARD_64.BTICard_TimerWr(value, handleval);
         }
         public static int BTICard_TSMDriftMaxGet(ref uint driftptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMDriftMaxGet(ref driftptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMDriftMaxGet(ref driftptr, handleval);
         }
         public static int BTICard_TSMDriftMaxSet(uint drift, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMDriftMaxSet(drift, handleval);
             else
                 return BTICARD_64.BTICard_TSMDriftMaxSet(drift, handleval);
         }
         public static int BTICard_TSMDriftRd(ref int driftptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMDriftRd(ref driftptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMDriftRd(ref driftptr, handleval);
         }
         public static int BTICard_TSMDriftRelWr(int drift, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMDriftRelWr(drift, handleval);
             else
                 return BTICARD_64.BTICard_TSMDriftRelWr(drift, handleval);
         }
         public static int BTICard_TSMDriftWr(int drift, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMDriftWr(drift, handleval);
             else
                 return BTICARD_64.BTICard_TSMDriftWr(drift, handleval);
         }
         public static int BTICard_TSMInputDelayCompGet(ref int delayptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMInputDelayCompGet(ref delayptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMInputDelayCompGet(ref delayptr, handleval);
         }
         public static int BTICard_TSMInputDelayCompSet(int delay, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMInputDelayCompSet(delay, handleval);
             else
                 return BTICARD_64.BTICard_TSMInputDelayCompSet(delay, handleval);
         }
         public static int BTICard_TSMInputThresholdAuto(int pinindex, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMInputThresholdAuto(pinindex, handleval);
             else
                 return BTICARD_64.BTICard_TSMInputThresholdAuto(pinindex, handleval);
         }
         public static int BTICard_TSMInputThresholdGet(ref ushort dacval, int pinindex, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMInputThresholdGet(ref dacval, pinindex, handleval);
             else
                 return BTICARD_64.BTICard_TSMInputThresholdGet(ref dacval, pinindex, handleval);
         }
         public static int BTICard_TSMInputThresholdSet(ushort dacval, int pinindex, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMInputThresholdSet(dacval, pinindex, handleval);
             else
                 return BTICARD_64.BTICard_TSMInputThresholdSet(dacval, pinindex, handleval);
         }
         public static int BTICard_TSMIntTrigger(ref ulong timetagptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMIntTrigger(ref timetagptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMIntTrigger(ref timetagptr, handleval);
         }
         public static int BTICard_TSMIRIGControlRd(ref uint ctrlptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMIRIGControlRd(ref ctrlptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMIRIGControlRd(ref ctrlptr, handleval);
         }
         public static int BTICard_TSMIRIGControlWr(uint ctrlval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMIRIGControlWr(ctrlval, handleval);
             else
                 return BTICARD_64.BTICard_TSMIRIGControlWr(ctrlval, handleval);
         }
         public static int BTICard_TSMIRIGYearsRd(ref uint year, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMIRIGYearsRd(ref year, handleval);
             else
                 return BTICARD_64.BTICard_TSMIRIGYearsRd(ref year, handleval);
         }
         public static int BTICard_TSMIRIGYearsWr(uint year, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMIRIGYearsWr(year, handleval);
             else
                 return BTICARD_64.BTICard_TSMIRIGYearsWr(year, handleval);
         }
         public static int BTICard_TSMJumpThresholdGet(ref uint drift, ref uint offset, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMJumpThresholdGet(ref drift, ref offset, handleval);
             else
                 return BTICARD_64.BTICard_TSMJumpThresholdGet(ref drift, ref offset, handleval);
         }
         public static int BTICard_TSMJumpThresholdSet(uint drift, uint offset, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMJumpThresholdSet(drift, offset, handleval);
             else
                 return BTICARD_64.BTICard_TSMJumpThresholdSet(drift, offset, handleval);
         }
         public static int BTICard_TSMOffsetLastRd(ref long offsetptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMOffsetLastRd(ref offsetptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMOffsetLastRd(ref offsetptr, handleval);
         }
         public static int BTICard_TSMReset(nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMReset(handleval);
             else
                 return BTICARD_64.BTICard_TSMReset(handleval);
         }
         public static int BTICard_TSMSourceConfig(uint sourcecfg, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMSourceConfig(sourcecfg, handleval);
             else
                 return BTICARD_64.BTICard_TSMSourceConfig(sourcecfg, handleval);
         }
         public static int BTICard_TSMStatus(ref uint statusptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMStatus(ref statusptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMStatus(ref statusptr, handleval);
         }
         public static int BTICard_TSMSyncConfig(uint timeconfig, uint driftconfig, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMSyncConfig(timeconfig, driftconfig, handleval);
             else
                 return BTICARD_64.BTICard_TSMSyncConfig(timeconfig, driftconfig, handleval);
         }
         public static int BTICard_TSMTimerRd(ref ulong valueptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMTimerRd(ref valueptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMTimerRd(ref valueptr, handleval);
         }
         public static int BTICard_TSMTimerRelWr(long value, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMTimerRelWr(value, handleval);
             else
                 return BTICARD_64.BTICard_TSMTimerRelWr(value, handleval);
         }
         public static int BTICard_TSMTimerRolloverGet(ref ulong valueptr, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMTimerRolloverGet(ref valueptr, handleval);
             else
                 return BTICARD_64.BTICard_TSMTimerRolloverGet(ref valueptr, handleval);
         }
         public static int BTICard_TSMTimerRolloverSet(ulong value, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMTimerRolloverSet(value, handleval);
             else
                 return BTICARD_64.BTICard_TSMTimerRolloverSet(value, handleval);
         }
         public static int BTICard_TSMTimerWr(ulong value, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_TSMTimerWr(value, handleval);
             else
                 return BTICARD_64.BTICard_TSMTimerWr(value, handleval);
         }
         public static int BTICard_ValAsciiCmpi(System.Text.StringBuilder str1, System.Text.StringBuilder str2)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValAsciiCmpi(str1, str2);
             else
                 return BTICARD_64.BTICard_ValAsciiCmpi(str1, str2);
         }
         public static unsafe string BTICard_ValAsciiCpy(System.Text.StringBuilder strdest, string strsrc, int count)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValAsciiCpy(strdest, strsrc, count);
             else
                 return BTICARD_64.BTICard_ValAsciiCpy(strdest, strsrc, count);
         }
         public static void BTICard_ValAsciiTrimLead(System.Text.StringBuilder buf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ValAsciiTrimLead(buf);
             else
                 BTICARD_64.BTICard_ValAsciiTrimLead(buf);
         }
         public static void BTICard_ValAsciiTrimTrail(System.Text.StringBuilder buf)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_ValAsciiTrimTrail(buf);
             else
                 BTICARD_64.BTICard_ValAsciiTrimTrail(buf);
         }
         public static uint BTICard_ValFromAscii(string asciistr, int radixval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValFromAscii(asciistr, radixval);
             else
                 return BTICARD_64.BTICard_ValFromAscii(asciistr, radixval);
         }
         public static uint BTICard_ValGetBits(uint oldvalue, int startbit, int endbit)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValGetBits(oldvalue, startbit, endbit);
             else
                 return BTICARD_64.BTICard_ValGetBits(oldvalue, startbit, endbit);
         }
         public static unsafe string BTICard_ValIncAscii(System.Text.StringBuilder asciistr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValIncAscii(asciistr);
             else
                 return BTICARD_64.BTICard_ValIncAscii(asciistr);
         }
         public static unsafe string BTICard_ValInccAscii(System.Text.StringBuilder asciistr)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValInccAscii(asciistr);
             else
                 return BTICARD_64.BTICard_ValInccAscii(asciistr);
         }
         public static int BTICard_ValIsLower(int value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValIsLower(value);
             else
                 return BTICARD_64.BTICard_ValIsLower(value);
         }
         public static int BTICard_ValLenAscii(int numbits, int radixval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValLenAscii(numbits, radixval);
             else
                 return BTICARD_64.BTICard_ValLenAscii(numbits, radixval);
         }
         public static uint BTICard_ValPutBits(uint oldvalue, uint newfld, int startbit, int endbit)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValPutBits(oldvalue, newfld, startbit, endbit);
             else
                 return BTICARD_64.BTICard_ValPutBits(oldvalue, newfld, startbit, endbit);
         }
         public static unsafe string BTICard_ValToAscii(uint value, System.Text.StringBuilder asciistr, int numbits, int radixval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValToAscii(value, asciistr, numbits, radixval);
             else
                 return BTICARD_64.BTICard_ValToAscii(value, asciistr, numbits, radixval);
         }
         public static int BTICard_ValToUpper(int value)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_ValToUpper(value);
             else
                 return BTICARD_64.BTICard_ValToUpper(value);
         }
         public static uint BTICard_VARRdL(ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_VARRdL(addrval, handleval);
             else
                 return BTICARD_64.BTICard_VARRdL(addrval, handleval);
         }
         public static void BTICard_VARRdsW(ushort[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_VARRdsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_VARRdsW(valueptr, addrval, countval, handleval);
         }
         public static ushort BTICard_VARRdW(ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 return BTICARD_32.BTICard_VARRdW(addrval, handleval);
             else
                 return BTICARD_64.BTICard_VARRdW(addrval, handleval);
         }
         public static void BTICard_VARWrL(uint value, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_VARWrL(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_VARWrL(value, addrval, handleval);
         }
         public static void BTICard_VARWrsW(ushort[] valueptr, ushort addrval, int countval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_VARWrsW(valueptr, addrval, countval, handleval);
             else
                 BTICARD_64.BTICard_VARWrsW(valueptr, addrval, countval, handleval);
         }
         public static void BTICard_VARWrW(ushort value, ushort addrval, nint handleval)
         {
-            if (nint.Size == 4)
+            if (IntPtr.Size == 4)
                 BTICARD_32.BTICard_VARWrW(value, addrval, handleval);
             else
                 BTICARD_64.BTICard_VARWrW(value, addrval, handleval);

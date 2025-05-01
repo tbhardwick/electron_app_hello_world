@@ -3,13 +3,18 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>$(NoWarn);CS0117</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="BTICardTest.cs" />
+    <Compile Include="native-libs\BTICARDNET.CS" />
+    <Compile Include="native-libs\BTI429NET.CS" />
     <Content Include="native-libs\*.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
