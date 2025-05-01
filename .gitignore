@@ -33,9 +33,17 @@ build
 # Electron
 .electron
 
-# C# / .NET Build Artifacts (BTICardTest)
-BTICardTest/BTICardTest/bin/
-BTICardTest/BTICardTest/obj/
+# C# / .NET Build Artifacts
+bin/
+obj/
+**/bin/
+**/obj/
+bticardtest/*/bin/
+bticardtest/*/obj/
+UA2430_Test/*/bin/
+UA2430_Test/*/obj/
+native-libs/bin/
+native-libs/obj/
 
 # Operating System Files
 Thumbs.db
@@ -50,4 +58,7 @@ Thumbs.db
 
 # Build Folders (General)
 /build
-/out 
+/out
+
+# JSON output files (optional, uncomment if needed)
+# output.json 
