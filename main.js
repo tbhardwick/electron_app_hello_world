@@ -1,6 +1,24 @@
 const { app, BrowserWindow, ipcMain } = require('electron/main')
 const path = require('path')
-const { execFile } = require('child_process')
+// const { execFile } = require('child_process') // No longer needed for this test
+
+// --- Load the Native Addon ---
+const bindings = require('bindings');
+let btiAddon;
+let addonLoadError = null;
+try {
+  btiAddon = bindings({ 
+    bindings: 'bti_addon', 
+    module_root: path.join(__dirname, 'cpp-addon') 
+  }); 
+  console.log("BTI Addon loaded successfully in main process.");
+} catch (error) {
+  console.error("Failed to load bti_addon in main process:", error);
+  addonLoadError = error; 
+  btiAddon = null; 
+}
+// --- End Addon Loading ---
+
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -33,101 +51,104 @@ app.on('window-all-closed', () => {
   }
 })
 
-// IPC Listener updated to run the executable with arguments and parse JSON output
+// --- IPC Listener Modified to Use Native Addon ---
 ipcMain.on('run-test', (event) => {
-  // Define arguments for the C# executable
-  const args = ['--action', 'testCard']; // Add more args here if needed in the future
-  // Construct the path to the executable within the workspace
-  const executablePath = path.join(__dirname, 'bin', 'Debug', 'net6.0', 'BTICardTest.exe');
+  console.log("Received 'run-test' IPC message.");
 
-  console.log(`Attempting to run: ${executablePath} ${args.join(' ')}`);
+  // Initialize results
+  let finalResults = {
+    success: false,
+    message: 'Test not fully executed.',
+    resultCode: null 
+  };
 
-  let fullStdout = '';
-  let fullStderr = '';
+  // Check if the addon loaded correctly
+  if (!btiAddon) {
+    console.error("BTI Addon not loaded, cannot run test.");
+    finalResults.message = `Failed to run test: Addon not loaded. ${addonLoadError?.message || ''}`;
+    event.sender.send('test-results', finalResults);
+    return;
+  }
 
-  const child = execFile(executablePath, args);
+  let cardHandle = null; // Variable to store the card handle
+  let coreHandle = null; // Variable to store the core handle
 
-  child.stdout.on('data', (data) => {
-    fullStdout += data;
-  });
+  try {
+    // --- Step 1: Open the Card ---
+    const cardNumToOpen = 0; 
+    console.log(`Calling btiAddon.cardOpen with card number: ${cardNumToOpen}`);
+    const openResult = btiAddon.cardOpen(cardNumToOpen);
+    console.log(`btiAddon.cardOpen returned:`, openResult);
+    finalResults.resultCode = openResult.resultCode;
 
-  child.stderr.on('data', (data) => {
-    fullStderr += data;
-    console.error(`stderr chunk: ${data}`);
-  });
+    if (!openResult.success || openResult.handle === null) {
+      finalResults.message = `Failed to open card: ${openResult.message} (Code: ${openResult.resultCode})`;
+      throw new Error(finalResults.message); // Use throw to trigger finally block for cleanup
+    }
+    cardHandle = openResult.handle;
+    console.log(`Card opened successfully. Handle: ${cardHandle}`);
 
-  child.on('close', (code) => {
-    console.log(`C# executable exited with code ${code}`);
-    console.log(`Full stdout:\n${fullStdout}`);
-    if (fullStderr) {
-      console.error(`Full stderr:\n${fullStderr}`);
+    // --- Step 2: Open the Core ---
+    const coreNumToOpen = 0;
+    console.log(`Calling btiAddon.coreOpen for core ${coreNumToOpen} with card handle: ${cardHandle}`);
+    const coreOpenResult = btiAddon.coreOpen(coreNumToOpen, cardHandle);
+    console.log(`btiAddon.coreOpen returned:`, coreOpenResult);
+    finalResults.resultCode = coreOpenResult.resultCode;
+
+    if (!coreOpenResult.success || coreOpenResult.handle === null) {
+      finalResults.message = `Failed to open core: ${coreOpenResult.message} (Code: ${coreOpenResult.resultCode})`;
+      throw new Error(finalResults.message); // Use throw for cleanup
+    }
+    coreHandle = coreOpenResult.handle;
+    console.log(`Core opened successfully. Handle: ${coreHandle}`);
+
+    // --- Step 3: Run Card Test (Level 1) ---
+    const testLevel = 1; // Memory Interface Test
+    console.log(`Calling btiAddon.cardTest (Level ${testLevel}) with core handle: ${coreHandle}`);
+    const testResult = btiAddon.cardTest(testLevel, coreHandle);
+    finalResults.resultCode = testResult;
+    console.log(`btiAddon.cardTest returned: ${testResult}`);
+
+    if (testResult === 0) { // Assuming 0 is ERR_NONE for success
+      finalResults.success = true;
+      finalResults.message = `Card/Core Opened. Card Test Level ${testLevel} successful!`;
+    } else {
+      finalResults.success = false;
+      // TODO: Could wrap/call BTICard_ErrDescStr here for a better message
+      finalResults.message = `Card/Core Opened. Card Test Level ${testLevel} failed with error code: ${testResult}`;
     }
 
-    const resultsData = {
-      executionError: null,
-      parseError: null,
-      csOutput: null, // This will hold the parsed JSON object from C#
-      stderr: fullStderr || null, // Store stderr, ensure it's null if empty
-      rawStdout: fullStdout || null // Store raw stdout
-    };
+  } catch (error) {
+    // Catch errors during any native function call or explicit throws
+    console.error("Error during BTI operation:", error.message);
+    finalResults.success = false;
+    // Use the message set before throwing, or the generic error message
+    finalResults.message = error.message.startsWith('Failed to open') ? error.message : `Error executing native function: ${error.message}`;
+    // Invalidate handles if error occurred after they were obtained
+    if (error.message.startsWith('Failed to open core')) coreHandle = null;
+    if (error.message.startsWith('Failed to open card')) cardHandle = null;
 
-    if (code !== 0) {
-      resultsData.executionError = `C# executable exited with code ${code}. Check stderr for details.`;
-    }
-
-    // Attempt to parse the JSON part of stdout
-    if (fullStdout) {
+  } finally {
+    // --- Step 4: Close the Card (Always attempt if handle was obtained) ---
+    if (cardHandle !== null) {
+      console.log(`Attempting to close card handle ${cardHandle}`);
       try {
-        // Use regex to find the largest JSON block starting with { and ending with }
-        const jsonMatch = fullStdout.match(/(\{.*\})/s); // Use 's' flag for dotAll if needed, find largest block
-        
-        if (jsonMatch && jsonMatch[1]) {
-          const jsonString = jsonMatch[1]; // The captured JSON string
-          
-          // --- Add detailed logging here ---
-          console.log(`Attempting to parse JSON substring via Regex (length ${jsonString.length}):`);
-          console.log(`>>>${jsonString}<<<`); 
-          // --- End detailed logging ---
-
-          resultsData.csOutput = JSON.parse(jsonString); 
-          
-          if (resultsData.csOutput && resultsData.csOutput.Success === false && !resultsData.executionError) {
-            console.warn('C# process reported failure:', resultsData.csOutput.ErrorMessage || 'No specific error message provided.');
-            resultsData.executionError = `C# logic reported failure: ${resultsData.csOutput.ErrorMessage || 'Unknown C# error'}`;
-          }
-        } else {
-           // If regex fails, fall back to the brace finding method for logging
-           const jsonStartIndex = fullStdout.lastIndexOf('{');
-           const jsonEndIndex = fullStdout.lastIndexOf('}');
-           throw new Error(`Could not find JSON pattern using regex. Last braces found at start: ${jsonStartIndex}, end: ${jsonEndIndex}.`);
+        const closeResult = btiAddon.cardClose(cardHandle);
+        console.log(`btiAddon.cardClose returned: ${closeResult}`);
+        if (closeResult !== 0) {
+           // Append warning if close failed, but don't overwrite main success/failure
+           finalResults.message += ` (Warning: CardClose failed with code ${closeResult})`; 
         }
-      } catch (parseErr) {
-        console.error(`JSON parse error: ${parseErr}`);
-        resultsData.parseError = `Failed to parse JSON output from C# executable. ${parseErr.message}`;
+      } catch (closeErr) {
+         console.error("Error calling btiAddon.cardClose:", closeErr);
+         finalResults.message += ` (Error during CardClose: ${closeErr.message})`;
       }
     } else {
-        console.log('stdout was empty.');
-        if (!resultsData.executionError) {
-            resultsData.parseError = 'C# executable produced no output.';
-            resultsData.executionError = resultsData.parseError; // Treat no output as an error if exit code was 0
-        }
+        console.log("Card handle was null, skipping close.");
     }
+  }
 
-    console.log('Sending results to renderer:', JSON.stringify(resultsData, null, 2));
-
-    // Send the structured results object back to the renderer process
-    event.sender.send('test-results', resultsData);
-  });
-
-  child.on('error', (err) => {
-    console.error(`Failed to start subprocess: ${err}`);
-    // Send error back immediately if the process couldn't even start
-    event.sender.send('test-results', {
-      executionError: `Failed to start C# executable: ${err.message}`,
-      parseError: null,
-      csOutput: null,
-      stderr: null,
-      rawStdout: null
-    });
-  });
+  console.log("Sending final results back to renderer:", finalResults);
+  event.sender.send('test-results', finalResults);
 });
+// --- End IPC Listener Modification ---
