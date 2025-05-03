@@ -28,22 +28,13 @@ coverage
 
 # Compiled binary addons
 dist
-build
 
 # Electron
 .electron
 
 # C# / .NET Build Artifacts
-bin/
-obj/
 **/bin/
 **/obj/
-bticardtest/*/bin/
-bticardtest/*/obj/
-UA2430_Test/*/bin/
-UA2430_Test/*/obj/
-native-libs/bin/
-native-libs/obj/
 
 # Operating System Files
 Thumbs.db
@@ -63,12 +54,7 @@ Thumbs.db
 # JSON output files (optional, uncomment if needed)
 # output.json
 
-# Electron specific
-.electron
-*.log
-
 # Build Artifacts
-build/
 Release/
 Debug/
 *.node
@@ -79,14 +65,7 @@ cpp-addon/build/
 # Optional: Vendor libraries if fetched externally
 # cpp-addon/vendor/bin/
 # cpp-addon/vendor/lib/
-# cpp-addon/vendor/include/
-
-# Node Modules
-node_modules
-
-# Operating System Files
-.DS_Store
-Thumbs.db
+cpp-addon/vendor/include/
 
 # NPM dependency logs
 npm-debug.log*
@@ -108,7 +87,6 @@ lerna-debug.log*
 *.db
 
 # IDE files
-.idea
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

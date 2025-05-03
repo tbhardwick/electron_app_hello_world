@@ -11,6 +11,16 @@ typedef void* HCORE; // Assuming HCORE is void*
 typedef void** LPHCORE; // Pointer to HCORE pointer
 typedef unsigned short USHORT;
 
+// Declare the BTI functions we'll use
+extern "C" {
+    ERRVAL BTICard_CardOpen(LPHCARD lphCard, int CardNum);
+    ERRVAL BTICard_CoreOpen(LPHCORE lphCore, int CoreNum, HCARD hCard);
+    ERRVAL BTICard_CardTest(USHORT wTestLevel, HCORE hCore);
+    ERRVAL BTICard_CardClose(HCARD hCard);
+    ERRVAL BTICard_BITInitiate(HCARD hCard);
+    const char* BTICard_ErrDescStr(ERRVAL errval, HCORE hCore); // Added declaration
+}
+
 // --- N-API Wrapper for BTICard_CardOpen ---
 Napi::Value CardOpenWrapped(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
@@ -127,6 +137,39 @@ Napi::Value CardCloseWrapped(const Napi::CallbackInfo& info) {
 }
 // --- End CardClose Wrapper ---
 
+// --- N-API Wrapper for BTICard_ErrDescStr ---
+Napi::Value GetErrorDescriptionWrapped(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+
+  // Expect two arguments: error code (Number), core handle (Number or Null)
+  if (info.Length() != 2 || !info[0].IsNumber() || (!info[1].IsNumber() && !info[1].IsNull() && !info[1].IsUndefined())) {
+    Napi::TypeError::New(env, "Expected: errorCode (Number), coreHandle (Number or Null)").ThrowAsJavaScriptException();
+    return env.Null();
+  }
+
+  ERRVAL errorCode = info[0].As<Napi::Number>().Int32Value();
+  HCORE coreHandle = nullptr; // Default to null
+
+  // Check if the second argument is a valid handle number
+  if (info[1].IsNumber()) {
+      coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+  }
+  // If coreHandle remains 0 (nullptr), the function will be called with a null handle,
+  // which should be acceptable according to documentation or typical library behavior.
+
+  // Call the actual library function
+  const char* errorDesc = BTICard_ErrDescStr(errorCode, coreHandle);
+
+  // Check if the result is null, which might happen for unknown error codes
+  if (errorDesc == nullptr) {
+    return Napi::String::New(env, "Unknown error code or failed to get description.");
+  }
+
+  // Return the error description string
+  return Napi::String::New(env, errorDesc);
+}
+// --- End ErrDescStr Wrapper ---
+
 // N-API Wrapper for BTICard_BITInitiate
 Napi::Value BitInitiateWrapped(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
@@ -161,6 +204,8 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
               Napi::Function::New(env, CardCloseWrapped));
   exports.Set(Napi::String::New(env, "bitInitiate"),
               Napi::Function::New(env, BitInitiateWrapped));
+  exports.Set(Napi::String::New(env, "getErrorDescription"),  // Export the new function
+              Napi::Function::New(env, GetErrorDescriptionWrapped));
   return exports;
 }
 

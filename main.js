@@ -82,7 +82,15 @@ ipcMain.on('run-test', (event) => {
     finalResults.resultCode = openResult.resultCode;
 
     if (!openResult.success || openResult.handle === null) {
-      finalResults.message = `Failed to open card: ${openResult.message} (Code: ${openResult.resultCode})`;
+      // Get error description
+      let errorDesc = "Unknown error";
+      try {
+         // Attempt to get description; coreHandle is null here
+        errorDesc = btiAddon.getErrorDescription(openResult.resultCode, null); 
+      } catch (descErr) { 
+        console.error("Failed to get error description for cardOpen", descErr);
+      }
+      finalResults.message = `Failed to open card: ${errorDesc} (Code: ${openResult.resultCode})`;
       throw new Error(finalResults.message); // Use throw to trigger finally block for cleanup
     }
     cardHandle = openResult.handle;
@@ -96,7 +104,15 @@ ipcMain.on('run-test', (event) => {
     finalResults.resultCode = coreOpenResult.resultCode;
 
     if (!coreOpenResult.success || coreOpenResult.handle === null) {
-      finalResults.message = `Failed to open core: ${coreOpenResult.message} (Code: ${coreOpenResult.resultCode})`;
+      // Get error description
+       let errorDesc = "Unknown error";
+       try {
+         // Attempt to get description; coreHandle is null here
+         errorDesc = btiAddon.getErrorDescription(coreOpenResult.resultCode, null); 
+       } catch (descErr) { 
+         console.error("Failed to get error description for coreOpen", descErr);
+       }
+      finalResults.message = `Failed to open core: ${errorDesc} (Code: ${coreOpenResult.resultCode})`;
       throw new Error(finalResults.message); // Use throw for cleanup
     }
     coreHandle = coreOpenResult.handle;
@@ -114,8 +130,14 @@ ipcMain.on('run-test', (event) => {
       finalResults.message = `Card/Core Opened. Card Test Level ${testLevel} successful!`;
     } else {
       finalResults.success = false;
-      // TODO: Could wrap/call BTICard_ErrDescStr here for a better message
-      finalResults.message = `Card/Core Opened. Card Test Level ${testLevel} failed with error code: ${testResult}`;
+      // Get error description using the valid coreHandle
+       let errorDesc = "Unknown error";
+       try {
+         errorDesc = btiAddon.getErrorDescription(testResult, coreHandle);
+       } catch (descErr) { 
+         console.error("Failed to get error description for cardTest", descErr);
+       }
+      finalResults.message = `Card/Core Opened. Card Test Level ${testLevel} failed: ${errorDesc} (Code: ${testResult})`;
     }
 
   } catch (error) {
@@ -136,8 +158,16 @@ ipcMain.on('run-test', (event) => {
         const closeResult = btiAddon.cardClose(cardHandle);
         console.log(`btiAddon.cardClose returned: ${closeResult}`);
         if (closeResult !== 0) {
+           // Get error description for close failure
+           let errorDesc = "Unknown error";
+           try {
+             // Pass coreHandle if available, otherwise null
+             errorDesc = btiAddon.getErrorDescription(closeResult, coreHandle);
+           } catch (descErr) { 
+             console.error("Failed to get error description for cardClose", descErr);
+           }
            // Append warning if close failed, but don't overwrite main success/failure
-           finalResults.message += ` (Warning: CardClose failed with code ${closeResult})`; 
+           finalResults.message += ` (Warning: CardClose failed: ${errorDesc} (Code: ${closeResult}))`; 
         }
       } catch (closeErr) {
          console.error("Error calling btiAddon.cardClose:", closeErr);
