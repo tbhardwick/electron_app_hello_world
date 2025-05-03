@@ -3,15 +3,24 @@
   "version": "1.0.0",
   "description": "Brad's Test Electron App",
   "main": "main.js",
+  "gypfile": true,
   "scripts": {
-    "start": "npx electron .",
+    "start": "electron .",
     "dev": "electronmon .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "cd cpp-addon && node-gyp rebuild && cd .."
   },
   "author": "Brad Hardwick",
   "license": "MIT",
+  "keywords": [],
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^7.1.0"
+  },
   "devDependencies": {
-    "electron": "^36.0.0",
-    "electronmon": "^2.0.2"
+    "electron": "^29.1.5",
+    "electronmon": "^2.0.2",
+    "electron-rebuild": "^3.2.9",
+    "node-gyp": "^10.0.1"
   }
 }

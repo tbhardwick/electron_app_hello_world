@@ -1,5 +1,0 @@
-C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\native-libs\obj\Debug\net6.0\BtiHardwareInterface.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\native-libs\obj\Debug\net6.0\BtiHardwareInterface.AssemblyInfoInputs.cache
-C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\native-libs\obj\Debug\net6.0\BtiHardwareInterface.AssemblyInfo.cs
-C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\native-libs\obj\Debug\net6.0\BtiHardwareInterface.csproj.CoreCompileInputs.cache
-C:\Users\Brad Hardwick\Documents\GitHub\electron_app_hello_world\native-libs\obj\Debug\net6.0\BtiHardwareInterface.sourcelink.json
