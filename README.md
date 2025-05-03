@@ -6,19 +6,6 @@ An Electron application demonstrating communication with a UA2430 device via its
 
 This application serves as a testbed and example for interacting with BTI UA2430 hardware from a modern desktop application built with Electron. It utilizes a C++ native addon to bridge the gap between JavaScript and the vendor's C++ library, providing a robust and maintainable solution.
 
-## Architecture
-
-- **Electron Shell:** Provides the main application window and user interface (HTML/CSS/JS).
-- **JavaScript (Renderer/Main):** Application logic written in JavaScript (`renderer.js`, `main.js`).
-- **Node.js Native Addon (`bti_addon`):** A C++ module that acts as a bridge between JavaScript and the vendor's C++ library.
-    - Located in the `cpp-addon/` directory.
-    - Wraps functions from the vendor's `BTICARD.H` / `BTI429.H` headers using N-API.
-    - Links against the vendor's static libraries (`.LIB` files).
-    - The build process copies the required vendor runtime libraries (`.DLL` files) alongside the compiled addon.
-- **Vendor Library:** The pre-compiled C++ libraries (`.DLL`, `.LIB`) and headers (`.H`) provided by the hardware vendor (BTI). These are located in `cpp-addon/vendor/`.
-
-JavaScript code calls functions exported by the `bti_addon` (e.g., `btiAddon.bitInitiate(handle)`), which in turn call the underlying functions in the vendor's DLLs.
-
 ## Features
 
 - Demonstrates loading and calling a C++ native addon from Electron.
@@ -30,57 +17,6 @@ JavaScript code calls functions exported by the `bti_addon` (e.g., `btiAddon.bit
     - `BTICard_BITInitiate`
     - `BTICard_ErrDescStr` (for descriptive error messages)
 - Establishes a build process using `node-gyp` for the native addon.
-
-## Available Addon Functions
-
-This section details the functions currently wrapped in the C++ addon and exposed to JavaScript via the `btiAddon` object (loaded in `main.js`).
-
-*   **`cardOpen(cardNumber: number)`**
-    *   **Description:** Attempts to open a connection to the specified BTI card.
-    *   **Arguments:**
-        *   `cardNumber`: The integer index of the card to open (e.g., 0).
-    *   **Returns:** `Object`
-        *   `success: boolean`: True if the card was opened successfully.
-        *   `handle: number | null`: The opaque card handle (as a number) if successful, otherwise null.
-        *   `message: string`: Status message.
-        *   `resultCode: number`: The raw result code from the underlying `BTICard_CardOpen` function.
-
-*   **`coreOpen(coreNumber: number, cardHandle: number)`**
-    *   **Description:** Attempts to open a specific core on an already opened card.
-    *   **Arguments:**
-        *   `coreNumber`: The integer index of the core to open (e.g., 0).
-        *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
-    *   **Returns:** `Object`
-        *   `success: boolean`: True if the core was opened successfully.
-        *   `handle: number | null`: The opaque core handle (as a number) if successful, otherwise null.
-        *   `message: string`: Status message.
-        *   `resultCode: number`: The raw result code from the underlying `BTICard_CoreOpen` function.
-
-*   **`cardTest(testLevel: number, coreHandle: number)`**
-    *   **Description:** Runs a built-in self-test on the specified core.
-    *   **Arguments:**
-        *   `testLevel`: The integer code for the test level to run (e.g., 1 for Memory Interface Test).
-        *   `coreHandle`: The handle obtained from a successful `coreOpen` call.
-    *   **Returns:** `number` - The raw result code from the underlying `BTICard_CardTest` function (0 typically indicates success).
-
-*   **`cardClose(cardHandle: number)`**
-    *   **Description:** Closes the connection to the specified card. This implicitly closes any open cores on that card.
-    *   **Arguments:**
-        *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
-    *   **Returns:** `number` - The raw result code from the underlying `BTICard_CardClose` function (0 typically indicates success).
-
-*   **`bitInitiate(cardHandle: number)`**
-    *   **Description:** Initiates the Built-In Test (BIT) for the specified card.
-    *   **Arguments:**
-        *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
-    *   **Returns:** `number` - The raw result code from the underlying `BTICard_BITInitiate` function.
-
-*   **`getErrorDescription(errorCode: number, coreHandle: number | null)`**
-    *   **Description:** Retrieves a descriptive string for a given BTI error code.
-    *   **Arguments:**
-        *   `errorCode`: The numerical error code returned by another BTI function.
-        *   `coreHandle`: The core handle associated with the error, if applicable (can be `null` if the error occurred before a core was opened or if the error is not core-specific).
-    *   **Returns:** `string` - The error description, or a generic message if the code is unknown.
 
 ## Prerequisites
 
@@ -134,17 +70,47 @@ cd ..
 
 ## Usage
 
-Run the application:
+To run the application for development purposes:
 
 ```bash
-# Run the application
+# Run the application using Electron Forge's development server
 npm start
-
-# Optional: Run in development mode with hot reloading (if configured)
-# npm run dev
 ```
 
 The application should load, and any UI elements connected to the addon functions (like the BIT Initiate test) should be available. Check the Developer Tools console (Ctrl+Shift+I) for logs and errors related to addon loading or function calls.
+
+Refer to the "Development Workflow" section below for packaging and building distributables.
+
+## Development Workflow
+
+Standard npm scripts are provided for common development tasks:
+
+- **Run in Development Mode:** `npm start` or `npm run dev`
+  - Launches the application directly from source code using Electron Forge.
+  - Enables features like hot-reloading for the renderer process, speeding up development.
+  - **Does not create distributable packages.**
+
+- **Package the Application:** `npm run package`
+  - Bundles the application code and production dependencies into an unpackaged format (located in the `out/` directory).
+  - Useful for testing the packaging process or running the app in a semi-production state without creating a full installer.
+
+- **Build Distributables:** `npm run make`
+  - Creates the final, distributable packages (e.g., installers, zip files) for your current platform.
+  - The output is placed in the `out/make/` directory.
+  - Use this command when you want to prepare a version for users.
+
+## Architecture
+
+- **Electron Shell:** Provides the main application window and user interface (HTML/CSS/JS).
+- **JavaScript (Renderer/Main):** Application logic written in JavaScript (`renderer.js`, `main.js`).
+- **Node.js Native Addon (`bti_addon`):** A C++ module that acts as a bridge between JavaScript and the vendor's C++ library.
+    - Located in the `cpp-addon/` directory.
+    - Wraps functions from the vendor's `BTICARD.H` / `BTI429.H` headers using N-API.
+    - Links against the vendor's static libraries (`.LIB` files).
+    - The build process copies the required vendor runtime libraries (`.DLL` files) alongside the compiled addon.
+- **Vendor Library:** The pre-compiled C++ libraries (`.DLL`, `.LIB`) and headers (`.H`) provided by the hardware vendor (BTI). These are located in `cpp-addon/vendor/`.
+
+JavaScript code calls functions exported by the `bti_addon` (e.g., `btiAddon.bitInitiate(handle)`), which in turn call the underlying functions in the vendor's DLLs.
 
 ## Project Structure
 
@@ -159,6 +125,57 @@ The application should load, and any UI elements connected to the addon function
     - `binding.gyp`: Build configuration file for `node-gyp`.
     - `vendor/`: Contains the vendor-provided header (`include/`), library (`lib/`), and runtime (`bin/`) files.
     - `build/`: Output directory for the compiled addon (`*.node`) and copied DLLs (created during `npm install` or rebuild). This directory is ignored by Git.
+
+## Available Addon Functions
+
+This section details the functions currently wrapped in the C++ addon and exposed to JavaScript via the `btiAddon` object (loaded in `main.js`).
+
+*   **`cardOpen(cardNumber: number)`**
+    *   **Description:** Attempts to open a connection to the specified BTI card.
+    *   **Arguments:**
+        *   `cardNumber`: The integer index of the card to open (e.g., 0).
+    *   **Returns:** `Object`
+        *   `success: boolean`: True if the card was opened successfully.
+        *   `handle: number | null`: The opaque card handle (as a number) if successful, otherwise null.
+        *   `message: string`: Status message.
+        *   `resultCode: number`: The raw result code from the underlying `BTICard_CardOpen` function.
+
+*   **`coreOpen(coreNumber: number, cardHandle: number)`**
+    *   **Description:** Attempts to open a specific core on an already opened card.
+    *   **Arguments:**
+        *   `coreNumber`: The integer index of the core to open (e.g., 0).
+        *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
+    *   **Returns:** `Object`
+        *   `success: boolean`: True if the core was opened successfully.
+        *   `handle: number | null`: The opaque core handle (as a number) if successful, otherwise null.
+        *   `message: string`: Status message.
+        *   `resultCode: number`: The raw result code from the underlying `BTICard_CoreOpen` function.
+
+*   **`cardTest(testLevel: number, coreHandle: number)`**
+    *   **Description:** Runs a built-in self-test on the specified core.
+    *   **Arguments:**
+        *   `testLevel`: The integer code for the test level to run (e.g., 1 for Memory Interface Test).
+        *   `coreHandle`: The handle obtained from a successful `coreOpen` call.
+    *   **Returns:** `number` - The raw result code from the underlying `BTICard_CardTest` function (0 typically indicates success).
+
+*   **`cardClose(cardHandle: number)`**
+    *   **Description:** Closes the connection to the specified card. This implicitly closes any open cores on that card.
+    *   **Arguments:**
+        *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
+    *   **Returns:** `number` - The raw result code from the underlying `BTICard_CardClose` function (0 typically indicates success).
+
+*   **`bitInitiate(cardHandle: number)`**
+    *   **Description:** Initiates the Built-In Test (BIT) for the specified card.
+    *   **Arguments:**
+        *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
+    *   **Returns:** `number` - The raw result code from the underlying `BTICard_BITInitiate` function.
+
+*   **`getErrorDescription(errorCode: number, coreHandle: number | null)`**
+    *   **Description:** Retrieves a descriptive string for a given BTI error code.
+    *   **Arguments:**
+        *   `errorCode`: The numerical error code returned by another BTI function.
+        *   `coreHandle`: The core handle associated with the error, if applicable (can be `null` if the error occurred before a core was opened or if the error is not core-specific).
+    *   **Returns:** `string` - The error description, or a generic message if the code is unknown.
 
 ## Development Notes
 
