@@ -1,6 +1,7 @@
 #include "BTICARD.H" // Include the vendor header (Path relative to include_dirs)
 #include "BTI429.H" // Added BTI429 Header - Verify Name!
 #include "bti_constants.h" // Added constants header
+#include "BTIDIO.H" // Added for Discrete IO functions
 
 // Then include standard and N-API headers
 #include <napi.h>
@@ -23,6 +24,36 @@ typedef void* HCORE;
 typedef void** LPHCORE;
 typedef unsigned short USHORT;
 typedef unsigned long ULONG;
+typedef unsigned long long ULONGLONG; // Added for 64-bit timer
+typedef long long LONGLONG; // Added for 64-bit timer relative write
+typedef USHORT* LPUSHORT; // Added for EventLogRd, ListDataBlkRd
+typedef ULONG* LPULONG; // Added for EventLogRd, ListDataBlkWr, Timer64Rd
+typedef ULONGLONG* LPULONGLONG; // Added for Timer64Rd
+typedef void* MSGADDR; // Placeholder, check actual definition in headers
+typedef void* LISTADDR; // Placeholder, check actual definition in headers
+// Placeholder structure for MsgBlockRd/MsgCommRd
+typedef struct {
+    USHORT msgopt;
+    USHORT msgact;
+    ULONG msgdata;
+    ULONG listptr;
+    ULONG timetag;
+    ULONG hitcount;
+    ULONG maxtime;
+    ULONG elapsetime;
+    ULONG mintime;
+    ULONG userptr;
+    ULONG timetagh;
+    USHORT decgap;
+    USHORT paramflag;
+} MSGFIELDS429;
+typedef MSGFIELDS429* LPMSGFIELDS429;
+// Placeholder for SeqFindInfo
+typedef struct {} SEQFINDINFO;
+typedef SEQFINDINFO* LPSEQFINDINFO;
+// Placeholder for BTIIRIGTIME
+typedef struct {} BTIIRIGTIME;
+typedef BTIIRIGTIME* LPBTIIRIGTIME;
 #endif
 
 // Declare the BTI functions we'll use (ensure these match BTICARD.H)
@@ -33,24 +64,43 @@ extern "C" {
     ERRVAL BTICard_CardClose(HCARD hCard);
     ERRVAL BTICard_BITInitiate(HCARD hCard);
     const char* BTICard_ErrDescStr(ERRVAL errval, HCORE hCore);
-    // --- Add declarations for newly implemented functions --- 
-    VOID BTICard_CardReset(HCORE hCore); // Added based on manual search
-    ULONG BTICard_CardGetInfo(USHORT infotype, int channum, HCORE hCore); // Added - Verify Signature!
+    VOID BTICard_CardReset(HCORE hCore);
+    ULONG BTICard_CardGetInfo(USHORT infotype, int channum, HCORE hCore);
+    ERRVAL BTICard_CardStart(HCORE hCore);
+    BOOL BTICard_CardStop(HCORE hCore);
+    ERRVAL BTICard_EventLogConfig(USHORT ctrlflags, USHORT count, HCORE hCore);
+    ULONG BTICard_EventLogRd(LPUSHORT typeval, LPULONG infoval, LPINT channel, HCORE hCore);
+    INT BTICard_EventLogStatus(HCORE hCore);
+    ERRVAL BTICard_Timer64Rd(LPULONGLONG valueh, LPULONGLONG valuel, HCORE hCore);
+    VOID BTICard_Timer64Wr(ULONGLONG valueh, ULONGLONG valuel, HCORE hCore);
+    // Added ExtDIO functions
+    BOOL BTICard_ExtDIORd(INT dionum, HCORE hCore);
+    VOID BTICard_ExtDIOWr(INT dionum, BOOL dioval, HCORE hCore);
 
-    // --- BTI429 Functions --- 
-    ERRVAL BTI429_ChConfig(ULONG configval, int channum, HCORE hCore); // Added - Verify Signature!
-    BOOL BTI429_ChStart(int channum, HCORE hCore); // Corrected Return Type
-    BOOL BTI429_ChStop(int channum, HCORE hCore); // Corrected Return Type
-    LISTADDR BTI429_ListXmtCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore); 
-    BOOL BTI429_ListDataWr(ULONG value, LISTADDR listaddr, HCORE hCore); 
-    BOOL BTI429_ListDataBlkWr(LPULONG listbuf, USHORT count, LISTADDR listaddr, HCORE hCore); 
-    LISTADDR BTI429_ListRcvCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore); 
-    ULONG BTI429_ListDataRd(LISTADDR listaddr, HCORE hCore); // Added - Verify Signature & Return Value on Empty!
-    BOOL BTI429_ListDataBlkRd(LPULONG listbuf, LPUSHORT count, LISTADDR listaddr, HCORE hCore); 
-    int BTI429_ListStatus(LISTADDR listaddr, HCORE hCore); // Added - Verify Signature & Return Type!
-    ULONG BTI429_FilterSet(ULONG configval, int labelval, int sdimask, int channum, HCORE hCore); // Added - Verify Signature & Return!
-    ULONG BTI429_FilterDefault(ULONG configval, int channum, HCORE hCore); // Added - Verify Signature & Return!
-    // Add other BTI429 declarations here as needed...
+    ERRVAL BTI429_ChConfig(ULONG configval, int channum, HCORE hCore);
+    BOOL BTI429_ChStart(int channum, HCORE hCore);
+    BOOL BTI429_ChStop(int channum, HCORE hCore);
+    LISTADDR BTI429_ListXmtCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore);
+    BOOL BTI429_ListDataWr(ULONG value, LISTADDR listaddr, HCORE hCore);
+    BOOL BTI429_ListDataBlkWr(LPULONG listbuf, LPUSHORT count, LISTADDR listaddr, HCORE hCore);
+    LISTADDR BTI429_ListRcvCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore);
+    ULONG BTI429_ListDataRd(LISTADDR listaddr, HCORE hCore);
+    BOOL BTI429_ListDataBlkRd(LPULONG listbuf, LPUSHORT count, LISTADDR listaddr, HCORE hCore);
+    int BTI429_ListStatus(LISTADDR listaddr, HCORE hCore);
+    ULONG BTI429_FilterSet(ULONG configval, int labelval, int sdimask, int channum, HCORE hCore);
+    ULONG BTI429_FilterDefault(ULONG configval, int channum, HCORE hCore);
+    MSGADDR BTI429_MsgCreate(ULONG ctrlflags, HCORE hCore);
+    VOID BTI429_MsgDataWr(ULONG value, MSGADDR message, HCORE hCore);
+    ERRVAL BTI429_SchedBuild(INT nummsgs, MSGADDR msgs[], INT min[], INT max[], INT channel, HCORE hCore);
+    ULONG BTI429_MsgDataRd(MSGADDR message, HCORE hCore);
+    USHORT BTI429_FldGetLabel(ULONG msg);
+    USHORT BTI429_FldGetSDI(ULONG msg);
+    ULONG BTI429_FldGetData(ULONG msg);
+    ULONG BTI429_BCDGetData(ULONG msg, USHORT msb, USHORT lsb);
+    ULONG BTI429_BNRGetData(ULONG msg, USHORT msb, USHORT lsb);
+    MSGADDR BTI429_MsgBlockRd(LPMSGFIELDS429 msgfields, MSGADDR message, HCORE hCore);
+    MSGADDR BTI429_MsgCommRd(LPMSGFIELDS429 msgfields, MSGADDR message, HCORE hCore);
+    BOOL BTI429_MsgIsAccessed(MSGADDR message, HCORE hCore);
 }
 
 // --- Async Worker for ListDataRd ---
@@ -419,6 +469,154 @@ Napi::Value CardGetInfoWrapped(const Napi::CallbackInfo& info) {
     // Note: ULONG might exceed safe integer range for Napi::Number if it's 64-bit.
     // Consider Napi::BigInt if resultValue can be very large.
     return Napi::Number::New(env, resultValue); 
+}
+
+// N-API Wrapper for BTICard_CardStart
+Napi::Value CardStartWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: core handle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
+    ERRVAL result = BTICard_CardStart(coreHandle);
+    return Napi::Number::New(env, result);
+}
+
+// N-API Wrapper for BTICard_CardStop
+Napi::Value CardStopWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: core handle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
+    BOOL result = BTICard_CardStop(coreHandle);
+    return Napi::Boolean::New(env, result);
+}
+
+// N-API Wrapper for BTICard_EventLogConfig
+Napi::Value EventLogConfigWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: ctrlflags (Number), count (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    USHORT ctrlflags = (USHORT)info[0].As<Napi::Number>().Uint32Value();
+    USHORT count = (USHORT)info[1].As<Napi::Number>().Uint32Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
+    ERRVAL result = BTICard_EventLogConfig(ctrlflags, count, coreHandle);
+    return Napi::Number::New(env, result);
+}
+
+// N-API Wrapper for BTICard_EventLogRd
+Napi::Value EventLogRdWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
+
+    USHORT typeval = 0;
+    ULONG infoval = 0;
+    INT channel = -1; // Initialize channel
+
+    ULONG logEntryAddr = BTICard_EventLogRd(&typeval, &infoval, &channel, coreHandle);
+
+    Napi::Object resultObj = Napi::Object::New(env);
+    if (logEntryAddr != 0) { // Assuming non-zero indicates an entry was read
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        resultObj.Set("type", Napi::Number::New(env, typeval));
+        resultObj.Set("info", Napi::Number::New(env, infoval)); // ULONG may exceed safe int range
+        resultObj.Set("channel", Napi::Number::New(env, channel));
+        resultObj.Set("entryAddr", Napi::Number::New(env, logEntryAddr)); // ULONG
+    } else {
+        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Or a specific 'empty' code if available
+        resultObj.Set("type", env.Null());
+        resultObj.Set("info", env.Null());
+        resultObj.Set("channel", env.Null());
+        resultObj.Set("entryAddr", env.Null());
+    }
+    return resultObj;
+}
+
+// N-API Wrapper for BTICard_EventLogStatus
+Napi::Value EventLogStatusWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
+    INT result = BTICard_EventLogStatus(coreHandle); // Returns INT status
+    // Consider returning status and result separately like listStatus
+     Napi::Object resultObj = Napi::Object::New(env);
+     if (result >= 0) { // STAT_EMPTY, STAT_PARTIAL, etc.
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        resultObj.Set("logStatus", Napi::Number::New(env, result));
+     } else {
+         resultObj.Set("status", Napi::Number::New(env, result)); // Actual error code
+         resultObj.Set("logStatus", env.Null());
+     }
+    return resultObj;
+}
+
+// N-API Wrapper for BTICard_Timer64Rd
+Napi::Value Timer64RdWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
+
+    // Declare separate ULONG variables for high and low parts, as per BTI documentation
+    ULONG timerValH = 0;
+    ULONG timerValL = 0;
+
+    // Call the BTI function with pointers to the ULONG variables
+    ERRVAL result = BTICard_Timer64Rd(&timerValH, &timerValL, coreHandle);
+
+    Napi::Object resultObj = Napi::Object::New(env);
+    resultObj.Set("status", Napi::Number::New(env, result));
+    if (result == ERR_NONE) {
+        // Combine the high and low ULONG parts into a ULONGLONG
+        ULONGLONG combinedValue = ((ULONGLONG)timerValH << 32) | timerValL;
+        resultObj.Set("value", Napi::BigInt::New(env, combinedValue)); // Use BigInt for ULONGLONG
+    } else {
+        resultObj.Set("value", env.Null());
+    }
+    return resultObj;
+}
+
+// N-API Wrapper for BTICard_Timer64Wr
+Napi::Value Timer64WrWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect two arguments: timerValue (BigInt), coreHandle (Number)
+    if (info.Length() != 2 || !info[0].IsBigInt() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: timerValue (BigInt), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    bool lossless;
+    ULONGLONG timerValue = info[0].As<Napi::BigInt>().Uint64Value(&lossless);
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
+
+    if (!lossless) {
+        Napi::RangeError::New(env, "BigInt value could not be represented as uint64_t losslessly").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // *** Verify actual parameters from BTI header. Does it take one ULONGLONG or two ULONGs? ***
+    // Assuming it takes one ULONGLONG for now:
+    // BTICard_Timer64Wr(timerValue, coreHandle); // Example if it took one ULONGLONG
+    // If it takes two ULONGs:
+    ULONG timerValH = (ULONG)(timerValue >> 32);
+    ULONG timerValL = (ULONG)(timerValue & 0xFFFFFFFF);
+    BTICard_Timer64Wr(timerValH, timerValL, coreHandle); // HACK: Passing parts - NEEDS VERIFICATION
+
+    // Function returns VOID
+    return env.Undefined();
 }
 
 // N-API Wrapper for BTI429_ChConfig
@@ -827,6 +1025,228 @@ Napi::Value FilterDefaultWrapped(const Napi::CallbackInfo& info) {
     return resultObj;
 }
 
+// N-API Wrapper for BTI429_MsgCreate
+Napi::Value MsgCreateWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect two arguments: ctrlflags (Number), coreHandle (Number)
+    if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: ctrlflags (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    ULONG ctrlflags = info[0].As<Napi::Number>().Uint32Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
+
+    MSGADDR msgAddrResult = BTI429_MsgCreate(ctrlflags, coreHandle);
+
+    Napi::Object resultObj = Napi::Object::New(env);
+    if (msgAddrResult != 0) { // Assuming non-zero MSGADDR indicates success
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        resultObj.Set("msgAddr", Napi::Number::New(env, msgAddrResult));
+    } else {
+        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure
+        resultObj.Set("msgAddr", env.Null());
+    }
+    return resultObj;
+}
+
+// N-API Wrapper for BTI429_MsgDataWr
+Napi::Value MsgDataWrWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect three arguments: value (Number), msgAddr (Number), coreHandle (Number)
+    if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: value (Number), msgAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    ULONG value = info[0].As<Napi::Number>().Uint32Value();
+    MSGADDR msgAddr = info[1].As<Napi::Number>().Int64Value(); // Assuming MSGADDR fits in Int64
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
+
+    BTI429_MsgDataWr(value, msgAddr, coreHandle);
+
+    // Function returns VOID, return undefined or status code
+    return env.Undefined(); // Or return Napi::Number::New(env, ERR_NONE);
+}
+
+// N-API Wrapper for BTI429_MsgDataRd
+Napi::Value MsgDataRdWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect two arguments: msgAddr (Number), coreHandle (Number)
+    if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msgAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    MSGADDR msgAddr = info[0].As<Napi::Number>().Int64Value(); // Assuming MSGADDR fits in Int64
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
+
+    // Call the actual library function - Returns ULONG data
+    // How to check for errors? Does it return 0 on error? Or is error implicit if msgAddr is invalid? Check manual.
+    ULONG dataWord = BTI429_MsgDataRd(msgAddr, coreHandle);
+
+    // Assume success if called, return the data word. Error handling might need refinement.
+    Napi::Object resultObj = Napi::Object::New(env);
+    resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); // Assuming success
+    resultObj.Set("value", Napi::Number::New(env, dataWord));
+    return resultObj;
+}
+
+// N-API Wrapper for BTI429_FldGetLabel
+Napi::Value FldGetLabelWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect one argument: msg (Number - ULONG)
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msg (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    ULONG msg = info[0].As<Napi::Number>().Uint32Value();
+    USHORT label = BTI429_FldGetLabel(msg);
+    return Napi::Number::New(env, label);
+}
+
+// N-API Wrapper for BTI429_FldGetSDI
+Napi::Value FldGetSDIWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msg (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    ULONG msg = info[0].As<Napi::Number>().Uint32Value();
+    USHORT sdi = BTI429_FldGetSDI(msg);
+    return Napi::Number::New(env, sdi);
+}
+
+// N-API Wrapper for BTI429_FldGetData
+Napi::Value FldGetDataWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msg (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    ULONG msg = info[0].As<Napi::Number>().Uint32Value();
+    ULONG data = BTI429_FldGetData(msg);
+    return Napi::Number::New(env, data); // Return ULONG data
+}
+
+// N-API Wrapper for BTI429_BCDGetData
+Napi::Value BCDGetDataWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect three arguments: msg (Number), msb (Number), lsb (Number)
+    if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msg (Number), msb (Number), lsb (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    ULONG msg = info[0].As<Napi::Number>().Uint32Value();
+    USHORT msb = (USHORT)info[1].As<Napi::Number>().Uint32Value();
+    USHORT lsb = (USHORT)info[2].As<Napi::Number>().Uint32Value();
+    ULONG data = BTI429_BCDGetData(msg, msb, lsb);
+    return Napi::Number::New(env, data); // Return ULONG data
+}
+
+// N-API Wrapper for BTI429_BNRGetData
+Napi::Value BNRGetDataWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+     // Expect three arguments: msg (Number), msb (Number), lsb (Number)
+    if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msg (Number), msb (Number), lsb (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    ULONG msg = info[0].As<Napi::Number>().Uint32Value();
+    USHORT msb = (USHORT)info[1].As<Napi::Number>().Uint32Value();
+    USHORT lsb = (USHORT)info[2].As<Napi::Number>().Uint32Value();
+    ULONG data = BTI429_BNRGetData(msg, msb, lsb);
+    return Napi::Number::New(env, data); // Return ULONG data
+}
+
+// Helper function to convert MSGFIELDS429 to Napi::Object
+Napi::Object ConvertMsgFieldsToNapiObject(Napi::Env env, const MSGFIELDS429& fields) {
+    Napi::Object obj = Napi::Object::New(env);
+    obj.Set("msgopt", Napi::Number::New(env, fields.msgopt));
+    obj.Set("msgact", Napi::Number::New(env, fields.msgact));
+    obj.Set("msgdata", Napi::Number::New(env, fields.msgdata));
+    obj.Set("listptr", Napi::Number::New(env, fields.listptr));
+    obj.Set("timetag", Napi::Number::New(env, fields.timetag));
+    obj.Set("hitcount", Napi::Number::New(env, fields.hitcount));
+    obj.Set("maxtime", Napi::Number::New(env, fields.maxtime));
+    obj.Set("elapsetime", Napi::Number::New(env, fields.elapsetime));
+    obj.Set("mintime", Napi::Number::New(env, fields.mintime));
+    // obj.Set("userptr", Napi::Number::New(env, fields.userptr)); // Usually not needed in JS
+    obj.Set("timetagh", Napi::Number::New(env, fields.timetagh));
+    obj.Set("decgap", Napi::Number::New(env, fields.decgap));
+    obj.Set("paramflag", Napi::Number::New(env, fields.paramflag));
+    return obj;
+}
+
+// N-API Wrapper for BTI429_MsgBlockRd
+Napi::Value MsgBlockRdWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msgAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    MSGADDR msgAddr = info[0].As<Napi::Number>().Int64Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
+
+    MSGFIELDS429 msgFields = {0}; // Initialize structure
+
+    // Call the actual library function - Returns MSGADDR
+    MSGADDR resultAddr = BTI429_MsgBlockRd(&msgFields, msgAddr, coreHandle);
+
+    Napi::Object resultObj = Napi::Object::New(env);
+    // Check if resultAddr matches input msgAddr or is non-zero for success? Check manual.
+    if (resultAddr != 0) { // Assuming non-zero return means success
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        resultObj.Set("fields", ConvertMsgFieldsToNapiObject(env, msgFields));
+    } else {
+        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure
+        resultObj.Set("fields", env.Null());
+    }
+    return resultObj;
+}
+
+// N-API Wrapper for BTI429_MsgCommRd
+Napi::Value MsgCommRdWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+     if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msgAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    MSGADDR msgAddr = info[0].As<Napi::Number>().Int64Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
+
+    MSGFIELDS429 msgFields = {0}; // Initialize structure
+
+    // Call the actual library function - Returns MSGADDR
+    MSGADDR resultAddr = BTI429_MsgCommRd(&msgFields, msgAddr, coreHandle);
+
+    Napi::Object resultObj = Napi::Object::New(env);
+    // Check if resultAddr matches input msgAddr or is non-zero for success? Check manual.
+    if (resultAddr != 0) { // Assuming non-zero return means success
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        resultObj.Set("fields", ConvertMsgFieldsToNapiObject(env, msgFields));
+    } else {
+        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure
+        resultObj.Set("fields", env.Null());
+    }
+    return resultObj;
+}
+
+// N-API Wrapper for BTI429_MsgIsAccessed
+Napi::Value MsgIsAccessedWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: msgAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    MSGADDR msgAddr = info[0].As<Napi::Number>().Int64Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
+
+    BOOL result = BTI429_MsgIsAccessed(msgAddr, coreHandle);
+    // How to detect errors? Assume BOOL return indicates access status only?
+    Napi::Object resultObj = Napi::Object::New(env);
+    resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); // Assuming success
+    resultObj.Set("accessed", Napi::Boolean::New(env, result));
+    return resultObj;
+}
+
 // --- Add New Async Wrappers Here ---
 
 // N-API Wrapper for ListDataRdAsync (uses ListDataRdWorker)
@@ -876,6 +1296,44 @@ Napi::Value ListDataBlkRdAsyncWrapped(const Napi::CallbackInfo& info) {
     return worker->GetPromise();
 }
 
+// N-API Wrapper for BTICard_ExtDIORd
+Napi::Value ExtDIORdWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect 2 arguments: dionum (Number), coreHandle (Number)
+    if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: dionum (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    INT dionum = info[0].As<Napi::Number>().Int32Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
+
+    BOOL result = BTICard_ExtDIORd(dionum, coreHandle);
+    // Similar to other BOOL returns, assume the call succeeded and return the state.
+    // Error handling might require checking device/core status separately if needed.
+    Napi::Object resultObj = Napi::Object::New(env);
+    resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); // Assuming success
+    resultObj.Set("value", Napi::Boolean::New(env, result));
+    return resultObj;
+}
+
+// N-API Wrapper for BTICard_ExtDIOWr
+Napi::Value ExtDIOWrWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect 3 arguments: dionum (Number), dioval (Boolean), coreHandle (Number)
+    if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsBoolean() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: dionum (Number), dioval (Boolean), coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    INT dionum = info[0].As<Napi::Number>().Int32Value();
+    BOOL dioval = info[1].As<Napi::Boolean>().Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
+
+    BTICard_ExtDIOWr(dionum, dioval, coreHandle);
+
+    // Function returns VOID, indicate success
+    return Napi::Number::New(env, ERR_NONE); // Or return env.Undefined();
+}
+
 // Initializer function for the addon module
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
   // Export the wrapped functions using static linking
@@ -889,6 +1347,8 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   // --- Export new functions ---
   exports.Set(Napi::String::New(env, "cardReset"), Napi::Function::New(env, CardResetWrapped));
   exports.Set(Napi::String::New(env, "cardGetInfo"), Napi::Function::New(env, CardGetInfoWrapped));
+  exports.Set(Napi::String::New(env, "cardStart"), Napi::Function::New(env, CardStartWrapped)); // Exported BTICard_CardStart
+  exports.Set(Napi::String::New(env, "cardStop"), Napi::Function::New(env, CardStopWrapped)); // Exported BTICard_CardStop
   exports.Set(Napi::String::New(env, "chConfig"), Napi::Function::New(env, ChConfigWrapped)); // Exported BTI429_ChConfig
   exports.Set(Napi::String::New(env, "chStart"), Napi::Function::New(env, ChStartWrapped)); // Exported BTI429_ChStart
   exports.Set(Napi::String::New(env, "chStop"), Napi::Function::New(env, ChStopWrapped)); // Exported BTI429_ChStop
@@ -903,6 +1363,23 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "filterDefault"), Napi::Function::New(env, FilterDefaultWrapped)); // Exported BTI429_FilterDefault
   exports.Set(Napi::String::New(env, "listDataRdAsync"), Napi::Function::New(env, ListDataRdAsyncWrapped)); // Exported Async ListDataRd
   exports.Set(Napi::String::New(env, "listDataBlkRdAsync"), Napi::Function::New(env, ListDataBlkRdAsyncWrapped)); // Exported Async ListDataBlkRd
+  exports.Set(Napi::String::New(env, "msgCreate"), Napi::Function::New(env, MsgCreateWrapped)); // Exported BTI429_MsgCreate
+  exports.Set(Napi::String::New(env, "msgDataWr"), Napi::Function::New(env, MsgDataWrWrapped)); // Exported BTI429_MsgDataWr
+  exports.Set(Napi::String::New(env, "msgDataRd"), Napi::Function::New(env, MsgDataRdWrapped)); // Exported BTI429_MsgDataRd
+  exports.Set(Napi::String::New(env, "fldGetLabel"), Napi::Function::New(env, FldGetLabelWrapped)); // Exported BTI429_FldGetLabel
+  exports.Set(Napi::String::New(env, "fldGetSDI"), Napi::Function::New(env, FldGetSDIWrapped)); // Exported BTI429_FldGetSDI
+  exports.Set(Napi::String::New(env, "fldGetData"), Napi::Function::New(env, FldGetDataWrapped)); // Exported BTI429_FldGetData
+  exports.Set(Napi::String::New(env, "bcdGetData"), Napi::Function::New(env, BCDGetDataWrapped)); // Exported BTI429_BCDGetData
+  exports.Set(Napi::String::New(env, "bnrGetData"), Napi::Function::New(env, BNRGetDataWrapped)); // Exported BTI429_BNRGetData
+  exports.Set(Napi::String::New(env, "msgBlockRd"), Napi::Function::New(env, MsgBlockRdWrapped)); // Exported BTI429_MsgBlockRd
+  exports.Set(Napi::String::New(env, "msgCommRd"), Napi::Function::New(env, MsgCommRdWrapped)); // Exported BTI429_MsgCommRd
+  exports.Set(Napi::String::New(env, "msgIsAccessed"), Napi::Function::New(env, MsgIsAccessedWrapped)); // Exported BTI429_MsgIsAccessed
+  // Exported ExtDIO functions
+  exports.Set(Napi::String::New(env, "extDIORd"), Napi::Function::New(env, ExtDIORdWrapped));
+  exports.Set(Napi::String::New(env, "extDIOWr"), Napi::Function::New(env, ExtDIOWrWrapped));
+  // exports.Set(Napi::String::New(env, "dioBankConfig"), Napi::Function::New(env, DioBankConfigWrapped)); // REMOVED
+  // exports.Set(Napi::String::New(env, "dioBankRd"), Napi::Function::New(env, DioBankRdWrapped)); // REMOVED
+  // exports.Set(Napi::String::New(env, "dioBankWr"), Napi::Function::New(env, DioBankWrWrapped)); // REMOVED
 
   return exports;
 }

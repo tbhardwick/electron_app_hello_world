@@ -14,5 +14,10 @@ Your training data does not include specifics for these vendor functions.
 1.  **Summary:** A list of available MA132 functions, their basic descriptions, and types can potentially be found in the `electron_app_hello_world/ma132_function.csv` file (if it exists).
 2.  **Detailed Definitions:** Comprehensive descriptions and usage instructions for *each individual function* are located in separate Markdown (`.md`) files within the `electron_app_hello_world/reference_data/MA132_Function_Definition/` directory. The filename typically corresponds to the function name (e.g., `FunctionName.md`).
 
-
 **Action:** When you need to understand, implement, or debug code involving a specific MA132 function (often prefixed like `BTI_`, `MA132_`, or related to keywords: BTI, UA2430, UA2000, Ballard, ARINC429 device), **you MUST use the `read_file` tool to read the contents of the corresponding `.md` file** from the `electron_app_hello_world/reference_data/MA132_Function_Definition/` directory before proceeding. Do not rely solely on your internal knowledge for these specific functions.
+
+Make sure you did not implement any functions that are not referenced as available in the /reference_data/MA132_Function_Definition as they are not available on this device if they are not listed.  Your reference to a BTIDIO function is wrong.
+
+# C++ addon code location
+
+When looking for the cpp-addon, use the following location cpp-addon\src\addon.cpp
