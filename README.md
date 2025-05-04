@@ -472,6 +472,7 @@ These functions operate directly on a 32-bit ARINC word (passed as a number) and
     *   **Returns:** `Object`
         *   `status: number`: Result code (`ERR_NONE` (0) is assumed).
         *   `value: boolean`: The state of the DIO pin (true for active/high, false for inactive/low).
+    *   **Note:** Issues were encountered when calling this function individually for higher `dionum` values (9-12) via Electron's IPC mechanism, resulting in "Invalid DIO number specified" errors originating from the native library, even though the same `dionum` values work in other contexts. Use `getAllDioStates` for reliable polling.
 
 *   **`extDIOWr(dionum: number, dioval: boolean, coreHandle: number): number`**
     *   **Description:** Sets the state of a single external digital I/O pin.
@@ -480,6 +481,17 @@ These functions operate directly on a 32-bit ARINC word (passed as a number) and
         *   `dioval`: The state to set (true for active/high, false for inactive/low).
         *   `coreHandle`: The core handle.
     *   **Returns:** `number` - Result code (`ERR_NONE` (0) is assumed as underlying function is void).
+
+*   **`getAllDioStates(coreHandle: number): Array<Object>`**
+    *   **Description:** Reads the status of all configured discrete input pins (DIO 0-7, mapping to `dionum` 1-4 and 9-12) in a single call. This is the recommended method for polling DIO status in this application due to issues encountered with individual `extDIORd` calls via IPC.
+    *   **Arguments:**
+        *   `coreHandle`: The core handle.
+    *   **Returns:** `Array<Object>` - An array where each object represents a DIO pin and contains:
+        *   `index: number`: The display index (0-7).
+        *   `apiDionum: number`: The `dionum` value used in the native call (1-12).
+        *   `status: number`: Result code (`ERR_NONE` (0) for success, `ERR_FAIL` (-1) for failure reading this pin).
+        *   `value: boolean | null`: The state of the DIO pin (true/false) if status is `ERR_NONE`, otherwise null.
+        *   `error: string | null`: An error message (e.g., "Invalid DIO number specified.") if status is `ERR_FAIL`, otherwise null.
 
 ### Asynchronous Operations
 

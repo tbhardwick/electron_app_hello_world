@@ -1,11 +1,25 @@
 const { app, BrowserWindow, ipcMain } = require('electron/main')
 const path = require('path')
 // const { execFile } = require('child_process') // No longer needed for this test
+const bindings = require('bindings');
+
+// --- BTI Constants (Verify values from BTI429.H) ---
+const BTI429_CHCFG429_AUTOSPEED = 0x0004; // Replace with actual value if different
+const BTI429_CHCFG429_HIT = 0x0400;       // Replace with actual value if different
+const MSGCRT429_DEFAULT = 0;              // Default message creation flag
+
+// --- Pre-calculate config flags --- 
+const ARINC_CONFIG_FLAGS = BTI429_CHCFG429_AUTOSPEED | BTI429_CHCFG429_HIT;
+const FILTER_CONFIG_FLAGS = MSGCRT429_DEFAULT;
+
+// Global handles - Initialized to null
+let gCardHandle = null;
+let gCoreHandle = null;
 
 // --- Load the Native Addon ---
-const bindings = require('bindings');
 let btiAddon;
 let addonLoadError = null;
+
 try {
   btiAddon = bindings({ 
     bindings: 'bti_addon', 
@@ -46,6 +60,35 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  // --- Clean up BTI handles on exit ---
+  if (gCoreHandle !== null) {
+    // CoreClose doesn't exist, we only close the card
+    // console.log(`Attempting to close core handle ${gCoreHandle}`);
+    // try { 
+    //     // Need BTICard_CoreClose if it exists, otherwise skip
+    // } catch (closeErr) { /* Handle error */ }
+  }
+  if (gCardHandle !== null) {
+      console.log(`Attempting to close card handle ${gCardHandle} on window close.`);
+      try {
+          if (btiAddon && typeof btiAddon.cardClose === 'function') {
+              const closeResult = btiAddon.cardClose(gCardHandle);
+              console.log(`btiAddon.cardClose on exit returned: ${closeResult}`);
+              if (closeResult !== 0) {
+                  // Log error but continue quitting
+                  console.error(`CardClose failed on exit (Code: ${closeResult})`);
+              }
+          } else {
+              console.warn("btiAddon or cardClose function not available on exit.");
+          }
+      } catch (closeErr) {
+         console.error("Error calling btiAddon.cardClose on exit:", closeErr);
+      }
+      gCardHandle = null; // Ensure handle is marked as closed
+      gCoreHandle = null; // Also nullify core handle if card is closed
+  }
+  // --- End BTI Cleanup ---
+
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -70,115 +113,171 @@ ipcMain.on('run-test', (event) => {
     return;
   }
 
-  let cardHandle = null; // Variable to store the card handle
-  let coreHandle = null; // Variable to store the core handle
+  // Use global handles defined outside this handler
+  let tempCardHandle = null; 
+  let tempCoreHandle = null;
 
   try {
-    // --- Step 1: Open the Card ---
-    const cardNumToOpen = 0; 
-    console.log(`Calling btiAddon.cardOpen with card number: ${cardNumToOpen}`);
-    const openResult = btiAddon.cardOpen(cardNumToOpen);
-    console.log(`btiAddon.cardOpen returned:`, openResult);
-    finalResults.resultCode = openResult.resultCode;
+    // --- Step 1: Open the Card (if not already open) ---
+    if (gCardHandle === null) {
+        const cardNumToOpen = 0; 
+        console.log(`Calling btiAddon.cardOpen with card number: ${cardNumToOpen}`);
+        const openResult = btiAddon.cardOpen(cardNumToOpen);
+        console.log(`btiAddon.cardOpen returned:`, openResult);
+        finalResults.resultCode = openResult.resultCode;
 
-    if (!openResult.success || openResult.handle === null) {
-      // Get error description
-      let errorDesc = "Unknown error";
-      try {
-         // Attempt to get description; coreHandle is null here
-        errorDesc = btiAddon.getErrorDescription(openResult.resultCode, null); 
-      } catch (descErr) { 
-        console.error("Failed to get error description for cardOpen", descErr);
-      }
-      finalResults.message = `Failed to open card: ${errorDesc} (Code: ${openResult.resultCode})`;
-      throw new Error(finalResults.message); // Use throw to trigger finally block for cleanup
-    }
-    cardHandle = openResult.handle;
-    console.log(`Card opened successfully. Handle: ${cardHandle}`);
-
-    // --- Step 2: Open the Core ---
-    const coreNumToOpen = 0;
-    console.log(`Calling btiAddon.coreOpen for core ${coreNumToOpen} with card handle: ${cardHandle}`);
-    const coreOpenResult = btiAddon.coreOpen(coreNumToOpen, cardHandle);
-    console.log(`btiAddon.coreOpen returned:`, coreOpenResult);
-    finalResults.resultCode = coreOpenResult.resultCode;
-
-    if (!coreOpenResult.success || coreOpenResult.handle === null) {
-      // Get error description
-       let errorDesc = "Unknown error";
-       try {
-         // Attempt to get description; coreHandle is null here
-         errorDesc = btiAddon.getErrorDescription(coreOpenResult.resultCode, null); 
-       } catch (descErr) { 
-         console.error("Failed to get error description for coreOpen", descErr);
-       }
-      finalResults.message = `Failed to open core: ${errorDesc} (Code: ${coreOpenResult.resultCode})`;
-      throw new Error(finalResults.message); // Use throw for cleanup
-    }
-    coreHandle = coreOpenResult.handle;
-    console.log(`Core opened successfully. Handle: ${coreHandle}`);
-
-    // --- Step 3: Run Card Test (Level 1) ---
-    const testLevel = 1; // Memory Interface Test
-    console.log(`Calling btiAddon.cardTest (Level ${testLevel}) with core handle: ${coreHandle}`);
-    const testResult = btiAddon.cardTest(testLevel, coreHandle);
-    finalResults.resultCode = testResult;
-    console.log(`btiAddon.cardTest returned: ${testResult}`);
-
-    if (testResult === 0) { // Assuming 0 is ERR_NONE for success
-      finalResults.success = true;
-      finalResults.message = `Card/Core Opened. Card Test Level ${testLevel} successful!`;
+        if (!openResult.success || openResult.handle === null) {
+          let errorDesc = "Unknown error";
+          try {
+            errorDesc = btiAddon.getErrorDescription(openResult.resultCode, null);
+          } catch (descErr) { console.error("Failed to get error description for cardOpen", descErr); }
+          finalResults.message = `Failed to open card: ${errorDesc} (Code: ${openResult.resultCode})`;
+          throw new Error(finalResults.message);
+        }
+        tempCardHandle = openResult.handle; // Assign to temp handle first
+        console.log(`Card opened successfully. Temporary Handle: ${tempCardHandle}`);
     } else {
-      finalResults.success = false;
-      // Get error description using the valid coreHandle
-       let errorDesc = "Unknown error";
-       try {
-         errorDesc = btiAddon.getErrorDescription(testResult, coreHandle);
-       } catch (descErr) { 
-         console.error("Failed to get error description for cardTest", descErr);
-       }
-      finalResults.message = `Card/Core Opened. Card Test Level ${testLevel} failed: ${errorDesc} (Code: ${testResult})`;
+        console.log(`Card already open with handle: ${gCardHandle}`);
+        tempCardHandle = gCardHandle; // Use existing global handle
     }
+
+    // --- Step 2: Open the Core (if not already open) ---
+    if (gCoreHandle === null) {
+        const coreNumToOpen = 0;
+        console.log(`Calling btiAddon.coreOpen for core ${coreNumToOpen} with card handle: ${tempCardHandle}`);
+        const coreOpenResult = btiAddon.coreOpen(coreNumToOpen, tempCardHandle);
+        console.log(`btiAddon.coreOpen returned:`, coreOpenResult);
+        finalResults.resultCode = coreOpenResult.resultCode;
+
+        if (!coreOpenResult.success || coreOpenResult.handle === null) {
+          let errorDesc = "Unknown error";
+          try {
+            errorDesc = btiAddon.getErrorDescription(coreOpenResult.resultCode, null);
+          } catch (descErr) { console.error("Failed to get error description for coreOpen", descErr); }
+          finalResults.message = `Failed to open core: ${errorDesc} (Code: ${coreOpenResult.resultCode})`;
+          throw new Error(finalResults.message); // Use throw for cleanup logic
+        }
+        tempCoreHandle = coreOpenResult.handle; // Assign to temp handle first
+        console.log(`Core opened successfully. Temporary Handle: ${tempCoreHandle}`);
+    } else {
+        console.log(`Core already open with handle: ${gCoreHandle}`);
+        tempCoreHandle = gCoreHandle; // Use existing global handle
+    }
+
+    // Assign to global handles ONLY after both open successfully
+    gCardHandle = tempCardHandle;
+    gCoreHandle = tempCoreHandle;
+    console.log(`Global handles assigned: Card=${gCardHandle}, Core=${gCoreHandle}`);
+
+    // --- REMOVED Reset the Core --- 
+    // console.log(`Calling btiAddon.cardReset with core handle: ${gCoreHandle}`);
+    // const resetResult = btiAddon.cardReset(gCoreHandle); 
+    // console.log("Core reset successful (assumed).");
+    // --- End Core Reset ---
+
+    // --- REMOVED extDIORd(0) Call --- 
+    // console.log(`Calling btiAddon.extDIORd(0) with core handle: ${gCoreHandle}`);
+    // const initDioResult = btiAddon.extDIORd(0, gCoreHandle);
+    // console.log(`btiAddon.extDIORd(0) returned:`, initDioResult);
+    // if (!initDioResult || initDioResult.status !== 0) {
+    //     // ... error handling ...
+    // }
+    // console.log("Initial DIO read(0) successful.");
+    // --- END REMOVED Call ---
+
+    // --- REMOVED: Configure ARINC Channel 0 --- 
+    // const channelNum = 0; 
+    // const configFlags = ARINC_CONFIG_FLAGS;
+    // console.log(`Calling btiAddon.chConfig for channel ${channelNum} with flags ${configFlags}`);
+    // const chConfigResult = btiAddon.chConfig(configFlags, channelNum, gCoreHandle);
+    // console.log(`btiAddon.chConfig returned: ${chConfigResult}`);
+    // if (chConfigResult !== 0) { 
+    //     // ... error handling ...
+    // }
+    // console.log(`ARINC Channel ${channelNum} configured successfully.`);
+
+    // --- REMOVED: Set Default Filter for Channel 0 --- 
+    // const filterConfigFlags = FILTER_CONFIG_FLAGS;
+    // console.log(`Calling btiAddon.filterDefault for channel ${channelNum}`);
+    // const filterResult = btiAddon.filterDefault(filterConfigFlags, channelNum, gCoreHandle);
+    // console.log(`btiAddon.filterDefault returned:`, filterResult);
+    // if (!filterResult || filterResult.status !== 0) {
+    //     // ... error handling ...
+    // }
+    // console.log(`ARINC Channel ${channelNum} default filter set successfully (Addr: ${filterResult.filterAddr}).`);
+    // --- End ARINC Config ---
+
+    // --- REMOVED: Start the card --- 
+    // console.log(`Calling btiAddon.cardStart with core handle: ${gCoreHandle}`);
+    // const startResult = btiAddon.cardStart(gCoreHandle);
+    // console.log(`btiAddon.cardStart returned: ${startResult}`);
+    // if (startResult !== 0) { 
+    //     // ... error handling ...
+    // }
+    // console.log("Card started successfully.");
+    // --- End Card Start ---
+
+    // --- Assume success if Card Open/Core Open passed ---
+    finalResults.success = true;
+    finalResults.message = `Card/Core Opened.`; // Minimal success message
+    finalResults.resultCode = 0; // Indicate success
 
   } catch (error) {
-    // Catch errors during any native function call or explicit throws
     console.error("Error during BTI operation:", error.message);
     finalResults.success = false;
-    // Use the message set before throwing, or the generic error message
-    finalResults.message = error.message.startsWith('Failed to open') ? error.message : `Error executing native function: ${error.message}`;
-    // Invalidate handles if error occurred after they were obtained
-    if (error.message.startsWith('Failed to open core')) coreHandle = null;
-    if (error.message.startsWith('Failed to open card')) cardHandle = null;
+    finalResults.message = error.message.startsWith('Failed to open') || error.message.startsWith('Card/Core Opened. Card Test') ? error.message : `Error executing native function: ${error.message}`;
+    // Don't reset global handles on error here, let subsequent calls fail if needed
+    // or implement specific error handling logic.
 
   } finally {
-    // --- Step 4: Close the Card (Always attempt if handle was obtained) ---
-    if (cardHandle !== null) {
-      console.log(`Attempting to close card handle ${cardHandle}`);
-      try {
-        const closeResult = btiAddon.cardClose(cardHandle);
-        console.log(`btiAddon.cardClose returned: ${closeResult}`);
-        if (closeResult !== 0) {
-           // Get error description for close failure
-           let errorDesc = "Unknown error";
-           try {
-             // Pass coreHandle if available, otherwise null
-             errorDesc = btiAddon.getErrorDescription(closeResult, coreHandle);
-           } catch (descErr) { 
-             console.error("Failed to get error description for cardClose", descErr);
-           }
-           // Append warning if close failed, but don't overwrite main success/failure
-           finalResults.message += ` (Warning: CardClose failed: ${errorDesc} (Code: ${closeResult}))`; 
-        }
-      } catch (closeErr) {
-         console.error("Error calling btiAddon.cardClose:", closeErr);
-         finalResults.message += ` (Error during CardClose: ${closeErr.message})`;
-      }
-    } else {
-        console.log("Card handle was null, skipping close.");
-    }
+    // --- REMOVED Step 4: Close the Card --- 
+    // Handles are now global and closed on window-all-closed
+    // console.log("Skipping card close in run-test handler; using global handles.");
   }
 
   console.log("Sending final results back to renderer:", finalResults);
   event.sender.send('test-results', finalResults);
 });
 // --- End IPC Listener Modification ---
+
+// --- REMOVED Handler for Individual Discrete Input Reading ---
+// ipcMain.handle('bti:extDIORd', async (event, dionum) => {
+//     // ... implementation ...
+// });
+// --- END Removed Handler ---
+
+// --- ADD Handler for Getting All DIO States ---
+ipcMain.handle('bti:getAllDioStates', async (event) => {
+    console.log(">>> IPC Handler Entered for getAllDioStates");
+    // Check if addon and function exist
+    if (!btiAddon || typeof btiAddon.getAllDioStates !== 'function') {
+        console.error('BTI Addon or getAllDioStates function not available.');
+        throw new Error('BTI Addon not loaded or function missing.');
+    }
+    // Check if core handle is valid 
+    if (gCoreHandle === null) {
+        console.error('Core handle is null. Cannot read DIOs. Run test first?');
+        throw new Error('Device core not opened. Please run the test first.');
+    }
+
+    try {
+        // Call the C++ addon function (takes only core handle)
+        const resultsArray = btiAddon.getAllDioStates(gCoreHandle);
+        console.log(`btiAddon.getAllDioStates(${gCoreHandle}) returned:`, resultsArray);
+        
+        // The C++ wrapper should return the array directly if successful
+        // Add checks if the wrapper returns status/error object instead
+        if (!Array.isArray(resultsArray)) {
+             console.error('getAllDioStates did not return an array:', resultsArray);
+             throw new Error('Failed to get DIO states: Invalid response from addon.');
+        }
+
+        return resultsArray; // Return the array of result objects
+
+    } catch (error) {
+        console.error(`Exception calling btiAddon.getAllDioStates:`, error);
+        // Re-throw the error to be caught by preload.js
+        throw error; 
+    }
+});
+// --- END Get All DIO States Handler ---

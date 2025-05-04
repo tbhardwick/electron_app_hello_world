@@ -21,3 +21,11 @@ Make sure you did not implement any functions that are not referenced as availab
 # C++ addon code location
 
 When looking for the cpp-addon, use the following location cpp-addon\src\addon.cpp
+
+# USB UA2430 Integration Guide
+
+You have available in the reference_data folder a guide to using the UA2430 USB device and the associated addon cpp wrapper functions.
+
+# MA132 ARINC 429 Programming Manual
+
+You have available in the reference_data folder a vendor document MA132_ARINC_429_Programming_Manaul_Rev_7.md to use in programming the UA2430 USB device.

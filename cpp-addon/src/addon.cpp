@@ -1,7 +1,6 @@
 #include "BTICARD.H" // Include the vendor header (Path relative to include_dirs)
 #include "BTI429.H" // Added BTI429 Header - Verify Name!
 #include "bti_constants.h" // Added constants header
-#include "BTIDIO.H" // Added for Discrete IO functions
 
 // Then include standard and N-API headers
 #include <napi.h>
@@ -11,97 +10,6 @@
 #include <vector>       // Added for vector usage
 #include <thread>       // Added for std::this_thread
 #include <chrono>       // Added for std::chrono
-
-// Define placeholder types if they are not standard
-// These should be defined in BTICARD.H or another header it includes.
-// Verify these definitions against your actual header files.
-#ifndef BTI_TYPES_DEFINED // Add include guard if BTICARD.H doesn't define these reliably
-#define BTI_TYPES_DEFINED
-typedef int ERRVAL;
-typedef void* HCARD; 
-typedef void** LPHCARD;
-typedef void* HCORE;
-typedef void** LPHCORE;
-typedef unsigned short USHORT;
-typedef unsigned long ULONG;
-typedef unsigned long long ULONGLONG; // Added for 64-bit timer
-typedef long long LONGLONG; // Added for 64-bit timer relative write
-typedef USHORT* LPUSHORT; // Added for EventLogRd, ListDataBlkRd
-typedef ULONG* LPULONG; // Added for EventLogRd, ListDataBlkWr, Timer64Rd
-typedef ULONGLONG* LPULONGLONG; // Added for Timer64Rd
-typedef void* MSGADDR; // Placeholder, check actual definition in headers
-typedef void* LISTADDR; // Placeholder, check actual definition in headers
-// Placeholder structure for MsgBlockRd/MsgCommRd
-typedef struct {
-    USHORT msgopt;
-    USHORT msgact;
-    ULONG msgdata;
-    ULONG listptr;
-    ULONG timetag;
-    ULONG hitcount;
-    ULONG maxtime;
-    ULONG elapsetime;
-    ULONG mintime;
-    ULONG userptr;
-    ULONG timetagh;
-    USHORT decgap;
-    USHORT paramflag;
-} MSGFIELDS429;
-typedef MSGFIELDS429* LPMSGFIELDS429;
-// Placeholder for SeqFindInfo
-typedef struct {} SEQFINDINFO;
-typedef SEQFINDINFO* LPSEQFINDINFO;
-// Placeholder for BTIIRIGTIME
-typedef struct {} BTIIRIGTIME;
-typedef BTIIRIGTIME* LPBTIIRIGTIME;
-#endif
-
-// Declare the BTI functions we'll use (ensure these match BTICARD.H)
-extern "C" {
-    ERRVAL BTICard_CardOpen(LPHCARD lphCard, int CardNum);
-    ERRVAL BTICard_CoreOpen(LPHCORE lphCore, int CoreNum, HCARD hCard);
-    ERRVAL BTICard_CardTest(USHORT wTestLevel, HCORE hCore);
-    ERRVAL BTICard_CardClose(HCARD hCard);
-    ERRVAL BTICard_BITInitiate(HCARD hCard);
-    const char* BTICard_ErrDescStr(ERRVAL errval, HCORE hCore);
-    VOID BTICard_CardReset(HCORE hCore);
-    ULONG BTICard_CardGetInfo(USHORT infotype, int channum, HCORE hCore);
-    ERRVAL BTICard_CardStart(HCORE hCore);
-    BOOL BTICard_CardStop(HCORE hCore);
-    ERRVAL BTICard_EventLogConfig(USHORT ctrlflags, USHORT count, HCORE hCore);
-    ULONG BTICard_EventLogRd(LPUSHORT typeval, LPULONG infoval, LPINT channel, HCORE hCore);
-    INT BTICard_EventLogStatus(HCORE hCore);
-    ERRVAL BTICard_Timer64Rd(LPULONGLONG valueh, LPULONGLONG valuel, HCORE hCore);
-    VOID BTICard_Timer64Wr(ULONGLONG valueh, ULONGLONG valuel, HCORE hCore);
-    // Added ExtDIO functions
-    BOOL BTICard_ExtDIORd(INT dionum, HCORE hCore);
-    VOID BTICard_ExtDIOWr(INT dionum, BOOL dioval, HCORE hCore);
-
-    ERRVAL BTI429_ChConfig(ULONG configval, int channum, HCORE hCore);
-    BOOL BTI429_ChStart(int channum, HCORE hCore);
-    BOOL BTI429_ChStop(int channum, HCORE hCore);
-    LISTADDR BTI429_ListXmtCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore);
-    BOOL BTI429_ListDataWr(ULONG value, LISTADDR listaddr, HCORE hCore);
-    BOOL BTI429_ListDataBlkWr(LPULONG listbuf, LPUSHORT count, LISTADDR listaddr, HCORE hCore);
-    LISTADDR BTI429_ListRcvCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore);
-    ULONG BTI429_ListDataRd(LISTADDR listaddr, HCORE hCore);
-    BOOL BTI429_ListDataBlkRd(LPULONG listbuf, LPUSHORT count, LISTADDR listaddr, HCORE hCore);
-    int BTI429_ListStatus(LISTADDR listaddr, HCORE hCore);
-    ULONG BTI429_FilterSet(ULONG configval, int labelval, int sdimask, int channum, HCORE hCore);
-    ULONG BTI429_FilterDefault(ULONG configval, int channum, HCORE hCore);
-    MSGADDR BTI429_MsgCreate(ULONG ctrlflags, HCORE hCore);
-    VOID BTI429_MsgDataWr(ULONG value, MSGADDR message, HCORE hCore);
-    ERRVAL BTI429_SchedBuild(INT nummsgs, MSGADDR msgs[], INT min[], INT max[], INT channel, HCORE hCore);
-    ULONG BTI429_MsgDataRd(MSGADDR message, HCORE hCore);
-    USHORT BTI429_FldGetLabel(ULONG msg);
-    USHORT BTI429_FldGetSDI(ULONG msg);
-    ULONG BTI429_FldGetData(ULONG msg);
-    ULONG BTI429_BCDGetData(ULONG msg, USHORT msb, USHORT lsb);
-    ULONG BTI429_BNRGetData(ULONG msg, USHORT msb, USHORT lsb);
-    MSGADDR BTI429_MsgBlockRd(LPMSGFIELDS429 msgfields, MSGADDR message, HCORE hCore);
-    MSGADDR BTI429_MsgCommRd(LPMSGFIELDS429 msgfields, MSGADDR message, HCORE hCore);
-    BOOL BTI429_MsgIsAccessed(MSGADDR message, HCORE hCore);
-}
 
 // --- Async Worker for ListDataRd ---
 class ListDataRdWorker : public Napi::AsyncWorker {
@@ -784,7 +692,7 @@ Napi::Value ListDataBlkWrWrapped(const Napi::CallbackInfo& info) {
 
     // Call the actual library function (Returns BOOL, takes LPUSHORT count)
     // Pass the address of count (&count) as required by LPUSHORT
-    BOOL success = BTI429_ListDataBlkWr(cppBuffer.data(), &count, listAddr, hCore);
+    BOOL success = BTI429_ListDataBlkWr(cppBuffer.data(), count, listAddr, hCore);
 
     // Return the result code (BOOL treated as ERR_NONE or ERR_FAIL for consistency)
     return Napi::Number::New(env, success ? ERR_NONE : ERR_FAIL); 
@@ -1296,26 +1204,6 @@ Napi::Value ListDataBlkRdAsyncWrapped(const Napi::CallbackInfo& info) {
     return worker->GetPromise();
 }
 
-// N-API Wrapper for BTICard_ExtDIORd
-Napi::Value ExtDIORdWrapped(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-    // Expect 2 arguments: dionum (Number), coreHandle (Number)
-    if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: dionum (Number), coreHandle (Number)").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    INT dionum = info[0].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
-
-    BOOL result = BTICard_ExtDIORd(dionum, coreHandle);
-    // Similar to other BOOL returns, assume the call succeeded and return the state.
-    // Error handling might require checking device/core status separately if needed.
-    Napi::Object resultObj = Napi::Object::New(env);
-    resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); // Assuming success
-    resultObj.Set("value", Napi::Boolean::New(env, result));
-    return resultObj;
-}
-
 // N-API Wrapper for BTICard_ExtDIOWr
 Napi::Value ExtDIOWrWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
@@ -1333,6 +1221,53 @@ Napi::Value ExtDIOWrWrapped(const Napi::CallbackInfo& info) {
     // Function returns VOID, indicate success
     return Napi::Number::New(env, ERR_NONE); // Or return env.Undefined();
 }
+
+// --- NEW Function to read all DIOs at once ---
+Napi::Value GetAllDioStatesWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    // Expect 1 argument: coreHandle (Number)
+    if (info.Length() != 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: coreHandle (Number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
+
+    const INT dionumMapping[] = {1, 2, 3, 4, 9, 10, 11, 12};
+    const int numDios = sizeof(dionumMapping) / sizeof(dionumMapping[0]);
+    Napi::Array resultsArray = Napi::Array::New(env, numDios);
+
+    // printf("[addon.cpp] GetAllDioStatesWrapped: Starting read loop...\n");
+    // fflush(stdout);
+
+    for (int i = 0; i < numDios; ++i) {
+        INT dionum = dionumMapping[i];
+        Napi::Object dioResult = Napi::Object::New(env);
+        dioResult.Set("index", Napi::Number::New(env, i)); 
+        dioResult.Set("apiDionum", Napi::Number::New(env, dionum));
+
+        INT result = static_cast<INT>(BTICard_ExtDIORd(dionum, coreHandle));
+
+        // printf("[addon.cpp] GetAllDioStatesWrapped: BTICard_ExtDIORd(%d) returned raw result = %d\n", dionum, result);
+        // fflush(stdout);
+
+        if (result < 0) {
+            dioResult.Set("status", Napi::Number::New(env, ERR_FAIL)); 
+            dioResult.Set("error", Napi::String::New(env, "Invalid DIO number specified.")); 
+            dioResult.Set("value", env.Null());
+        } else {
+            dioResult.Set("status", Napi::Number::New(env, ERR_NONE));
+            dioResult.Set("value", Napi::Boolean::New(env, (result == 1)));
+             dioResult.Set("error", env.Null());
+        }
+        resultsArray.Set(i, dioResult);
+    }
+
+    // printf("[addon.cpp] GetAllDioStatesWrapped: Finished read loop.\n");
+    // fflush(stdout);
+
+    return resultsArray;
+}
+// --- END NEW Function ---
 
 // Initializer function for the addon module
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
@@ -1375,11 +1310,11 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "msgCommRd"), Napi::Function::New(env, MsgCommRdWrapped)); // Exported BTI429_MsgCommRd
   exports.Set(Napi::String::New(env, "msgIsAccessed"), Napi::Function::New(env, MsgIsAccessedWrapped)); // Exported BTI429_MsgIsAccessed
   // Exported ExtDIO functions
-  exports.Set(Napi::String::New(env, "extDIORd"), Napi::Function::New(env, ExtDIORdWrapped));
   exports.Set(Napi::String::New(env, "extDIOWr"), Napi::Function::New(env, ExtDIOWrWrapped));
-  // exports.Set(Napi::String::New(env, "dioBankConfig"), Napi::Function::New(env, DioBankConfigWrapped)); // REMOVED
-  // exports.Set(Napi::String::New(env, "dioBankRd"), Napi::Function::New(env, DioBankRdWrapped)); // REMOVED
-  // exports.Set(Napi::String::New(env, "dioBankWr"), Napi::Function::New(env, DioBankWrWrapped)); // REMOVED
+
+  // --- Export the NEW function ---
+  exports.Set(Napi::String::New(env, "getAllDioStates"), Napi::Function::New(env, GetAllDioStatesWrapped));
+  // --- END Export ---
 
   return exports;
 }
