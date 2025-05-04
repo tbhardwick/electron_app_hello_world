@@ -11,6 +11,7 @@
 #define ERR_NONE 0         // No error
 #define ERR_TIMEOUT -90    // Function timed out waiting for data (Value guessed from AsyncWorker)
 #define ERR_UNDERFLOW -108 // Read failed because the buffer is empty (Value guessed from AsyncWorker)
+#define ERR_FAIL -1        // Generic failure code
 // Add other common ERR_ codes as needed...
 
 // --- List Status Codes (from C# wrapper STAT_*) --- 

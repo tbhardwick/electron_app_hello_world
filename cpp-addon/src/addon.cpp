@@ -41,13 +41,13 @@ extern "C" {
     ERRVAL BTI429_ChConfig(ULONG configval, int channum, HCORE hCore); // Added - Verify Signature!
     ERRVAL BTI429_ChStart(int channum, HCORE hCore); // Added - Verify Signature!
     ERRVAL BTI429_ChStop(int channum, HCORE hCore); // Added - Verify Signature!
-    ULONG BTI429_ListXmtCreate(ULONG listconfigval, int count, int channelNum, HCORE hCore); // Added - Verify Signature & Params!
-    ERRVAL BTI429_ListDataWr(ULONG value, ULONG listaddr, HCORE hCore); // Added - Verify Signature!
-    ERRVAL BTI429_ListDataBlkWr(ULONG* listbuf, int count, ULONG listaddr, HCORE hCore); // Added - Verify Signature!
-    ULONG BTI429_ListRcvCreate(ULONG listconfigval, int count, int channelNum, HCORE hCore); // Added - Verify Signature & Params!
-    ULONG BTI429_ListDataRd(ULONG listaddr, HCORE hCore); // Added - Verify Signature & Return Value on Empty!
-    ERRVAL BTI429_ListDataBlkRd(ULONG* listbuf, int count, ULONG listaddr, HCORE hCore); // Added - Verify Signature & Params!
-    int BTI429_ListStatus(ULONG listaddr, HCORE hCore); // Added - Verify Signature & Return Type!
+    LISTADDR BTI429_ListXmtCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore); 
+    BOOL BTI429_ListDataWr(ULONG value, LISTADDR listaddr, HCORE hCore); 
+    BOOL BTI429_ListDataBlkWr(LPULONG listbuf, USHORT count, LISTADDR listaddr, HCORE hCore); 
+    LISTADDR BTI429_ListRcvCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore); 
+    ULONG BTI429_ListDataRd(LISTADDR listaddr, HCORE hCore); // Added - Verify Signature & Return Value on Empty!
+    BOOL BTI429_ListDataBlkRd(LPULONG listbuf, LPUSHORT count, LISTADDR listaddr, HCORE hCore); 
+    int BTI429_ListStatus(LISTADDR listaddr, HCORE hCore); // Added - Verify Signature & Return Type!
     ULONG BTI429_FilterSet(ULONG configval, int labelval, int sdimask, int channum, HCORE hCore); // Added - Verify Signature & Return!
     ULONG BTI429_FilterDefault(ULONG configval, int channum, HCORE hCore); // Added - Verify Signature & Return!
     // Add other BTI429 declarations here as needed...
@@ -158,6 +158,7 @@ public:
 
         if (maxCount_ <= 0) { 
             status_ = ERR_NONE; // Success, read 0 items
+            actualCountRead_ = 0;
             return;
         }
 
@@ -167,26 +168,36 @@ public:
             if (currentListStatus < 0) { 
                 SetError("Error checking list status.");
                 status_ = currentListStatus;
+                actualCountRead_ = 0;
                 return;
             }
 
             // Use defined constants
             if (currentListStatus == STAT_PARTIAL || currentListStatus == STAT_FULL) { 
-                // ** CRITICAL: Verify how ListDataBlkRd reports count read! **
-                status_ = BTI429_ListDataBlkRd(readBuffer_.data(), maxCount_, listAddr_, hCore_); 
+                USHORT countActuallyRead = 0; // Variable to receive the actual count
+                // Pass address of countActuallyRead for the second parameter
+                BOOL success = BTI429_ListDataBlkRd(readBuffer_.data(), &countActuallyRead, listAddr_, hCore_);
 
-                if (status_ == ERR_NONE) { 
-                    // ** PLACEHOLDER: Need actual count read ** 
-                    actualCountRead_ = maxCount_; // *** REPLACE WITH ACTUAL LOGIC ***
-                } else if (status_ == ERR_UNDERFLOW) { 
-                    actualCountRead_ = 0;
-                    status_ = ERR_NONE; // Treat underflow as success (read 0)
-                } else { // Other BTI error
-                    SetError("Error reading data block."); 
-                    actualCountRead_ = 0;
-                    // Keep the specific BTI error in status_
+                if (success) { 
+                    status_ = ERR_NONE; 
+                    actualCountRead_ = countActuallyRead; // Store the count returned by the function
+                } else { 
+                    // Attempt to determine if it was Underflow or another error
+                    int postReadStatus = BTI429_ListStatus(listAddr_, hCore_);
+                    if (postReadStatus == STAT_EMPTY && countActuallyRead == 0) { // Check if list is empty AND 0 items were read
+                        status_ = ERR_NONE; // Treat read 0 as success
+                        actualCountRead_ = 0;
+                    } else if (postReadStatus == STAT_EMPTY) { // List empty but read > 0 attempted?
+                        status_ = ERR_UNDERFLOW; // Indicate underflow
+                        actualCountRead_ = 0;
+                        // Don't SetError, let OnError handle based on status_
+                    } else {
+                        status_ = postReadStatus < 0 ? postReadStatus : ERR_FAIL; // Use status error or generic fail
+                        SetError("Error reading data block."); 
+                        actualCountRead_ = 0;
+                    }
                 }
-                return; 
+                return; // Exit loop after read attempt (success or fail)
             }
 
             auto now = steady_clock::now();
@@ -201,6 +212,7 @@ public:
         if (timedOut) {
              SetError("Timeout waiting for data block.");
              status_ = ERR_TIMEOUT;
+             actualCountRead_ = 0; // Ensure count is 0 on timeout
         }
     }
 
@@ -282,7 +294,7 @@ Napi::Value CoreOpenWrapped(const Napi::CallbackInfo& info) {
     return env.Null();
   }
   int coreNum = info[0].As<Napi::Number>().Int32Value();
-  HCARD cardHandle = (HCARD)(info[1].As<Napi::Number>().Int64Value());
+  HCARD cardHandle = reinterpret_cast<HCARD>(info[1].As<Napi::Number>().Int64Value());
   HCORE coreHandle = nullptr; 
   ERRVAL result = BTICard_CoreOpen(&coreHandle, coreNum, cardHandle);
   Napi::Object resultObj = Napi::Object::New(env);
@@ -310,7 +322,7 @@ Napi::Value CardTestWrapped(const Napi::CallbackInfo& info) {
     return env.Null();
   }
   USHORT testLevel = (USHORT)info[0].As<Napi::Number>().Uint32Value();
-  HCORE coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+  HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
   ERRVAL result = BTICard_CardTest(testLevel, coreHandle);
   return Napi::Number::New(env, result);
 }
@@ -322,7 +334,7 @@ Napi::Value CardCloseWrapped(const Napi::CallbackInfo& info) {
     Napi::TypeError::New(env, "Expected: card handle (Number)").ThrowAsJavaScriptException();
     return env.Null();
   }
-  HCARD cardHandle = (HCARD)(info[0].As<Napi::Number>().Int64Value());
+  HCARD cardHandle = reinterpret_cast<HCARD>(info[0].As<Napi::Number>().Int64Value());
   ERRVAL result = BTICard_CardClose(cardHandle);
   return Napi::Number::New(env, result);
 }
@@ -337,7 +349,7 @@ Napi::Value GetErrorDescriptionWrapped(const Napi::CallbackInfo& info) {
   ERRVAL errorCode = info[0].As<Napi::Number>().Int32Value();
   HCORE coreHandle = nullptr; 
   if (info[1].IsNumber()) {
-      coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+      coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
   }
   const char* errorDesc = BTICard_ErrDescStr(errorCode, coreHandle);
   if (errorDesc == nullptr) {
@@ -353,7 +365,7 @@ Napi::Value BitInitiateWrapped(const Napi::CallbackInfo& info) {
     Napi::TypeError::New(env, "Number expected for hCard").ThrowAsJavaScriptException();
     return env.Null();
   }
-  HCARD hCard = (HCARD)(info[0].As<Napi::Number>().Int64Value());
+  HCARD hCard = reinterpret_cast<HCARD>(info[0].As<Napi::Number>().Int64Value());
   ERRVAL result = BTICard_BITInitiate(hCard);
   return Napi::Number::New(env, result);
 }
@@ -371,7 +383,7 @@ Napi::Value CardResetWrapped(const Napi::CallbackInfo& info) {
     }
 
     // Extract core handle and cast
-    HCORE coreHandle = (HCORE)(info[0].As<Napi::Number>().Int64Value());
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
 
     // Call the actual library function (returns VOID)
     BTICard_CardReset(coreHandle);
@@ -395,7 +407,7 @@ Napi::Value CardGetInfoWrapped(const Napi::CallbackInfo& info) {
     // Extract arguments and cast
     USHORT infoType = (USHORT)info[0].As<Napi::Number>().Uint32Value();
     int channelNum = info[1].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[2].As<Napi::Number>().Int64Value());
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
 
     // Call the actual library function
     ULONG resultValue = BTICard_CardGetInfo(infoType, channelNum, coreHandle);
@@ -424,7 +436,7 @@ Napi::Value ChConfigWrapped(const Napi::CallbackInfo& info) {
     // Use Uint32Value as config flags usually fit in 32 bits. Verify if ULONG is 64-bit in BTI headers.
     ULONG configVal = info[0].As<Napi::Number>().Uint32Value(); 
     int channelNum = info[1].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[2].As<Napi::Number>().Int64Value());
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
 
     // Call the actual library function
     ERRVAL result = BTI429_ChConfig(configVal, channelNum, coreHandle);
@@ -445,7 +457,7 @@ Napi::Value ChStartWrapped(const Napi::CallbackInfo& info) {
 
     // Extract arguments and cast
     int channelNum = info[0].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
 
     // Call the actual library function
     ERRVAL result = BTI429_ChStart(channelNum, coreHandle);
@@ -466,7 +478,7 @@ Napi::Value ChStopWrapped(const Napi::CallbackInfo& info) {
 
     // Extract arguments and cast
     int channelNum = info[0].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
 
     // Call the actual library function
     ERRVAL result = BTI429_ChStop(channelNum, coreHandle);
@@ -479,36 +491,35 @@ Napi::Value ChStopWrapped(const Napi::CallbackInfo& info) {
 Napi::Value ListXmtCreateWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect four arguments: configVal (Number), count (Number), channelNum (Number), coreHandle (Number)
+    // Expect four arguments: configVal, count, msgAddr, coreHandle
     if (info.Length() != 4 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber() || !info[3].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: configVal (Number), count (Number), channelNum (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: configVal (number), count (number), msgAddr (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     // Extract arguments and cast
     ULONG configVal = info[0].As<Napi::Number>().Uint32Value();
-    int count = info[1].As<Napi::Number>().Int32Value();
-    int channelNum = info[2].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[3].As<Napi::Number>().Int64Value());
+    INT count = info[1].As<Napi::Number>().Int32Value();
+    // Expecting MSGADDR (handle/address) passed as a number from JS
+    MSGADDR msgAddr = info[2].As<Napi::Number>().Int64Value(); // Use Int64Value for safety if ULONG might exceed 32-bit range
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[3].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function - Assuming it returns list address (0 on failure)
-    ULONG listAddr = BTI429_ListXmtCreate(configVal, count, channelNum, coreHandle);
+    // Call the actual library function
+    LISTADDR listAddrResult = BTI429_ListXmtCreate(configVal, count, msgAddr, coreHandle);
 
     Napi::Object resultObj = Napi::Object::New(env);
-    if (listAddr != 0) {
+    // LISTADDR is ULONG, check if non-zero indicates success (Check BTI docs)
+    // Assuming non-zero means success for now.
+    if (listAddrResult != 0) { 
         // Success: Return list address and status 0 (ERR_NONE assumed)
-        resultObj.Set("status", Napi::Number::New(env, 0)); // Assuming ERR_NONE = 0
-        // Return address as Number - check if ULONG can exceed safe integer range!
-        resultObj.Set("listAddr", Napi::Number::New(env, listAddr)); 
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); 
+        // Return address as Number (LISTADDR is ULONG)
+        resultObj.Set("listAddr", Napi::Number::New(env, listAddrResult)); 
     } else {
         // Failure: Return an error status and null address
-        // Need a way to get the actual error code if listAddr is 0.
-        // BTICard_ErrDescStr might work, or there might be a BTI429 error func.
-        // Using a generic error code for now.
-        resultObj.Set("status", Napi::Number::New(env, -1)); // Generic error
+        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure for now
         resultObj.Set("listAddr", env.Null());
     }
-
     return resultObj;
 }
 
@@ -518,95 +529,99 @@ Napi::Value ListDataWrWrapped(const Napi::CallbackInfo& info) {
 
     // Expect three arguments: value (Number), listAddr (Number), coreHandle (Number)
     if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: value (Number), listAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: value (number), listAddr (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     // Extract arguments and cast
     ULONG value = info[0].As<Napi::Number>().Uint32Value(); // ARINC word is 32 bits
-    ULONG listAddr = info[1].As<Napi::Number>().Uint32Value(); // Assuming list address fits in 32 bits
-    HCORE coreHandle = (HCORE)(info[2].As<Napi::Number>().Int64Value());
+    // LISTADDR is ULONG, get as number
+    LISTADDR listAddr = info[1].As<Napi::Number>().Int64Value(); // Use Int64Value for safety
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function
-    ERRVAL result = BTI429_ListDataWr(value, listAddr, coreHandle);
+    // Call the actual library function (Returns BOOL)
+    BOOL success = BTI429_ListDataWr(value, listAddr, coreHandle);
 
-    // Return the status code
-    return Napi::Number::New(env, result);
+    // Return the status code (BOOL treated as ERR_NONE or ERR_FAIL for consistency)
+    return Napi::Number::New(env, success ? ERR_NONE : ERR_FAIL); 
 }
 
 // N-API Wrapper for BTI429_ListDataBlkWr
 Napi::Value ListDataBlkWrWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect three arguments: dataArray (Array), listAddr (Number), coreHandle (Number)
     if (info.Length() != 3 || !info[0].IsArray() || !info[1].IsNumber() || !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: dataArray (Array), listAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: dataArray (Array<number>), listAddr (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    // Extract arguments
-    Napi::Array dataArray = info[0].As<Napi::Array>();
-    ULONG listAddr = info[1].As<Napi::Number>().Uint32Value(); 
-    HCORE coreHandle = (HCORE)(info[2].As<Napi::Number>().Int64Value());
+    Napi::Array jsArray = info[0].As<Napi::Array>();
+    // LISTADDR is ULONG, get as number
+    LISTADDR listAddr = info[1].As<Napi::Number>().Int64Value(); // Use Int64Value for safety
+    HCORE hCore = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value()); // Use Int64 for handles
 
-    uint32_t count = dataArray.Length();
+    uint32_t arrayLength = jsArray.Length();
+    // Check if count exceeds USHORT max
+     if (arrayLength > 65535) {
+        Napi::RangeError::New(env, "Data array length exceeds maximum allowed (65535)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    // Function expects USHORT for count
+    USHORT count = static_cast<USHORT>(arrayLength); 
+
     if (count == 0) {
-        return Napi::Number::New(env, 0); // Nothing to write, return success (ERR_NONE assumed)
+        // Nothing to write, return success immediately
+        return Napi::Number::New(env, ERR_NONE);
     }
 
-    // Create a C++ buffer from the JavaScript array
-    std::vector<ULONG> cppBuffer; 
-    cppBuffer.reserve(count);
+    std::vector<ULONG> cppBuffer(count);
     for (uint32_t i = 0; i < count; ++i) {
-        Napi::Value val = dataArray.Get(i);
+        Napi::Value val = jsArray.Get(i);
         if (!val.IsNumber()) {
-            // Handle error: array contains non-number
-             Napi::TypeError::New(env, "Array must contain only numbers").ThrowAsJavaScriptException();
+             Napi::TypeError::New(env, "Array element is not a number").ThrowAsJavaScriptException();
              return env.Null();
         }
-        // Assuming ARINC words fit in 32 bits
-        cppBuffer.push_back(val.As<Napi::Number>().Uint32Value());
+        cppBuffer[i] = val.As<Napi::Number>().Uint32Value(); // Use Uint32 for ARINC words
     }
 
-    // Call the actual library function
-    ERRVAL result = BTI429_ListDataBlkWr(cppBuffer.data(), cppBuffer.size(), listAddr, coreHandle);
+    // Call the actual library function (Returns BOOL, takes USHORT count)
+    BOOL success = BTI429_ListDataBlkWr(cppBuffer.data(), count, listAddr, hCore);
 
-    // Return the status code
-    return Napi::Number::New(env, result);
+    // Return the result code (BOOL treated as ERR_NONE or ERR_FAIL for consistency)
+    return Napi::Number::New(env, success ? ERR_NONE : ERR_FAIL); 
 }
 
 // N-API Wrapper for BTI429_ListRcvCreate
 Napi::Value ListRcvCreateWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect four arguments: configVal (Number), count (Number), channelNum (Number), coreHandle (Number)
+    // Expecting configVal, count, msgAddr, coreHandle
     if (info.Length() != 4 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber() || !info[3].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: configVal (Number), count (Number), channelNum (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: configVal (number), count (number), msgAddr (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    // Extract arguments and cast
     ULONG configVal = info[0].As<Napi::Number>().Uint32Value();
-    int count = info[1].As<Napi::Number>().Int32Value();
-    int channelNum = info[2].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[3].As<Napi::Number>().Int64Value());
+    INT count = info[1].As<Napi::Number>().Int32Value();
+    // Expecting MSGADDR (handle/address) passed as a number from JS
+    MSGADDR msgAddr = info[2].As<Napi::Number>().Int64Value(); // Use Int64Value for safety if ULONG might exceed 32-bit range
+    HCORE hCore = reinterpret_cast<HCORE>(info[3].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function - Assuming it returns list address (0 on failure)
-    ULONG listAddr = BTI429_ListRcvCreate(configVal, count, channelNum, coreHandle);
+    // Call the actual library function
+    LISTADDR listAddrResult = BTI429_ListRcvCreate(configVal, count, msgAddr, hCore);
 
     Napi::Object resultObj = Napi::Object::New(env);
-    if (listAddr != 0) {
-        // Success: Return list address and status 0 (ERR_NONE assumed)
-        resultObj.Set("status", Napi::Number::New(env, 0)); // Assuming ERR_NONE = 0
-        // Return address as Number - check if ULONG can exceed safe integer range!
-        resultObj.Set("listAddr", Napi::Number::New(env, listAddr)); 
+    // LISTADDR is ULONG, check if non-zero indicates success (Check BTI docs)
+    // Assuming non-zero means success for now.
+    if (listAddrResult != 0) { 
+         resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+         // Return address as Number (LISTADDR is ULONG)
+         resultObj.Set("listAddr", Napi::Number::New(env, listAddrResult)); 
     } else {
-        // Failure: Return an error status and null address
-        // Using a generic error code for now. Check manual for specific error retrieval.
-        resultObj.Set("status", Napi::Number::New(env, -1)); // Generic error
-        resultObj.Set("listAddr", env.Null());
+        // Need a way to get the actual error code if creation fails
+         resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure for now
+         resultObj.Set("listAddr", env.Null());
     }
-
     return resultObj;
 }
 
@@ -616,36 +631,35 @@ Napi::Value ListDataRdWrapped(const Napi::CallbackInfo& info) {
 
     // Expect two arguments: listAddr (Number), coreHandle (Number)
     if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: listAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: listAddr (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     // Extract arguments and cast
-    ULONG listAddr = info[0].As<Napi::Number>().Uint32Value(); 
-    HCORE coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+    LISTADDR listAddr = info[0].As<Napi::Number>().Int64Value(); // Use Int64Value for safety
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function - Assuming it returns data word, or 0/error on empty
-    ULONG dataWord = BTI429_ListDataRd(listAddr, coreHandle);
+    // Before calling read, check status - maybe handle empty synchronously?
+    int listStatus = BTI429_ListStatus(listAddr, coreHandle);
 
     Napi::Object resultObj = Napi::Object::New(env);
-    
-    // How to check for errors/empty? Needs verification.
-    // Option 1: Assume 0 means empty/error (Less likely for data read)
-    // Option 2: Assume it returns ERR_UNDERFLOW (-108?) on empty.
-    // Option 3: Assume ListStatus must be checked first.
-    
-    // Assuming for now that a non-zero return is valid data, 0 is empty/error.
-    // ** THIS IS LIKELY INCORRECT - VERIFY WITH MANUAL **
-    if (dataWord != 0) { // Placeholder check - Verify actual empty/error condition! 
-        resultObj.Set("status", Napi::Number::New(env, 0)); // Assuming success
-        resultObj.Set("value", Napi::Number::New(env, dataWord));
-    } else {
-        // Assuming empty or error if 0 is returned.
-        // Should ideally check ListStatus first or check for specific error return.
-        resultObj.Set("status", Napi::Number::New(env, -108)); // Guessing ERR_UNDERFLOW
-        resultObj.Set("value", env.Null());
-    }
 
+    if (listStatus == STAT_EMPTY) {
+        resultObj.Set("status", Napi::Number::New(env, ERR_UNDERFLOW)); // Specific code for empty
+        resultObj.Set("value", env.Null());
+    } else if (listStatus < 0) { // Error checking status
+         resultObj.Set("status", Napi::Number::New(env, listStatus)); // Return BTI error
+         resultObj.Set("value", env.Null());
+    } else { // Status OK (Partial or Full)
+        // Call the actual library function - Returns ULONG data
+        ULONG dataWord = BTI429_ListDataRd(listAddr, coreHandle);
+        
+        // How to differentiate valid 0 data from an error? 
+        // Assume success if status was ok before read. Could re-check status after.
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        resultObj.Set("value", Napi::Number::New(env, dataWord)); // Return ULONG as number
+    }
+    
     return resultObj;
 }
 
@@ -653,62 +667,64 @@ Napi::Value ListDataRdWrapped(const Napi::CallbackInfo& info) {
 Napi::Value ListDataBlkRdWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect three arguments: listAddr (Number), maxCount (Number), coreHandle (Number)
     if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: listAddr (Number), maxCount (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: listAddr (number), maxCount (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    // Extract arguments
-    ULONG listAddr = info[0].As<Napi::Number>().Uint32Value(); 
-    int maxCount = info[1].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[2].As<Napi::Number>().Int64Value());
+    LISTADDR listAddr = info[0].As<Napi::Number>().Int64Value(); // Use Int64Value for safety
+    int maxCountJs = info[1].As<Napi::Number>().Int32Value();
+    HCORE hCore = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
 
-    if (maxCount <= 0) {
-        // Return empty array with success status if maxCount is zero or negative
-        Napi::Object resultObj = Napi::Object::New(env);
-        resultObj.Set("status", Napi::Number::New(env, 0)); // Assuming ERR_NONE
+    Napi::Object resultObj = Napi::Object::New(env);
+
+    if (maxCountJs <= 0) {
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
         resultObj.Set("dataArray", Napi::Array::New(env, 0));
         return resultObj;
     }
+    
+    // Check if maxCountJs exceeds USHORT max
+    if (maxCountJs > 65535) {
+        Napi::RangeError::New(env, "maxCount exceeds maximum allowed (65535)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    USHORT maxCount = static_cast<USHORT>(maxCountJs); // Cast to USHORT
 
-    // Allocate a buffer to receive the data
     std::vector<ULONG> cppBuffer(maxCount);
+    USHORT countActuallyRead = 0; // Variable to receive the count read
 
-    // Call the actual library function - Assuming it returns ERRVAL and fills the buffer.
-    // Does 'count' need to be passed by reference? Does it return the number read?
-    // Needs verification!
-    ERRVAL result = BTI429_ListDataBlkRd(cppBuffer.data(), maxCount, listAddr, coreHandle);
+    // Call the actual library function (Returns BOOL, takes LPUSHORT count)
+    BOOL success = BTI429_ListDataBlkRd(cppBuffer.data(), &countActuallyRead, listAddr, hCore);
 
-    Napi::Object resultObj = Napi::Object::New(env);
-    resultObj.Set("status", Napi::Number::New(env, result));
+    int resultCode = ERR_FAIL; // Default to fail
 
-    if (result == 0) { // Assuming ERR_NONE means success, potentially with 0 words read
-        // How many words were *actually* read?
-        // If the function modified 'maxCount' or returned the count, we need that value.
-        // Assuming here (incorrectly?) that if status is 0, all requested words (up to maxCount)
-        // available were read and placed in the buffer. 
-        // We might need ListStatus first to know how many are available.
-        // ** VERIFY HOW TO GET ACTUAL READ COUNT **
-
-        // For now, assume we need to check ListStatus separately or the function 
-        // somehow signals the count read. Let's just copy potentially maxCount items.
-        // This will likely contain garbage if fewer words were read.
-        int actualCountRead = maxCount; // Placeholder - ** REPLACE WITH ACTUAL COUNT **
-
-        Napi::Array dataArray = Napi::Array::New(env, actualCountRead);
-        for (int i = 0; i < actualCountRead; ++i) {
-            // ULONG might need BigInt if it's 64-bit and values are large
-            dataArray.Set(i, Napi::Number::New(env, cppBuffer[i])); 
+    if (success) {
+        resultCode = ERR_NONE;
+        Napi::Array dataArray = Napi::Array::New(env, countActuallyRead);
+        for (USHORT i = 0; i < countActuallyRead; ++i) {
+            dataArray.Set(i, Napi::Number::New(env, cppBuffer[i]));
         }
-        resultObj.Set("dataArray", dataArray);
-    } else if (result == -108) { // Guessing ERR_UNDERFLOW (-108 means buffer was empty)
-        resultObj.Set("dataArray", Napi::Array::New(env, 0)); // Return empty array
+         resultObj.Set("dataArray", dataArray);
     } else {
-        // Other error
-        resultObj.Set("dataArray", env.Null());
+         // Try ListStatus to get a more specific error
+         int listStatus = BTI429_ListStatus(listAddr, hCore);
+         if (listStatus < 0) { // BTI error code
+             resultCode = listStatus;
+             resultObj.Set("dataArray", env.Null());
+         } else if (listStatus == STAT_EMPTY && countActuallyRead == 0) { // Check if list is empty AND 0 items were read
+             resultCode = ERR_NONE; // Treat read 0 as success
+             resultObj.Set("dataArray", Napi::Array::New(env, 0)); // Ensure empty array
+         } else if (listStatus == STAT_EMPTY) { // List empty but read > 0 was attempted
+              resultCode = ERR_UNDERFLOW; 
+              resultObj.Set("dataArray", env.Null());
+         } else { // Other non-success, non-empty, non-BTI-error situation?
+             resultCode = ERR_FAIL; // Keep generic fail 
+             resultObj.Set("dataArray", env.Null());
+         }
     }
 
+    resultObj.Set("status", Napi::Number::New(env, resultCode));
     return resultObj;
 }
 
@@ -718,29 +734,26 @@ Napi::Value ListStatusWrapped(const Napi::CallbackInfo& info) {
 
     // Expect two arguments: listAddr (Number), coreHandle (Number)
     if (info.Length() != 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: listAddr (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: listAddr (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     // Extract arguments and cast
-    ULONG listAddr = info[0].As<Napi::Number>().Uint32Value(); 
-    HCORE coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+    LISTADDR listAddr = info[0].As<Napi::Number>().Int64Value(); // Use Int64Value for safety
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function - Assuming it returns the list status directly
-    int listStatus = BTI429_ListStatus(listAddr, coreHandle);
+    // Call the actual library function - returns INT status code
+    int listStatusResult = BTI429_ListStatus(listAddr, coreHandle);
 
-    // It might return an ERRVAL on error, or just the status codes.
-    // Assuming it returns status codes directly (e.g., 0, 1, 2 for STAT_EMPTY, etc.)
-    // Need to verify if negative values indicate errors.
     Napi::Object resultObj = Napi::Object::New(env);
-    if (listStatus >= 0) { // Placeholder check for non-error status
-         resultObj.Set("status", Napi::Number::New(env, 0)); // Overall success
-         resultObj.Set("listStatus", Napi::Number::New(env, listStatus));
-    } else {
-         resultObj.Set("status", Napi::Number::New(env, listStatus)); // Return the error code
-         resultObj.Set("listStatus", env.Null());
+    if (listStatusResult >= 0) { // Non-negative is a status (STAT_EMPTY, STAT_PARTIAL, STAT_FULL)
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); // Overall operation success
+        resultObj.Set("listStatus", Napi::Number::New(env, listStatusResult));
+    } else { // Negative is an error code
+        resultObj.Set("status", Napi::Number::New(env, listStatusResult)); // Return BTI error code
+        resultObj.Set("listStatus", env.Null()); // No valid status
     }
-
+    
     return resultObj;
 }
 
@@ -748,36 +761,35 @@ Napi::Value ListStatusWrapped(const Napi::CallbackInfo& info) {
 Napi::Value FilterSetWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect five arguments: configVal, label, sdiMask, channelNum, coreHandle (all Numbers)
+    // Expect five arguments: configVal, label, sdiMask, channelNum, coreHandle
     if (info.Length() != 5 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber() || !info[3].IsNumber() || !info[4].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: configVal, label, sdiMask, channelNum, coreHandle (all Numbers)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: configVal (number), label (number), sdiMask (number), channelNum (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     // Extract arguments and cast
     ULONG configVal = info[0].As<Napi::Number>().Uint32Value();
-    int labelVal = info[1].As<Napi::Number>().Int32Value();
-    int sdiMask = info[2].As<Napi::Number>().Int32Value();
-    int channelNum = info[3].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[4].As<Napi::Number>().Int64Value());
+    INT labelVal = info[1].As<Napi::Number>().Int32Value(); // Label likely fits in INT
+    INT sdiMask = info[2].As<Napi::Number>().Int32Value(); 
+    INT channelNum = info[3].As<Napi::Number>().Int32Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[4].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function - Assuming it returns filter address (0 on failure?)
-    ULONG filterAddr = BTI429_FilterSet(configVal, labelVal, sdiMask, channelNum, coreHandle);
+    // Call the actual library function - Returns ULONG (MSGADDR)
+    // MSGADDR is likely a pointer or handle type
+    MSGADDR filterAddrResult = BTI429_FilterSet(configVal, labelVal, sdiMask, channelNum, coreHandle);
 
     Napi::Object resultObj = Napi::Object::New(env);
-    // Check manual: Does 0 indicate failure, or is it a valid address?
-    // Does it return ERRVAL on failure?
-    if (filterAddr != 0) { // Placeholder check for success - VERIFY!
-        resultObj.Set("status", Napi::Number::New(env, 0)); // Assuming ERR_NONE
-        // Check if ULONG address needs BigInt
-        resultObj.Set("filterAddr", Napi::Number::New(env, filterAddr)); 
+     // MSGADDR is ULONG, check if non-zero indicates success
+    if (filterAddrResult != 0) { 
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        // Return address as Number (MSGADDR is ULONG)
+        resultObj.Set("filterAddr", Napi::Number::New(env, filterAddrResult)); 
     } else {
-        // Failure: Return an error status and null address
-        // Using a generic error code for now. Check manual for specific error retrieval.
-        resultObj.Set("status", Napi::Number::New(env, -1)); // Generic error
+         // Need a way to get the actual error code if creation fails
+        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure
         resultObj.Set("filterAddr", env.Null());
     }
-
+    
     return resultObj;
 }
 
@@ -785,54 +797,48 @@ Napi::Value FilterSetWrapped(const Napi::CallbackInfo& info) {
 Napi::Value FilterDefaultWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect three arguments: configVal (Number), channelNum (Number), coreHandle (Number)
+    // Expect three arguments: configVal, channelNum, coreHandle
     if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: configVal (Number), channelNum (Number), coreHandle (Number)").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected: configVal (number), channelNum (number), coreHandle (number)").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     // Extract arguments and cast
     ULONG configVal = info[0].As<Napi::Number>().Uint32Value();
-    int channelNum = info[1].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[2].As<Napi::Number>().Int64Value());
+    INT channelNum = info[1].As<Napi::Number>().Int32Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function - Assuming it returns filter address (0 on failure?)
-    ULONG filterAddr = BTI429_FilterDefault(configVal, channelNum, coreHandle);
+    // Call the actual library function - Returns ULONG (MSGADDR)
+    MSGADDR filterAddrResult = BTI429_FilterDefault(configVal, channelNum, coreHandle);
 
-    Napi::Object resultObj = Napi::Object::New(env);
-    // Check manual: Does 0 indicate failure, or is it a valid address?
-    // Does it return ERRVAL on failure?
-    if (filterAddr != 0) { // Placeholder check for success - VERIFY!
-        resultObj.Set("status", Napi::Number::New(env, 0)); // Assuming ERR_NONE
-        // Check if ULONG address needs BigInt
-        resultObj.Set("filterAddr", Napi::Number::New(env, filterAddr)); 
+     Napi::Object resultObj = Napi::Object::New(env);
+     // MSGADDR is ULONG, check if non-zero indicates success
+    if (filterAddrResult != 0) { 
+        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
+        // Return address as Number (MSGADDR is ULONG)
+        resultObj.Set("filterAddr", Napi::Number::New(env, filterAddrResult)); 
     } else {
-        // Failure: Return an error status and null address
-        // Using a generic error code for now. Check manual for specific error retrieval.
-        resultObj.Set("status", Napi::Number::New(env, -1)); // Generic error
+         // Need a way to get the actual error code if creation fails
+        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure
         resultObj.Set("filterAddr", env.Null());
     }
-
+    
     return resultObj;
 }
 
 // --- Add New Async Wrappers Here ---
 
-// Async N-API wrapper for ListDataRd
+// N-API Wrapper for ListDataRdAsync (uses ListDataRdWorker)
 Napi::Value ListDataRdAsyncWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect three arguments: listAddr (Number), coreHandle (Number), timeoutMs (Number)
     if (info.Length() != 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: listAddr (Number), coreHandle (Number), timeoutMs (Number)").ThrowAsJavaScriptException();
-        // Returning promise that will be rejected, though TypeError is already thrown
-        Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(env);
-        deferred.Reject(Napi::String::New(env, "Invalid arguments"));
-        return deferred.Promise();
+        Napi::TypeError::New(env, "Expected: listAddr (number), coreHandle (number), timeoutMs (number)").ThrowAsJavaScriptException();
+        return env.Null();
     }
 
-    ULONG listAddr = info[0].As<Napi::Number>().Uint32Value();
-    HCORE coreHandle = (HCORE)(info[1].As<Napi::Number>().Int64Value());
+    LISTADDR listAddr = info[0].As<Napi::Number>().Int64Value(); // Use Int64Value for safety
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
     int timeoutMs = info[2].As<Napi::Number>().Int32Value();
 
     ListDataRdWorker* worker = new ListDataRdWorker(env, listAddr, coreHandle, timeoutMs);
@@ -840,24 +846,31 @@ Napi::Value ListDataRdAsyncWrapped(const Napi::CallbackInfo& info) {
     return worker->GetPromise();
 }
 
-// Async N-API wrapper for ListDataBlkRd
+// N-API Wrapper for ListDataBlkRdAsync (uses ListDataBlkRdWorker)
 Napi::Value ListDataBlkRdAsyncWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // Expect four arguments: listAddr (Number), maxCount (Number), coreHandle (Number), timeoutMs (Number)
-    if (info.Length() != 4 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber() || !info[3].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: listAddr (Number), maxCount(Number), coreHandle (Number), timeoutMs (Number)").ThrowAsJavaScriptException();
-        Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(env);
-        deferred.Reject(Napi::String::New(env, "Invalid arguments"));
-        return deferred.Promise();
+     if (info.Length() != 4 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber() || !info[3].IsNumber()) {
+        Napi::TypeError::New(env, "Expected: listAddr (number), maxCount (number), coreHandle (number), timeoutMs (number)").ThrowAsJavaScriptException();
+        return env.Null();
     }
 
-    ULONG listAddr = info[0].As<Napi::Number>().Uint32Value();
-    int maxCount = info[1].As<Napi::Number>().Int32Value();
-    HCORE coreHandle = (HCORE)(info[2].As<Napi::Number>().Int64Value());
+    LISTADDR listAddr = info[0].As<Napi::Number>().Int64Value(); // Use Int64Value for safety
+    int maxCountJs = info[1].As<Napi::Number>().Int32Value();
+    HCORE coreHandle = reinterpret_cast<HCORE>(info[2].As<Napi::Number>().Int64Value());
     int timeoutMs = info[3].As<Napi::Number>().Int32Value();
 
-    ListDataBlkRdWorker* worker = new ListDataBlkRdWorker(env, listAddr, maxCount, coreHandle, timeoutMs);
+    // Basic validation for maxCount
+    if (maxCountJs < 0) {
+         Napi::RangeError::New(env, "maxCount cannot be negative").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+     if (maxCountJs > 65535) { // Also check against USHORT limit if applicable
+        Napi::RangeError::New(env, "maxCount exceeds practical limit (65535)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    ListDataBlkRdWorker* worker = new ListDataBlkRdWorker(env, listAddr, maxCountJs, coreHandle, timeoutMs);
     worker->Queue();
     return worker->GetPromise();
 }
@@ -893,4 +906,4 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   return exports;
 }
 
-NODE_API_MODULE(btiaddon, Init) 
+NODE_API_MODULE(bti_addon, Init) 
