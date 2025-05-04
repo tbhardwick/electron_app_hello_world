@@ -45,4 +45,48 @@ pre {
 
 .stderr-output {
     /* Add specific styles for stderr if needed */
+}
+
+/* Add styles for discrete input indicators */
+.dio-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Spacing between indicators */
+}
+
+.dio-indicator {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    min-width: 120px; /* Ensure consistent width */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dio-label {
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+.dio-status {
+    font-family: monospace;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: white;
+    background-color: #888; /* Default/Initial state */
+}
+
+/* State-specific styles */
+.dio-indicator.active .dio-status {
+    background-color: #4CAF50; /* Green for Active */
+}
+
+.dio-indicator.inactive .dio-status {
+    background-color: #f44336; /* Red for Inactive */
+}
+
+.dio-indicator.error .dio-status {
+    background-color: #ff9800; /* Orange for Error */
+    color: black;
 } 

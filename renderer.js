@@ -1,9 +1,9 @@
 const runTestBtn = document.getElementById('runTestBtn');
 const stopPollBtn = document.getElementById('stopPollBtn'); // Get reference to stop button
 const resultsOutput = document.getElementById('resultsOutput');
-const discreteInputSpans = [];
+const discreteIndicators = [];
 for (let i = 0; i < 8; i++) {
-    discreteInputSpans.push(document.getElementById(`discrete-in-${i}`));
+    discreteIndicators.push(document.getElementById(`discrete-in-${i}`));
 }
 
 // Mapping from display index (0-7) to Hardware Reference Name and API dionum
@@ -89,57 +89,93 @@ if (runTestBtn && resultsOutput) { // Add checks to ensure elements exist
 
 // Function to update discrete input status display
 async function updateDiscreteInputs() {
-    // *** ADDED CHECK: Only proceed if the device is ready ***
     if (!isDeviceReady) {
+        // Maybe reset indicators to a default state if device becomes not ready?
+        for (let i = 0; i < 8; i++) {
+            const indicatorDiv = discreteIndicators[i];
+            if (indicatorDiv) {
+                const statusSpan = indicatorDiv.querySelector('.dio-status');
+                indicatorDiv.classList.remove('active', 'inactive', 'error');
+                if (statusSpan) statusSpan.textContent = '---';
+            }
+        }
         return;
     }
 
-    // Use the new getAllDioStates function
     if (!window.electronAPI || typeof window.electronAPI.getAllDioStates !== 'function') {
         console.error('electronAPI or getAllDioStates not available');
+        // Update UI to show API error state
+        for (let i = 0; i < 8; i++) {
+             const indicatorDiv = discreteIndicators[i];
+            if (indicatorDiv) {
+                const statusSpan = indicatorDiv.querySelector('.dio-status');
+                indicatorDiv.classList.remove('active', 'inactive');
+                indicatorDiv.classList.add('error');
+                if (statusSpan) statusSpan.textContent = 'API ERR';
+            }
+        }
         return;
     }
 
     try {
-        // Call the single function to get all states
         const allStates = await window.electronAPI.getAllDioStates();
-        // console.log("Received allStates:", allStates); // Optional: log the whole array
 
-        // Process the returned array
         if (Array.isArray(allStates) && allStates.length === 8) {
             for (const dioState of allStates) {
-                // dioState should be { index: 0-7, apiDionum: 1-12, status: 0/-1, value: true/false/null, error: null/string }
                 const displayIndex = dioState.index;
-                const displayName = discreteMapping[displayIndex]?.name || `Unknown DIO ${displayIndex}`;
+                const indicatorDiv = discreteIndicators[displayIndex];
                 
-                if (discreteInputSpans[displayIndex]) {
+                if (indicatorDiv) {
+                    const statusSpan = indicatorDiv.querySelector('.dio-status');
+                    const labelSpan = indicatorDiv.querySelector('.dio-label');
+                    const displayName = discreteMapping[displayIndex]?.name || `Unknown DIO ${displayIndex}`;
+
+                    // Ensure label is set correctly (in case it was changed)
+                    if (labelSpan && labelSpan.textContent !== `${displayName}:`) {
+                       labelSpan.textContent = `${displayName}:`;
+                    }
+
+                    // Remove previous state classes
+                    indicatorDiv.classList.remove('active', 'inactive', 'error');
+
                     if (dioState.status === 0) {
-                        const statusText = dioState.value === true ? 'Active' : 'Inactive';
-                        discreteInputSpans[displayIndex].textContent = `${displayName}: ${statusText}`;
+                        if (dioState.value === true) {
+                            indicatorDiv.classList.add('active');
+                            if (statusSpan) statusSpan.textContent = 'Active';
+                        } else {
+                            indicatorDiv.classList.add('inactive');
+                            if (statusSpan) statusSpan.textContent = 'Inactive';
+                        }
                     } else {
-                        // Use the error message from the addon if available
-                        const errorMsg = dioState.error || 'Error'; 
-                        discreteInputSpans[displayIndex].textContent = `${displayName}: ${errorMsg}`;
-                         console.error(`Error reading ${displayName} (API ${dioState.apiDionum}): Status ${dioState.status}, Msg: ${errorMsg}`);
+                        const errorMsg = dioState.error || 'Error';
+                        indicatorDiv.classList.add('error');
+                        if (statusSpan) statusSpan.textContent = errorMsg.substring(0, 6); // Keep error text short
+                        console.error(`Error reading ${displayName} (API ${dioState.apiDionum}): Status ${dioState.status}, Msg: ${errorMsg}`);
                     }
                 }
             }
         } else {
-             console.error('Received invalid data structure from getAllDioStates:', allStates);
-             // Set all to error state
-             for (let i = 0; i < 8; i++) {
-                 if (discreteInputSpans[i]) {
-                    discreteInputSpans[i].textContent = `${discreteMapping[i]?.name || 'DIO ' + i}: Invalid Data`;
-                 }
+            console.error('Received invalid data structure from getAllDioStates:', allStates);
+            for (let i = 0; i < 8; i++) {
+                const indicatorDiv = discreteIndicators[i];
+                if (indicatorDiv) {
+                    const statusSpan = indicatorDiv.querySelector('.dio-status');
+                    indicatorDiv.classList.remove('active', 'inactive');
+                    indicatorDiv.classList.add('error');
+                    if (statusSpan) statusSpan.textContent = 'Data ERR';
+                }
             }
         }
     } catch (error) {
         console.error('Error in updateDiscreteInputs calling getAllDioStates:', error);
-        // Set all to error state on general failure
         for (let i = 0; i < 8; i++) {
-             if (discreteInputSpans[i]) {
-                discreteInputSpans[i].textContent = `${discreteMapping[i]?.name || 'DIO ' + i}: Comm Error`;
-             }
+            const indicatorDiv = discreteIndicators[i];
+            if (indicatorDiv) {
+                const statusSpan = indicatorDiv.querySelector('.dio-status');
+                indicatorDiv.classList.remove('active', 'inactive');
+                indicatorDiv.classList.add('error');
+                if (statusSpan) statusSpan.textContent = 'Comm ERR';
+            }
         }
     }
 }
@@ -153,8 +189,16 @@ if (window.electronAPI && typeof window.electronAPI.getAllDioStates === 'functio
     console.warn('getAllDioStates function not found on window.electronAPI. Discrete input polling disabled.');
     // Update UI to indicate polling is disabled
     for (let i = 0; i < 8; i++) {
-        if(discreteInputSpans[i]) {
-            discreteInputSpans[i].textContent = `DI ${i}: Disabled`;
+        const indicatorDiv = discreteIndicators[i];
+        if (indicatorDiv) {
+            const statusSpan = indicatorDiv.querySelector('.dio-status');
+            const labelSpan = indicatorDiv.querySelector('.dio-label');
+            const displayName = discreteMapping[i]?.name || `DIO ${i}`;
+            
+            indicatorDiv.classList.remove('active', 'inactive');
+            indicatorDiv.classList.add('error');
+            if(labelSpan) labelSpan.textContent = `${displayName}:`;
+            if(statusSpan) statusSpan.textContent = 'Disabled';
         }
     }
 }
@@ -166,16 +210,19 @@ if (stopPollBtn) {
             clearInterval(pollingIntervalId);
             pollingIntervalId = null; // Clear the ID
             console.log("Polling stopped by user.");
-            // Optionally update UI to indicate polling is stopped
-             for (let i = 0; i < 8; i++) {
-                 if (discreteInputSpans[i]) {
-                    // Append ' (Stopped)' or similar
-                    const currentText = discreteInputSpans[i].textContent;
-                    if (!currentText.includes('(Stopped)')) { 
-                        discreteInputSpans[i].textContent += ' (Stopped)';
-                    }
-                 }
-             }
+            // Update UI to show stopped state
+            for (let i = 0; i < 8; i++) {
+                const indicatorDiv = discreteIndicators[i];
+                if (indicatorDiv) {
+                   const statusSpan = indicatorDiv.querySelector('.dio-status');
+                   if(statusSpan && !statusSpan.textContent.includes('(Stopped)')) {
+                       // Only append if not already showing error/disabled etc.
+                       if(!indicatorDiv.classList.contains('error')) {
+                           statusSpan.textContent += ' (Stopped)';
+                       }
+                   }
+                }
+            }
         } else {
             console.log("Polling is already stopped.");
         }
