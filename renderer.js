@@ -145,14 +145,14 @@ function checkStaleness() {
 // Setup interval for staleness check
 setInterval(checkStaleness, STALENESS_CHECK_INTERVAL_MS);
 
-// Handle ARINC data updates from main process
-window.electronAPI?.onArincDataUpdate((updates) => {
+// --- Refactored Data Handler ---
+function handleArincDataUpdate(updates) {
     if (!Array.isArray(updates)) {
         console.error('Received non-array data for ARINC update:', updates);
         return;
     }
-    // console.log(`Received ${updates.length} ARINC updates`);
-    const now = Date.now(); // Use a consistent timestamp for the batch
+    // console.log(`Handling ${updates.length} ARINC updates`);
+    const now = Date.now(); // Use a consistent timestamp for the batch if not provided
     updates.forEach(update => {
         if (update.channel === undefined || update.label === undefined || update.word === undefined) {
             console.error('Invalid ARINC update received:', update);
@@ -160,23 +160,29 @@ window.electronAPI?.onArincDataUpdate((updates) => {
         }
 
         const channel = update.channel;
-        const labelOctal = update.label.toString(8).padStart(3, '0');
+        // Ensure label is treated as decimal if coming from mock generator
+        const labelOctal = Number(update.label).toString(8).padStart(3, '0');
 
         if (!arincData[channel]) {
             console.warn(`Received data for unexpected channel ${channel}`);
-            arincData[channel] = {}; // Initialize if needed, though UI init should do this
+            arincData[channel] = {}; // Initialize if needed
         }
 
         if (!arincData[channel][labelOctal]) {
-            arincData[channel][labelOctal] = { rowElement: null }; // Initialize if first time seeing label
+            arincData[channel][labelOctal] = { rowElement: null }; // Initialize if first time
         }
 
         arincData[channel][labelOctal].word = update.word;
-        arincData[channel][labelOctal].timestamp = update.timestamp || now; // Use provided timestamp or batch time
+        // Use provided timestamp, otherwise use batch time
+        arincData[channel][labelOctal].timestamp = update.timestamp_ms || update.timestamp || now;
 
         renderLabelUpdate(channel, labelOctal);
     });
-});
+}
+// --- End Refactored Data Handler ---
+
+// Handle ARINC data updates from main process
+window.electronAPI?.onArincDataUpdate(handleArincDataUpdate);
 
 // Handle ARINC error/status updates from main process
 window.electronAPI?.onArincErrorUpdate((errorInfo) => {
@@ -212,6 +218,27 @@ window.electronAPI?.onArincErrorUpdate((errorInfo) => {
     }
 });
 
+// --- Mock Data Generation ---
+function generateMockArincData(count = 20) {
+    const mockUpdates = [];
+    const now = Date.now();
+    for (let i = 0; i < count; i++) {
+        const channel = Math.floor(Math.random() * ARINC_CHANNEL_COUNT);
+        // Generate random octal label between 001 and 377
+        const label = Math.floor(Math.random() * (0o377 - 0o001 + 1)) + 0o001;
+        const word = Math.floor(Math.random() * 0xFFFFFFFF);
+        mockUpdates.push({
+            channel: channel,
+            label: label, // Keep as decimal number for consistency
+            word: word,
+            timestamp_ms: now // Use consistent timestamp for the batch
+        });
+    }
+    console.log("Generated mock data:", mockUpdates);
+    return mockUpdates;
+}
+// --- End Mock Data Generation ---
+
 // --- End ARINC Receive Data Handling ---
 
 
@@ -221,7 +248,13 @@ function updateDIOStatus(statuses) {
     const lastUpdatedSpan = document.getElementById('dio-last-updated');
     container.innerHTML = ''; // Clear previous content
     errorDiv.style.display = 'none'; // Hide error initially
-    lastUpdatedSpan.textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
+
+    // Only update timestamp if polling is active
+    if (dioPollingIntervalId !== null) {
+        lastUpdatedSpan.textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
+    } else {
+        lastUpdatedSpan.textContent = `Polling Stopped`;
+    }
 
     if (!Array.isArray(statuses)) {
         console.error('Expected an array of DIO statuses, received:', statuses);
@@ -264,36 +297,99 @@ function updateDIOStatus(statuses) {
     container.appendChild(row);
 }
 
-async function refreshDIO() {
+// Renamed from refreshDIO to reflect its use within polling
+async function fetchAndUpdateDIO() {
     if (!hCore) {
-        console.error('Core not open. Cannot refresh DIO.');
-        const errorDiv = document.getElementById('dio-error');
-        errorDiv.textContent = 'Error: Hardware core is not open.';
-        errorDiv.style.display = 'block';
+        console.error('Core not open. Cannot fetch DIO.');
+        // Optionally update UI to show core is not open
+        stopDioPolling(); // Stop polling if core becomes invalid
         return;
     }
+    // Ensure the toggle button reflects the running state
+    const toggleButton = document.getElementById('toggle-dio-polling');
+    if (toggleButton && dioPollingIntervalId !== null) {
+        toggleButton.textContent = 'Stop Polling';
+        toggleButton.classList.remove('btn-success');
+        toggleButton.classList.add('btn-warning');
+    }
+
     try {
-        // console.log('Requesting DIO states from main process...');
         const dioStatuses = await window.electronAPI.getAllDioStates(hCore);
-        // console.log('Received DIO states:', dioStatuses);
         updateDIOStatus(dioStatuses);
     } catch (error) {
-        console.error('Error getting DIO states:', error);
+        console.error('Error getting DIO states during poll:', error);
         const errorDiv = document.getElementById('dio-error');
-        errorDiv.textContent = `Error refreshing DIO: ${error.message || error}`;
-        errorDiv.style.display = 'block';
+        if(errorDiv) { // Check if element exists
+             errorDiv.textContent = `Error polling DIO: ${error.message || error}`;
+             errorDiv.style.display = 'block';
+        }
         updateDIOStatus([]); // Clear display on error
+        stopDioPolling(); // Stop polling on error
     }
 }
 
+function stopDioPolling() {
+    if (dioPollingIntervalId !== null) {
+        clearInterval(dioPollingIntervalId);
+        dioPollingIntervalId = null;
+        console.log("DIO Polling stopped.");
+        const toggleButton = document.getElementById('toggle-dio-polling');
+        const lastUpdatedSpan = document.getElementById('dio-last-updated');
+        if (toggleButton) {
+            toggleButton.textContent = 'Start Polling';
+            toggleButton.classList.remove('btn-warning');
+            toggleButton.classList.add('btn-success');
+        }
+        if(lastUpdatedSpan) {
+             lastUpdatedSpan.textContent = `Polling Stopped`;
+        }
+    }
+}
+
+function startDioPolling() {
+    if (dioPollingIntervalId === null && hCore) { // Only start if stopped and core is ready
+        console.log("Starting DIO Polling...");
+        fetchAndUpdateDIO(); // Fetch immediately
+        dioPollingIntervalId = setInterval(fetchAndUpdateDIO, 100); // Poll every 100ms
+        const toggleButton = document.getElementById('toggle-dio-polling');
+         if (toggleButton) {
+            toggleButton.textContent = 'Stop Polling';
+            toggleButton.classList.remove('btn-success');
+            toggleButton.classList.add('btn-warning');
+        }
+    } else if (!hCore) {
+        console.error("Cannot start DIO polling: Core handle is not valid.");
+    } else {
+        console.log("DIO Polling is already active.");
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    const refreshButton = document.getElementById('refresh-dio');
+    // REMOVED: Listener for refreshButton
+    const togglePollingButton = document.getElementById('toggle-dio-polling');
+    const mockArincButton = document.getElementById('generate-mock-arinc');
 
-    if (refreshButton) {
-        refreshButton.addEventListener('click', refreshDIO);
+    // Add listener for the toggle button
+    if (togglePollingButton) {
+        togglePollingButton.addEventListener('click', () => {
+            if (dioPollingIntervalId === null) {
+                startDioPolling();
+            } else {
+                stopDioPolling();
+            }
+        });
     } else {
-        console.error('Refresh DIO button not found');
+        console.error('Toggle DIO Polling button not found');
+    }
+
+    // Add listener for mock data button
+    if (mockArincButton) {
+        mockArincButton.addEventListener('click', () => {
+            const mockData = generateMockArincData(30); // Generate 30 updates
+            handleArincDataUpdate(mockData); // Directly call the handler
+        });
+    } else {
+        console.error('Generate Mock ARINC button not found');
     }
 
     // --- Initialization Sequence ---
@@ -301,9 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electronAPI.initializeHardware()
         .then(result => {
             if (result.success) {
-                hCore = result.hCore; // Store the core handle
+                hCore = result.hCore;
                 console.log('Hardware initialized successfully, Core Handle:', hCore);
-                // Initialize ARINC Receiver specific components
                 return window.electronAPI.initializeReceiver(hCore);
             }
              else {
@@ -313,9 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(initResult => {
              if (initResult.success) {
                 console.log('ARINC Receiver initialized successfully.');
-                // Now safe to refresh DIO or start ARINC monitoring
-                refreshDIO(); // Perform initial DIO read
-                // Start ARINC monitoring
+                 // Start DIO polling automatically after successful init
+                 startDioPolling();
                  return window.electronAPI.startArincMonitoring(hCore);
              } else {
                   throw new Error(`Failed to initialize ARINC receiver: ${initResult.message || 'Unknown error'}`);
@@ -351,6 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 arincErrorDiv.textContent = `Initialization Failed: ${error.message || error}`;
                 arincErrorDiv.style.display = 'block';
             }
+            stopDioPolling(); // Ensure polling is stopped if init fails
         });
 
         // Initial UI setup for ARINC
@@ -358,9 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Stop polling/monitoring if the window is closed
     window.addEventListener('beforeunload', () => {
-        if (dioPollingIntervalId) {
-            clearInterval(dioPollingIntervalId);
-        }
+        // Use the stop function
+        stopDioPolling();
         if(hCore) {
             window.electronAPI.stopArincMonitoring(hCore).catch(console.error);
         }
