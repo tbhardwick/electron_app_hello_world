@@ -1,14 +1,70 @@
 /* General Styles */
 body {
   font-family: sans-serif;
+  padding: 20px;
+  background-color: #f8f9fa; /* Light grey background */
+  color: #212529; /* Dark text */
 }
 
+/* Headings */
+h1 {
+  /* display: flex; */ /* No longer needed without logo */
+  /* align-items: center; */
+  /* gap: 10px; */
+  color: #0d6efd; /* Bootstrap primary blue */
+  margin-bottom: 1rem; /* Add some bottom margin */
+}
+
+h2 {
+  color: #0d6efd; /* Bootstrap primary blue */
+}
+
+/* Logo Image Styling */
+/* #app-logo {
+    vertical-align: middle;
+    width: 32px;
+    height: 32px;
+} */
+
+/* Button Styling */
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Specific Button IDs (Example, if needed) */
+/* #runTestBtn {
+  background-color: #198754; 
+  color: white;
+}
+
+#stopPollBtn {
+  background-color: #dc3545; 
+  color: white;
+}
+
+#runTestBtn:hover {
+  background-color: #157347;
+}
+
+#stopPollBtn:hover {
+  background-color: #bb2d3b; 
+} */
+
+/* Preformatted Text Styling (for results) */
 pre {
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-  padding: 10px;
+  background-color: #e9ecef; /* Lighter grey for code blocks */
+  padding: 15px;
+  border: 1px solid #ced4da; /* Light grey border */
+  border-radius: 4px;
   white-space: pre-wrap; /* Wrap long lines */
-  word-wrap: break-word; /* Break words if necessary */
+  word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 /* Results Formatting */
@@ -49,32 +105,45 @@ pre {
 
 /* Add styles for discrete input indicators */
 .dio-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Spacing between indicators */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  background-color: #ffffff;
 }
 
 .dio-indicator {
-    border: 1px solid #ccc;
-    padding: 8px 12px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    min-width: 120px; /* Ensure consistent width */
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  min-width: 120px; /* Ensure consistent width */
 }
 
 .dio-label {
-    margin-right: 8px;
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .dio-status {
-    font-family: monospace;
-    padding: 2px 5px;
-    border-radius: 3px;
-    color: white;
-    background-color: #888; /* Default/Initial state */
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.dio-status.on {
+  background-color: #28a745; /* Green for ON */
+  color: white;
+}
+
+.dio-status.off {
+  background-color: #6c757d; /* Grey for OFF */
+  color: white;
 }
 
 /* State-specific styles */
@@ -89,4 +158,91 @@ pre {
 .dio-indicator.error .dio-status {
     background-color: #ff9800; /* Orange for Error */
     color: black;
+}
+
+/* Tab Specific Styles */
+.nav-tabs .nav-link {
+    color: #495057; /* Standard tab text color */
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd; /* Active tab text color */
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 0 0 .25rem .25rem;
+}
+
+/* ARINC Receive Styles */
+.arinc-channels-container {
+    /* Add specific container styles if needed */
+}
+
+.arinc-channel-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #ccc;
+}
+
+.arinc-channel-section:last-child {
+    border-bottom: none;
+}
+
+.arinc-channel-section h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.arinc-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.arinc-data-table th, .arinc-data-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-family: monospace;
+}
+
+.arinc-data-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* Status Indicator Styles */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+    font-size: 1.5em; /* Adjust size via font-size */
+    line-height: 0; /* Align vertically */
+}
+
+.status-indicator.green {
+    color: #28a745; /* Bootstrap success green */
+}
+
+.status-indicator.red {
+    color: #dc3545; /* Bootstrap danger red */
+}
+
+.status-indicator.grey {
+    color: #adb5bd; /* Bootstrap secondary grey */
+}
+
+/* Center align status indicator within table cell */
+.arinc-data-table td:last-child {
+    text-align: center;
 } 

@@ -7,9 +7,102 @@
 #include <windows.h>
 #include <string>
 #include <iostream>
-#include <vector>       // Added for vector usage
-#include <thread>       // Added for std::this_thread
-#include <chrono>       // Added for std::chrono
+#include <vector>
+#include <thread>
+#include <chrono>
+#include <map>              // For storing latest words/timestamps
+#include <atomic>           // For monitoringActive flag
+#include <mutex>            // Potentially needed for data structures if accessed outside monitor thread
+#include <condition_variable> // Potentially needed for signaling thread
+
+// --- Define Constants ---
+const int ARINC_CHANNEL_COUNT = 8;
+
+// --- Global State for ARINC Monitoring ---
+std::atomic<bool> monitoringActive(false);
+std::thread monitorThread;
+std::mutex dataMutex; // Mutex for protecting shared data structures if needed
+HCARD hCardGlobal = nullptr;
+HCORE hCoreGlobal = nullptr;
+std::vector<LISTADDR> receiveListAddrs(ARINC_CHANNEL_COUNT, 0); // Store List Addrs per channel
+std::map<int, std::map<int, ULONG>> latestWords; // channel -> label -> word
+std::map<int, std::map<int, std::chrono::steady_clock::time_point>> lastUpdateTimes; // channel -> label -> timestamp
+
+// ThreadSafeFunctions for callbacks to JavaScript
+Napi::ThreadSafeFunction tsfnDataUpdate = nullptr;
+Napi::ThreadSafeFunction tsfnErrorUpdate = nullptr;
+
+// --- Forward Declarations ---
+void MonitorLoop();
+long long steady_clock_to_epoch_ms(const std::chrono::steady_clock::time_point& tp);
+
+// Helper structure for passing data to JS callbacks
+struct ArincUpdateData {
+    int channel;
+    int label;
+    ULONG word;
+    long long timestamp_ms; // Use epoch ms
+};
+
+struct ArincErrorData {
+    int channel = -1; // Use -1 or similar for global errors
+    int status_code;
+    std::string message;
+};
+
+// Callback wrappers for ThreadSafeFunction
+void CallJsDataUpdate(Napi::Env env, Napi::Function jsCallback, std::vector<ArincUpdateData>* updates) {
+    if (!updates) return;
+
+    Napi::Array jsArray = Napi::Array::New(env, updates->size());
+    for (size_t i = 0; i < updates->size(); ++i) {
+        const auto& update = (*updates)[i];
+        Napi::Object obj = Napi::Object::New(env);
+        obj.Set("channel", Napi::Number::New(env, update.channel));
+        obj.Set("label", Napi::Number::New(env, update.label));
+        obj.Set("word", Napi::Number::New(env, update.word));
+        obj.Set("timestamp", Napi::Number::New(env, (double)update.timestamp_ms)); // Pass timestamp as number
+        jsArray.Set(i, obj);
+    }
+
+    jsCallback.Call({jsArray});
+    delete updates; // Clean up the heap-allocated vector
+}
+
+void CallJsErrorUpdate(Napi::Env env, Napi::Function jsCallback, ArincErrorData* errorData) {
+    if (!errorData) return;
+
+    Napi::Object obj = Napi::Object::New(env);
+    if (errorData->channel >= 0) { // Check if it's a channel-specific error
+        obj.Set("channel", Napi::Number::New(env, errorData->channel));
+    } else {
+        obj.Set("channel", env.Null()); // Indicate global error
+    }
+    // Map status code to string if possible, otherwise send code
+    std::string statusStr;
+    if(errorData->status_code == ERR_NONE) statusStr = "OK";
+    else if (errorData->status_code == ERR_TIMEOUT) statusStr = "TIMEOUT";
+    // Add more BTI specific error mappings here based on bti_constants.h
+    else statusStr = "ERROR";
+
+    obj.Set("status", Napi::String::New(env, statusStr));
+    obj.Set("message", Napi::String::New(env, errorData->message));
+    obj.Set("code", Napi::Number::New(env, errorData->status_code)); // Include the raw code
+
+    jsCallback.Call({obj});
+    delete errorData; // Clean up the heap-allocated data
+}
+
+// --- Timestamp Helper ---
+long long steady_clock_to_epoch_ms(const std::chrono::steady_clock::time_point& tp) {
+    // This conversion assumes steady_clock's epoch is reasonably close to system_clock's epoch
+    // or that the difference is consistent. A more robust solution might calibrate at startup.
+    auto duration = tp.time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    // A potentially more accurate way (if needed and C++20 available):
+    // return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() +
+    //        std::chrono::duration_cast<std::chrono::milliseconds>(tp - std::chrono::steady_clock::now()).count();
+}
 
 // --- Async Worker for ListDataRd ---
 class ListDataRdWorker : public Napi::AsyncWorker {
@@ -1225,95 +1318,610 @@ Napi::Value ExtDIOWrWrapped(const Napi::CallbackInfo& info) {
 // --- NEW Function to read all DIOs at once ---
 Napi::Value GetAllDioStatesWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-    // Expect 1 argument: coreHandle (Number)
-    if (info.Length() != 1 || !info[0].IsNumber()) {
-        Napi::TypeError::New(env, "Expected: coreHandle (Number)").ThrowAsJavaScriptException();
+    // Expect 1 argument: coreHandle (BigInt)
+    if (info.Length() != 1 || !info[0].IsBigInt()) { // Check for BigInt
+        Napi::TypeError::New(env, "Expected: coreHandle (BigInt)").ThrowAsJavaScriptException();
         return env.Null();
     }
-    HCORE coreHandle = reinterpret_cast<HCORE>(info[0].As<Napi::Number>().Int64Value());
+
+    bool lossless;
+    uint64_t coreHandleValue = info[0].As<Napi::BigInt>().Uint64Value(&lossless);
+    if (!lossless) {
+        Napi::Error::New(env, "Invalid core handle value.").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    HCORE coreHandle = reinterpret_cast<HCORE>(coreHandleValue);
 
     const INT dionumMapping[] = {1, 2, 3, 4, 9, 10, 11, 12};
     const int numDios = sizeof(dionumMapping) / sizeof(dionumMapping[0]);
     Napi::Array resultsArray = Napi::Array::New(env, numDios);
 
-    // printf("[addon.cpp] GetAllDioStatesWrapped: Starting read loop...\n");
-    // fflush(stdout);
-
     for (int i = 0; i < numDios; ++i) {
         INT dionum = dionumMapping[i];
         Napi::Object dioResult = Napi::Object::New(env);
-        dioResult.Set("index", Napi::Number::New(env, i)); 
+        dioResult.Set("index", Napi::Number::New(env, i));
         dioResult.Set("apiDionum", Napi::Number::New(env, dionum));
 
+        // Call BTI function
         INT result = static_cast<INT>(BTICard_ExtDIORd(dionum, coreHandle));
 
-        // printf("[addon.cpp] GetAllDioStatesWrapped: BTICard_ExtDIORd(%d) returned raw result = %d\n", dionum, result);
-        // fflush(stdout);
-
-        if (result < 0) {
-            dioResult.Set("status", Napi::Number::New(env, ERR_FAIL)); 
-            dioResult.Set("error", Napi::String::New(env, "Invalid DIO number specified.")); 
+        if (result < 0) { // Assuming negative means error based on previous logic
+            dioResult.Set("status", Napi::Number::New(env, ERR_FAIL)); // Use a generic error code or map BTI errors
+            // Potentially use BTICard_ErrDescStr here if ExtDIORd sets last error
+            dioResult.Set("error", Napi::String::New(env, "Error reading DIO."));
             dioResult.Set("value", env.Null());
         } else {
             dioResult.Set("status", Napi::Number::New(env, ERR_NONE));
-            dioResult.Set("value", Napi::Boolean::New(env, (result == 1)));
-             dioResult.Set("error", env.Null());
+            dioResult.Set("value", Napi::Boolean::New(env, (result == 1))); // Assuming 1=ON, 0=OFF
+            dioResult.Set("error", env.Null());
         }
         resultsArray.Set(i, dioResult);
     }
-
-    // printf("[addon.cpp] GetAllDioStatesWrapped: Finished read loop.\n");
-    // fflush(stdout);
 
     return resultsArray;
 }
 // --- END NEW Function ---
 
-// Initializer function for the addon module
+// --- NEW ARINC Receive Functions ---
+
+// Exported Function: InitializeHardware
+Napi::Value InitializeHardwareWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    Napi::Object resultObj = Napi::Object::New(env);
+
+    // Prevent re-initialization if already initialized
+    if (hCardGlobal != nullptr || hCoreGlobal != nullptr) {
+        resultObj.Set("success", Napi::Boolean::New(env, false));
+        resultObj.Set("hCard", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCardGlobal)));
+        resultObj.Set("hCore", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCoreGlobal)));
+        resultObj.Set("message", Napi::String::New(env, "Hardware already initialized."));
+        resultObj.Set("resultCode", Napi::Number::New(env, ERR_NONE)); // Or a custom code?
+        return resultObj;
+    }
+
+    int cardNum = 0; // Use Card 0 as confirmed by user
+    HCARD hCard = nullptr;
+    ERRVAL result = BTICard_CardOpen(&hCard, cardNum);
+
+    if (result != ERR_NONE || hCard == nullptr) {
+        const char* errStr = BTICard_ErrDescStr(result, nullptr);
+        resultObj.Set("success", Napi::Boolean::New(env, false));
+        resultObj.Set("hCard", env.Null());
+        resultObj.Set("hCore", env.Null());
+        resultObj.Set("message", Napi::String::New(env, errStr ? errStr : "Failed to open card."));
+        resultObj.Set("resultCode", Napi::Number::New(env, result));
+        hCardGlobal = nullptr;
+        hCoreGlobal = nullptr;
+        return resultObj;
+    }
+
+    hCardGlobal = hCard;
+
+    int coreNum = 0; // ARINC core
+    HCORE hCore = nullptr;
+    result = BTICard_CoreOpen(&hCore, coreNum, hCard);
+
+    if (result != ERR_NONE || hCore == nullptr) {
+        const char* errStr = BTICard_ErrDescStr(result, hCard);
+        resultObj.Set("success", Napi::Boolean::New(env, false));
+        resultObj.Set("hCard", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCard)));
+        resultObj.Set("hCore", env.Null());
+        resultObj.Set("message", Napi::String::New(env, errStr ? errStr : "Failed to open core."));
+        resultObj.Set("resultCode", Napi::Number::New(env, result));
+        // Don't null hCardGlobal here, it might be needed for cleanup attempt
+        hCoreGlobal = nullptr;
+        return resultObj;
+    }
+
+    hCoreGlobal = hCore;
+
+    // Optional Reset
+    BTICard_CardReset(hCore);
+
+    resultObj.Set("success", Napi::Boolean::New(env, true));
+    resultObj.Set("hCard", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCard)));
+    resultObj.Set("hCore", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCore)));
+    resultObj.Set("message", Napi::String::New(env, "Hardware initialized successfully."));
+    resultObj.Set("resultCode", Napi::Number::New(env, ERR_NONE));
+
+    return resultObj;
+}
+
+// Exported Function: InitializeReceiver
+Napi::Value InitializeReceiverWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 3 || !info[0].IsBigInt() || !info[1].IsFunction() || !info[2].IsFunction()) {
+        Napi::TypeError::New(env, "Expected: hCore (BigInt), dataCallback (Function), errorCallback (Function)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    bool lossless;
+    HCORE hCore = reinterpret_cast<HCORE>(info[0].As<Napi::BigInt>().Uint64Value(&lossless));
+    if (!lossless || !hCore) {
+        Napi::TypeError::New(env, "Invalid core handle provided.").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+     // Ensure global core handle matches if already set
+    if (hCoreGlobal && hCoreGlobal != hCore) {
+         Napi::Error::New(env, "Core handle mismatch with global state.").ThrowAsJavaScriptException();
+        return env.Null();
+    } else if (!hCoreGlobal) {
+        hCoreGlobal = hCore; // Set if not already set
+    }
+
+     // Cleanup previous TSFNs if they exist
+    if (tsfnDataUpdate) {
+        // Check if acquire returns napi_ok before releasing, otherwise it might already be released/dead
+        if (tsfnDataUpdate.Acquire() == napi_ok) {
+            tsfnDataUpdate.Release();
+        }
+        tsfnDataUpdate = nullptr;
+    }
+    if (tsfnErrorUpdate) {
+        if (tsfnErrorUpdate.Acquire() == napi_ok) {
+             tsfnErrorUpdate.Release();
+        }
+        tsfnErrorUpdate = nullptr;
+    }
+
+    // Create new ThreadSafeFunctions with corrected argument count
+    Napi::Function jsDataCallback = info[1].As<Napi::Function>();
+    Napi::Function jsErrorCallback = info[2].As<Napi::Function>();
+
+    // Define the finalizer lambda explicitly
+    auto dataFinalizer = [](Napi::Env env, void* finalize_data) { // Simplified signature
+        std::cout << "tsfnDataUpdate finalized." << std::endl;
+    };
+
+    tsfnDataUpdate = Napi::ThreadSafeFunction::New(
+        env,
+        jsDataCallback,
+        "ARINC Data Update", // Resource Name
+        0, // Max Queue Size (0 = unlimited)
+        1, // Initial Thread Count
+        dataFinalizer,
+        (void*)nullptr // FinalizerDataType*
+    );
+
+    auto errorFinalizer = [](Napi::Env env, void* finalize_data) { // Simplified signature
+        std::cout << "tsfnErrorUpdate finalized." << std::endl;
+    };
+
+    tsfnErrorUpdate = Napi::ThreadSafeFunction::New(
+        env,
+        jsErrorCallback,
+        "ARINC Error Update", // Resource Name
+        0, // Max Queue Size
+        1, // Initial Thread Count
+        errorFinalizer,
+        (void*)nullptr // FinalizerDataType*
+    );
+
+    Napi::Object resultObj = Napi::Object::New(env);
+    bool success = true;
+    std::string errorMessage = "Receiver initialized successfully.";
+    int lastErrorCode = ERR_NONE;
+
+    // Configure Event Log first (Keep this)
+    ERRVAL logConfigResult = BTICard_EventLogConfig(LOGCFG_ENABLE, 1024, hCore);
+    if(logConfigResult != ERR_NONE) {
+        // ... (Handle event log config error)
+        goto end_init_receiver;
+    }
+
+    // Configure Channels & Lists
+    for (int i = 0; i < ARINC_CHANNEL_COUNT; ++i) {
+        // Config Channel
+        ULONG chFlags = CHCFG429_AUTOSPEED | CHCFG429_LOGERR;
+        ERRVAL chConfigResult = BTI429_ChConfig(chFlags, i, hCore);
+        if (chConfigResult != ERR_NONE) {
+            const char* errStr = BTICard_ErrDescStr(chConfigResult, hCore);
+            errorMessage = "Failed to configure channel " + std::to_string(i) + ": " + (errStr ? errStr : "Unknown error");
+            success = false;
+            lastErrorCode = chConfigResult;
+            break;
+        }
+
+        // Create Default Filter FIRST
+        MSGADDR defaultMsgAddr = BTI429_FilterDefault(MSGCRT429_DEFAULT, i, hCore);
+        if (defaultMsgAddr == 0) {
+             errorMessage = "Failed to create default filter for channel " + std::to_string(i);
+             std::cerr << "BTI429_FilterDefault failed for channel " << i << std::endl;
+             success = false;
+             lastErrorCode = ERR_FAIL; // Or get last error if possible
+             break;
+        }
+        std::cout << "Created default filter for channel " << i << " with msg addr: " << defaultMsgAddr << std::endl;
+
+        // Create Receive List, passing the message address from the default filter
+        ULONG listFlags = LISTCRT429_FIFO; // Use FIFO mode
+        LISTADDR listAddr = BTI429_ListRcvCreate(listFlags, 1024, defaultMsgAddr, hCore);
+        if (listAddr == 0) {
+            errorMessage = "Failed to create receive list for channel " + std::to_string(i) + " (linked to default filter)";
+            std::cerr << "BTI429_ListRcvCreate failed for channel " << i << " with flags: " << listFlags << " msgAddr: " << defaultMsgAddr << std::endl;
+            success = false;
+            lastErrorCode = ERR_FAIL;
+            break;
+        }
+        receiveListAddrs[i] = listAddr; // Still store list address for reading
+        std::cout << "Created receive list for channel " << i << " linked to msg " << defaultMsgAddr << " with list address: " << listAddr << std::endl;
+    }
+
+end_init_receiver:
+    resultObj.Set("success", Napi::Boolean::New(env, success));
+    resultObj.Set("message", Napi::String::New(env, errorMessage));
+    resultObj.Set("lastErrorCode", Napi::Number::New(env, lastErrorCode));
+
+    // If initialization failed, release TSFNs immediately
+    if (!success) {
+         if (tsfnDataUpdate) { tsfnDataUpdate.Release(); tsfnDataUpdate = nullptr; }
+         if (tsfnErrorUpdate) { tsfnErrorUpdate.Release(); tsfnErrorUpdate = nullptr; }
+    }
+
+    return resultObj;
+}
+
+// Exported Function: StartMonitoring
+Napi::Value StartMonitoringWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsBigInt()) {
+        Napi::TypeError::New(env, "Expected: hCore (BigInt)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    bool lossless;
+    HCORE hCore = reinterpret_cast<HCORE>(info[0].As<Napi::BigInt>().Uint64Value(&lossless));
+    if (!lossless || !hCore || hCore != hCoreGlobal) { // Ensure handle matches global
+        Napi::TypeError::New(env, "Invalid or mismatched core handle provided.").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Napi::Object resultObj = Napi::Object::New(env);
+
+    if (monitoringActive.load()) {
+        resultObj.Set("success", Napi::Boolean::New(env, false));
+        resultObj.Set("message", Napi::String::New(env, "Monitoring is already active."));
+        return resultObj;
+    }
+    if (!tsfnDataUpdate || !tsfnErrorUpdate) {
+         resultObj.Set("success", Napi::Boolean::New(env, false));
+        resultObj.Set("message", Napi::String::New(env, "Callbacks not initialized. Call InitializeReceiver first."));
+        return resultObj;
+    }
+
+    ERRVAL startResult = BTICard_CardStart(hCore);
+    if (startResult != ERR_NONE) {
+        const char* errStr = BTICard_ErrDescStr(startResult, hCore);
+        resultObj.Set("success", Napi::Boolean::New(env, false));
+        resultObj.Set("message", Napi::String::New(env, std::string("Failed to start card: ") + (errStr ? errStr : "Unknown error")));
+        return resultObj;
+    }
+
+    monitoringActive.store(true);
+    try {
+        // Ensure previous thread is joined if somehow still exists
+        if (monitorThread.joinable()) {
+             std::cout << "Warning: Previous monitor thread was still joinable. Joining now." << std::endl;
+            monitorThread.join();
+        }
+        monitorThread = std::thread(MonitorLoop);
+    } catch (const std::exception& e) {
+         monitoringActive.store(false);
+         BTICard_CardStop(hCore); // Attempt to stop card if thread creation failed
+         const char* errStr = BTICard_ErrDescStr(startResult, hCore);
+         resultObj.Set("success", Napi::Boolean::New(env, false));
+         resultObj.Set("message", Napi::String::New(env, std::string("Failed to start monitoring thread: ") + e.what()));
+         return resultObj;
+    }
+
+    resultObj.Set("success", Napi::Boolean::New(env, true));
+    resultObj.Set("message", Napi::String::New(env, "ARINC monitoring started."));
+    return resultObj;
+}
+
+// Exported Function: StopMonitoring
+Napi::Value StopMonitoringWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 1 || !info[0].IsBigInt()) {
+        Napi::TypeError::New(env, "Expected: hCore (BigInt)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    bool lossless;
+    HCORE hCore = reinterpret_cast<HCORE>(info[0].As<Napi::BigInt>().Uint64Value(&lossless));
+     if (!lossless || !hCore || hCore != hCoreGlobal) { // Check against global
+        Napi::TypeError::New(env, "Invalid or mismatched core handle provided.").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Napi::Object resultObj = Napi::Object::New(env);
+
+    if (!monitoringActive.load()) {
+        resultObj.Set("success", Napi::Boolean::New(env, true)); // Already stopped
+        resultObj.Set("message", Napi::String::New(env, "Monitoring was not active."));
+        // Ensure TSFNs are released if somehow they weren't
+         if (tsfnDataUpdate) { tsfnDataUpdate.Abort(); tsfnDataUpdate.Release(); tsfnDataUpdate = nullptr; }
+         if (tsfnErrorUpdate) { tsfnErrorUpdate.Abort(); tsfnErrorUpdate.Release(); tsfnErrorUpdate = nullptr; }
+        return resultObj;
+    }
+
+    std::cout << "StopMonitoring called. Setting flag false." << std::endl;
+    monitoringActive.store(false);
+
+    // Abort TSFNs to unblock any pending calls immediately
+    if (tsfnDataUpdate) {
+        tsfnDataUpdate.Abort(); // Abort any queued calls
+    }
+    if (tsfnErrorUpdate) {
+        tsfnErrorUpdate.Abort();
+    }
+
+    if (monitorThread.joinable()) {
+        std::cout << "Joining monitor thread..." << std::endl;
+        try {
+             monitorThread.join();
+             std::cout << "Monitor thread joined." << std::endl;
+        } catch(const std::system_error& e) {
+            std::cerr << "Error joining monitor thread: " << e.what() << " (" << e.code() << ")" << std::endl;
+            // Proceed with stopping the card anyway
+        }
+    } else {
+         std::cout << "Monitor thread was not joinable." << std::endl;
+    }
+
+    // Stop the card
+     std::cout << "Stopping BTI Card..." << std::endl;
+    BTICard_CardStop(hCore);
+     std::cout << "BTI Card stopped." << std::endl;
+
+    // Release ThreadSafeFunctions - crucial to prevent leaks/crashes
+    if (tsfnDataUpdate) {
+        std::cout << "Releasing tsfnDataUpdate..." << std::endl;
+        tsfnDataUpdate.Release();
+        tsfnDataUpdate = nullptr;
+    }
+    if (tsfnErrorUpdate) {
+         std::cout << "Releasing tsfnErrorUpdate..." << std::endl;
+        tsfnErrorUpdate.Release();
+        tsfnErrorUpdate = nullptr;
+    }
+
+    resultObj.Set("success", Napi::Boolean::New(env, true));
+    resultObj.Set("message", Napi::String::New(env, "ARINC monitoring stopped."));
+    return resultObj;
+}
+
+// Exported Function: CleanupHardware
+Napi::Value CleanupHardwareWrapped(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    Napi::Object resultObj = Napi::Object::New(env);
+
+    // Ensure monitoring is stopped first
+    if (monitoringActive.load() && hCoreGlobal) {
+         std::cout << "CleanupHardware: Stopping active monitoring first..." << std::endl;
+         // Need to recreate CallbackInfo or pass null if no args needed
+         // This is tricky. It's better if stop is called explicitly before cleanup.
+         // Forcing a stop here without proper JS context can be problematic.
+         // Let's just set the flag and rely on card close.
+         monitoringActive.store(false);
+         if (monitorThread.joinable()) monitorThread.join(); // Try to join if possible
+         BTICard_CardStop(hCoreGlobal);
+          if (tsfnDataUpdate) { tsfnDataUpdate.Abort(); tsfnDataUpdate.Release(); tsfnDataUpdate = nullptr; }
+         if (tsfnErrorUpdate) { tsfnErrorUpdate.Abort(); tsfnErrorUpdate.Release(); tsfnErrorUpdate = nullptr; }
+    }
+
+    if (hCardGlobal) {
+        std::cout << "CleanupHardware: Closing card..." << std::endl;
+        ERRVAL closeResult = BTICard_CardClose(hCardGlobal);
+        if (closeResult == ERR_NONE) {
+             resultObj.Set("success", Napi::Boolean::New(env, true));
+             resultObj.Set("message", Napi::String::New(env, "Hardware resources released."));
+        } else {
+            const char* errStr = BTICard_ErrDescStr(closeResult, hCardGlobal);
+            resultObj.Set("success", Napi::Boolean::New(env, false));
+            resultObj.Set("message", Napi::String::New(env, std::string("Error closing card: ") + (errStr ? errStr : "Unknown error")));
+        }
+        hCardGlobal = nullptr; // Clear global handles
+        hCoreGlobal = nullptr;
+    } else {
+         resultObj.Set("success", Napi::Boolean::New(env, true)); // No card was open
+         resultObj.Set("message", Napi::String::New(env, "No hardware card was open."));
+    }
+
+    return resultObj;
+}
+
+// --- ARINC Monitoring Thread Loop ---
+void MonitorLoop() {
+    if (!hCoreGlobal) {
+        std::cerr << "MonitorLoop started with null hCoreGlobal!" << std::endl;
+        return;
+    }
+
+    HCORE hCore = hCoreGlobal; // Use the global core handle
+    const int MAX_READ_COUNT = 512; // How many words to read per channel check
+    std::vector<ULONG> readBuffer(MAX_READ_COUNT);
+
+    std::cout << "ARINC Monitor Thread Started." << std::endl;
+
+    while (monitoringActive.load()) {
+        // Check if TSFNs are still valid before proceeding
+        if (!tsfnDataUpdate || !tsfnErrorUpdate) {
+             std::cerr << "MonitorLoop: TSFN became invalid. Exiting loop." << std::endl;
+             monitoringActive.store(false);
+             break;
+        }
+
+        bool dataProcessedInCycle = false;
+        auto updatesBatch = new std::vector<ArincUpdateData>(); // Allocate on heap for TSFN
+
+        // 1. Poll Event Log (Optional but good for responsiveness)
+        USHORT eventType = 0;
+        ULONG eventInfo = 0;
+        INT eventChannel = -1;
+        ULONG logEntryAddr = BTICard_EventLogRd(&eventType, &eventInfo, &eventChannel, hCore);
+
+        if (logEntryAddr != 0) {
+            dataProcessedInCycle = true; // Consider event log read as activity
+           // std::cout << "Event Logged: Type=" << eventType << ", Info=" << eventInfo << ", Chan=" << eventChannel << std::endl;
+            if (eventType == EVENTTYPE_429LIST) { // List full/empty
+                std::cout << "ARINC List event on channel " << eventChannel << " (Info: " << eventInfo << " -> " << (eventInfo == 0 ? "Empty?" : "Full?") << ")" << std::endl;
+                // Could potentially report this as a warning/info via tsfnErrorUpdate
+                // auto* errorData = new ArincErrorData{eventChannel, ERR_INFO, std::string("List Buffer Event: ") + (eventInfo == 0 ? "Empty/Underrun" : "Full/Overflow") };
+                // tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
+            }
+            else if (eventType == EVENTTYPE_429ERR) { // Decoder error
+                 auto* errorData = new ArincErrorData{eventChannel, ERR_FAIL, "ARINC Decoder Error (See message activity)" };
+                 tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
+            }
+            // Add more event handling here if needed
+        }
+
+        // 2. Periodically Check Receive Lists
+        for (int channel = 0; channel < ARINC_CHANNEL_COUNT; ++channel) { // Uses the new constant
+            if (!monitoringActive.load()) break; // Check flag again inside loop
+
+            LISTADDR listAddr = receiveListAddrs[channel];
+            if (listAddr == 0) continue; // Skip if list wasn't created
+
+            int listStatus = BTI429_ListStatus(listAddr, hCore);
+
+            if (listStatus < 0) {
+                 // Error checking list status
+                 const char* errStr = BTICard_ErrDescStr(listStatus, hCore);
+                 auto* errorData = new ArincErrorData{channel, listStatus, std::string("Error checking list status: ") + (errStr ? errStr : "Unknown error")};
+                 if (tsfnErrorUpdate) tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
+                 continue; // Skip this channel on error
+            }
+
+            if (listStatus == STAT_PARTIAL || listStatus == STAT_FULL) {
+                dataProcessedInCycle = true;
+                USHORT countActuallyRead = 0; // Initialize to 0 before passing address
+                // std::cout << "Ch " << channel << " Status: " << listStatus << ". Reading up to " << MAX_READ_COUNT << std::endl;
+                BOOL success = BTI429_ListDataBlkRd(readBuffer.data(), &countActuallyRead, listAddr, hCore);
+                 // std::cout << "Ch " << channel << " Read attempt done. Success: " << success << ", Count: " << countActuallyRead << std::endl;
+
+                if (success && countActuallyRead > 0) {
+                    //std::cout << "Read " << countActuallyRead << " words from Ch " << channel << std::endl;
+                    for (USHORT i = 0; i < countActuallyRead; ++i) {
+                        ULONG word = readBuffer[i];
+                        int label = BTI429_FldGetLabel(word); // Label is bits 0-7
+                        auto now = std::chrono::steady_clock::now();
+
+                        // Update map
+                        auto& lastWord = latestWords[channel][label];
+                        auto& lastTime = lastUpdateTimes[channel][label];
+
+                        // Store/update data and add to batch for JS update
+                        lastWord = word;
+                        lastTime = now;
+                        updatesBatch->push_back({channel, label, word, steady_clock_to_epoch_ms(now)});
+                    }
+                } else if (!success) {
+                    // Handle read failure - check status again?
+                    int postReadStatus = BTI429_ListStatus(listAddr, hCore);
+                    const char* errStr = BTICard_ErrDescStr(postReadStatus, hCore);
+                    std::string errMsg = "Error reading data block (ListDataBlkRd failed).";
+                    if(postReadStatus < 0) {
+                        errMsg += " BTI Error: " + (errStr ? std::string(errStr) : "Unknown");
+                    } else {
+                        errMsg += " Post-read status: " + std::to_string(postReadStatus);
+                    }
+                     auto* errorData = new ArincErrorData{channel, (postReadStatus < 0 ? postReadStatus : ERR_FAIL), errMsg};
+                     if (tsfnErrorUpdate) tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
+                } else if (countActuallyRead == 0 && listStatus == STAT_FULL) {
+                     // This case might indicate an issue, log or report it
+                     // std::cerr << "Warning: Ch " << channel << " status FULL but read 0 words." << std::endl;
+                     // auto* errorData = new ArincErrorData{channel, ERR_INFO, "List status FULL but read 0 words."};
+                     // if (tsfnErrorUpdate) tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
+                }
+            }
+        }
+        if (!monitoringActive.load()) break; // Check flag again after loop
+
+        // 3. Send Batch Update if data was found/processed
+        if (!updatesBatch->empty()) {
+            if (tsfnDataUpdate) {
+               napi_status status = tsfnDataUpdate.BlockingCall(updatesBatch, CallJsDataUpdate);
+                if (status != napi_ok && status != napi_closing) { // Ignore error if stopping
+                    std::cerr << "Failed to call tsfnDataUpdate! Status: " << status << std::endl;
+                    delete updatesBatch; // Clean up if call failed
+                } else if (status == napi_closing) {
+                     std::cout << "tsfnDataUpdate closing, discarding batch." << std::endl;
+                      delete updatesBatch;
+                } // On napi_ok, updatesBatch is deleted inside CallJsDataUpdate
+            } else {
+                std::cerr << "tsfnDataUpdate is null, discarding batch." << std::endl;
+                delete updatesBatch; // Clean up if TSFN is null
+            }
+        } else {
+             delete updatesBatch; // Clean up if empty
+        }
+
+        // 4. Sleep
+        // Only sleep if no data was processed to stay responsive
+        if (!dataProcessedInCycle) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Polling interval when idle
+        } else {
+             std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Shorter sleep if busy
+        }
+    }
+
+    std::cout << "ARINC Monitor Thread Exiting." << std::endl;
+}
+
+// --- Initializer function for the addon module ---
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  // Export the wrapped functions using static linking
+  // Export the original wrapped functions
   exports.Set(Napi::String::New(env, "cardOpen"), Napi::Function::New(env, CardOpenWrapped));
   exports.Set(Napi::String::New(env, "coreOpen"), Napi::Function::New(env, CoreOpenWrapped));
   exports.Set(Napi::String::New(env, "cardTest"), Napi::Function::New(env, CardTestWrapped));
-  // Corrected: Use CardCloseWrapped for 'cardClose' export
-  exports.Set(Napi::String::New(env, "cardClose"), Napi::Function::New(env, CardCloseWrapped)); 
+  exports.Set(Napi::String::New(env, "cardClose"), Napi::Function::New(env, CardCloseWrapped));
   exports.Set(Napi::String::New(env, "bitInitiate"), Napi::Function::New(env, BitInitiateWrapped));
   exports.Set(Napi::String::New(env, "getErrorDescription"), Napi::Function::New(env, GetErrorDescriptionWrapped));
-  // --- Export new functions ---
   exports.Set(Napi::String::New(env, "cardReset"), Napi::Function::New(env, CardResetWrapped));
   exports.Set(Napi::String::New(env, "cardGetInfo"), Napi::Function::New(env, CardGetInfoWrapped));
-  exports.Set(Napi::String::New(env, "cardStart"), Napi::Function::New(env, CardStartWrapped)); // Exported BTICard_CardStart
-  exports.Set(Napi::String::New(env, "cardStop"), Napi::Function::New(env, CardStopWrapped)); // Exported BTICard_CardStop
-  exports.Set(Napi::String::New(env, "chConfig"), Napi::Function::New(env, ChConfigWrapped)); // Exported BTI429_ChConfig
-  exports.Set(Napi::String::New(env, "chStart"), Napi::Function::New(env, ChStartWrapped)); // Exported BTI429_ChStart
-  exports.Set(Napi::String::New(env, "chStop"), Napi::Function::New(env, ChStopWrapped)); // Exported BTI429_ChStop
-  exports.Set(Napi::String::New(env, "listXmtCreate"), Napi::Function::New(env, ListXmtCreateWrapped)); // Exported BTI429_ListXmtCreate
-  exports.Set(Napi::String::New(env, "listDataWr"), Napi::Function::New(env, ListDataWrWrapped)); // Exported BTI429_ListDataWr
-  exports.Set(Napi::String::New(env, "listDataBlkWr"), Napi::Function::New(env, ListDataBlkWrWrapped)); // Exported BTI429_ListDataBlkWr
-  exports.Set(Napi::String::New(env, "listRcvCreate"), Napi::Function::New(env, ListRcvCreateWrapped)); // Exported BTI429_ListRcvCreate
-  exports.Set(Napi::String::New(env, "listDataRd"), Napi::Function::New(env, ListDataRdWrapped)); // Exported BTI429_ListDataRd
-  exports.Set(Napi::String::New(env, "listDataBlkRd"), Napi::Function::New(env, ListDataBlkRdWrapped)); // Exported BTI429_ListDataBlkRd
-  exports.Set(Napi::String::New(env, "listStatus"), Napi::Function::New(env, ListStatusWrapped)); // Exported BTI429_ListStatus
-  exports.Set(Napi::String::New(env, "filterSet"), Napi::Function::New(env, FilterSetWrapped)); // Exported BTI429_FilterSet
-  exports.Set(Napi::String::New(env, "filterDefault"), Napi::Function::New(env, FilterDefaultWrapped)); // Exported BTI429_FilterDefault
-  exports.Set(Napi::String::New(env, "listDataRdAsync"), Napi::Function::New(env, ListDataRdAsyncWrapped)); // Exported Async ListDataRd
-  exports.Set(Napi::String::New(env, "listDataBlkRdAsync"), Napi::Function::New(env, ListDataBlkRdAsyncWrapped)); // Exported Async ListDataBlkRd
-  exports.Set(Napi::String::New(env, "msgCreate"), Napi::Function::New(env, MsgCreateWrapped)); // Exported BTI429_MsgCreate
-  exports.Set(Napi::String::New(env, "msgDataWr"), Napi::Function::New(env, MsgDataWrWrapped)); // Exported BTI429_MsgDataWr
-  exports.Set(Napi::String::New(env, "msgDataRd"), Napi::Function::New(env, MsgDataRdWrapped)); // Exported BTI429_MsgDataRd
-  exports.Set(Napi::String::New(env, "fldGetLabel"), Napi::Function::New(env, FldGetLabelWrapped)); // Exported BTI429_FldGetLabel
-  exports.Set(Napi::String::New(env, "fldGetSDI"), Napi::Function::New(env, FldGetSDIWrapped)); // Exported BTI429_FldGetSDI
-  exports.Set(Napi::String::New(env, "fldGetData"), Napi::Function::New(env, FldGetDataWrapped)); // Exported BTI429_FldGetData
-  exports.Set(Napi::String::New(env, "bcdGetData"), Napi::Function::New(env, BCDGetDataWrapped)); // Exported BTI429_BCDGetData
-  exports.Set(Napi::String::New(env, "bnrGetData"), Napi::Function::New(env, BNRGetDataWrapped)); // Exported BTI429_BNRGetData
-  exports.Set(Napi::String::New(env, "msgBlockRd"), Napi::Function::New(env, MsgBlockRdWrapped)); // Exported BTI429_MsgBlockRd
-  exports.Set(Napi::String::New(env, "msgCommRd"), Napi::Function::New(env, MsgCommRdWrapped)); // Exported BTI429_MsgCommRd
-  exports.Set(Napi::String::New(env, "msgIsAccessed"), Napi::Function::New(env, MsgIsAccessedWrapped)); // Exported BTI429_MsgIsAccessed
-  // Exported ExtDIO functions
+  exports.Set(Napi::String::New(env, "cardStart"), Napi::Function::New(env, CardStartWrapped));
+  exports.Set(Napi::String::New(env, "cardStop"), Napi::Function::New(env, CardStopWrapped));
+  exports.Set(Napi::String::New(env, "eventLogConfig"), Napi::Function::New(env, EventLogConfigWrapped));
+  exports.Set(Napi::String::New(env, "eventLogRd"), Napi::Function::New(env, EventLogRdWrapped));
+  exports.Set(Napi::String::New(env, "eventLogStatus"), Napi::Function::New(env, EventLogStatusWrapped));
+  exports.Set(Napi::String::New(env, "timer64Rd"), Napi::Function::New(env, Timer64RdWrapped));
+  exports.Set(Napi::String::New(env, "timer64Wr"), Napi::Function::New(env, Timer64WrWrapped));
+  exports.Set(Napi::String::New(env, "chConfig"), Napi::Function::New(env, ChConfigWrapped));
+  exports.Set(Napi::String::New(env, "chStart"), Napi::Function::New(env, ChStartWrapped));
+  exports.Set(Napi::String::New(env, "chStop"), Napi::Function::New(env, ChStopWrapped));
+  exports.Set(Napi::String::New(env, "listXmtCreate"), Napi::Function::New(env, ListXmtCreateWrapped));
+  exports.Set(Napi::String::New(env, "listDataWr"), Napi::Function::New(env, ListDataWrWrapped));
+  exports.Set(Napi::String::New(env, "listDataBlkWr"), Napi::Function::New(env, ListDataBlkWrWrapped));
+  exports.Set(Napi::String::New(env, "listRcvCreate"), Napi::Function::New(env, ListRcvCreateWrapped));
+  exports.Set(Napi::String::New(env, "listDataRd"), Napi::Function::New(env, ListDataRdWrapped));
+  exports.Set(Napi::String::New(env, "listDataBlkRd"), Napi::Function::New(env, ListDataBlkRdWrapped));
+  exports.Set(Napi::String::New(env, "listStatus"), Napi::Function::New(env, ListStatusWrapped));
+  exports.Set(Napi::String::New(env, "filterSet"), Napi::Function::New(env, FilterSetWrapped));
+  exports.Set(Napi::String::New(env, "filterDefault"), Napi::Function::New(env, FilterDefaultWrapped));
+  exports.Set(Napi::String::New(env, "listDataRdAsync"), Napi::Function::New(env, ListDataRdAsyncWrapped));
+  exports.Set(Napi::String::New(env, "listDataBlkRdAsync"), Napi::Function::New(env, ListDataBlkRdAsyncWrapped));
+  exports.Set(Napi::String::New(env, "msgCreate"), Napi::Function::New(env, MsgCreateWrapped));
+  exports.Set(Napi::String::New(env, "msgDataWr"), Napi::Function::New(env, MsgDataWrWrapped));
+  exports.Set(Napi::String::New(env, "msgDataRd"), Napi::Function::New(env, MsgDataRdWrapped));
+  exports.Set(Napi::String::New(env, "fldGetLabel"), Napi::Function::New(env, FldGetLabelWrapped));
+  exports.Set(Napi::String::New(env, "fldGetSDI"), Napi::Function::New(env, FldGetSDIWrapped));
+  exports.Set(Napi::String::New(env, "fldGetData"), Napi::Function::New(env, FldGetDataWrapped));
+  exports.Set(Napi::String::New(env, "bcdGetData"), Napi::Function::New(env, BCDGetDataWrapped));
+  exports.Set(Napi::String::New(env, "bnrGetData"), Napi::Function::New(env, BNRGetDataWrapped));
+  exports.Set(Napi::String::New(env, "msgBlockRd"), Napi::Function::New(env, MsgBlockRdWrapped));
+  exports.Set(Napi::String::New(env, "msgCommRd"), Napi::Function::New(env, MsgCommRdWrapped));
+  exports.Set(Napi::String::New(env, "msgIsAccessed"), Napi::Function::New(env, MsgIsAccessedWrapped));
   exports.Set(Napi::String::New(env, "extDIOWr"), Napi::Function::New(env, ExtDIOWrWrapped));
-
-  // --- Export the NEW function ---
   exports.Set(Napi::String::New(env, "getAllDioStates"), Napi::Function::New(env, GetAllDioStatesWrapped));
+
+  // --- Export NEW ARINC receiver control functions ---
+  exports.Set(Napi::String::New(env, "initializeHardware"), Napi::Function::New(env, InitializeHardwareWrapped));
+  exports.Set(Napi::String::New(env, "initializeReceiver"), Napi::Function::New(env, InitializeReceiverWrapped));
+  exports.Set(Napi::String::New(env, "startMonitoring"), Napi::Function::New(env, StartMonitoringWrapped));
+  exports.Set(Napi::String::New(env, "stopMonitoring"), Napi::Function::New(env, StopMonitoringWrapped));
+  exports.Set(Napi::String::New(env, "cleanupHardware"), Napi::Function::New(env, CleanupHardwareWrapped));
   // --- END Export ---
 
   return exports;

@@ -1,6 +1,6 @@
-const runTestBtn = document.getElementById('runTestBtn');
-const stopPollBtn = document.getElementById('stopPollBtn'); // Get reference to stop button
-const resultsOutput = document.getElementById('resultsOutput');
+// const runTestBtn = document.getElementById('runTestBtn'); // REMOVED
+// const stopPollBtn = document.getElementById('stopPollBtn'); // REMOVED - Was this used?
+// const resultsOutput = document.getElementById('resultsOutput'); // REMOVED
 const discreteIndicators = [];
 for (let i = 0; i < 8; i++) {
     discreteIndicators.push(document.getElementById(`discrete-in-${i}`));
@@ -24,68 +24,348 @@ let pollingIntervalId = null;
 // Flag to track if the device (card/core) is successfully opened
 let isDeviceReady = false;
 
-if (runTestBtn && resultsOutput) { // Add checks to ensure elements exist
-  runTestBtn.addEventListener('click', () => {
-    resultsOutput.textContent = 'Running test...';
-    resultsOutput.className = ''; // Reset any previous status class
-    // Check if electronAPI is available before calling send
-    if (window.electronAPI && typeof window.electronAPI.send === 'function') {
-        window.electronAPI.send('run-test');
+// Keep track of the polling interval ID
+let dioPollingIntervalId = null;
+let hCore = null;
+
+// --- ARINC Receive Data Handling ---
+let arincData = {}; // Structure: { channelId: { labelOctal: { word: number, timestamp: number, rowElement: Element } } }
+const ARINC_CHANNEL_COUNT = 8;
+const STALE_THRESHOLD_MS = 500;
+const STALENESS_CHECK_INTERVAL_MS = 250;
+
+function initializeArincUI() {
+    console.log('Initializing ARINC Receive UI...');
+    const container = document.querySelector('.arinc-channels-container');
+    if (!container) {
+        console.error('ARINC channels container not found!');
+        return;
+    }
+    container.innerHTML = ''; // Clear previous content
+
+    for (let i = 0; i < ARINC_CHANNEL_COUNT; i++) {
+        arincData[i] = {}; // Initialize data store for channel
+
+        const section = document.createElement('div');
+        section.className = 'arinc-channel-section';
+        section.id = `channel-${i}-data`;
+
+        const heading = document.createElement('h3');
+        const statusIndicator = document.createElement('span');
+        statusIndicator.id = `channel-${i}-status-indicator`;
+        statusIndicator.className = 'status-indicator grey'; // Initial state: grey
+        statusIndicator.textContent = '●';
+        heading.appendChild(statusIndicator);
+        heading.appendChild(document.createTextNode(` Channel ${i}`));
+        section.appendChild(heading);
+
+        const table = document.createElement('table');
+        table.id = `channel-${i}-table`;
+        table.className = 'arinc-data-table table table-sm table-bordered table-striped'; // Added bootstrap classes
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Label (Octal)</th>
+                    <th>Data Word (Hex)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data rows will be added here -->
+            </tbody>
+        `;
+        section.appendChild(table);
+        container.appendChild(section);
+    }
+    console.log('ARINC Receive UI Initialized.');
+}
+
+// Render/update a specific label row in the table
+function renderLabelUpdate(channel, labelOctal) {
+    const channelData = arincData[channel];
+    if (!channelData || !channelData[labelOctal]) return;
+
+    const entry = channelData[labelOctal];
+    const tableBody = document.querySelector(`#channel-${channel}-table tbody`);
+    if (!tableBody) {
+        console.error(`Table body for channel ${channel} not found!`);
+        return;
+    }
+
+    let row = entry.rowElement;
+    if (!row) {
+        row = document.createElement('tr');
+        row.id = `ch${channel}-label-${labelOctal}`; // Use octal in ID
+
+        const labelCell = document.createElement('td');
+        labelCell.textContent = labelOctal;
+
+        const wordCell = document.createElement('td');
+        wordCell.textContent = entry.word.toString(16).toUpperCase().padStart(8, '0'); // Initial word
+
+        const statusCell = document.createElement('td');
+        const statusIndicator = document.createElement('span');
+        statusIndicator.className = 'status-indicator grey'; // Initial state
+        statusIndicator.textContent = '●';
+        statusCell.appendChild(statusIndicator);
+
+        row.appendChild(labelCell);
+        row.appendChild(wordCell);
+        row.appendChild(statusCell);
+
+        tableBody.appendChild(row);
+        entry.rowElement = row; // Cache the row element
     } else {
-        resultsOutput.textContent = 'Error: electronAPI not loaded.';
-        resultsOutput.className = 'error-message'; // Add error class
-        console.error('electronAPI or electronAPI.send is not available');
-    }
-  });
-
-  // Check if electronAPI is available before calling on
-  if (window.electronAPI && typeof window.electronAPI.on === 'function') {
-    // --- Updated listener for the NEW simple resultsData structure from the native addon --- 
-    window.electronAPI.on('test-results', (resultsData) => {
-      console.log('Received test results data:', resultsData);
-
-      resultsOutput.className = ''; // Reset classes
-
-      if (resultsData && typeof resultsData.success === 'boolean') {
-        // Update the device ready state based on test success
-        isDeviceReady = resultsData.success;
-        console.log(`Device ready state set to: ${isDeviceReady}`);
-
-        if (resultsData.success) {
-          resultsOutput.textContent = `Success: ${resultsData.message} (Code: ${resultsData.resultCode !== null ? resultsData.resultCode : 'N/A'})`;
-          resultsOutput.className = 'status-passed'; // Use a success class
-        } else {
-          resultsOutput.textContent = `Error: ${resultsData.message} (Code: ${resultsData.resultCode !== null ? resultsData.resultCode : 'N/A'})`;
-          resultsOutput.className = 'error-message status-failed'; // Use an error class
+        // Row exists, just update the word cell
+        const wordCell = row.cells[1];
+        if (wordCell) {
+            wordCell.textContent = entry.word.toString(16).toUpperCase().padStart(8, '0');
         }
-      } else {
-        // Test failed or unexpected data, ensure device is marked not ready
-        isDeviceReady = false;
-        console.log(`Device ready state set to false due to unexpected data.`);
-        // Fallback if the data structure is not what we expect
-        resultsOutput.textContent = 'Error: Received unexpected data structure from main process.';
-        resultsOutput.className = 'error-message';
-        console.error('Unexpected resultsData structure:', resultsData);
-      }
-    });
-    // --- End Updated Listener ---
-
-  } else {
-    console.error('electronAPI or electronAPI.on is not available');
-    // Display error in resultsOutput
-    if (resultsOutput) {
-      resultsOutput.innerHTML = '<p class="error-message">Error: electronAPI not available for receiving results.</p>';
-      resultsOutput.className = 'error-message';
     }
-  }
-} else {
-    console.error('Could not find button or results elements in the DOM.');
-    // If resultsOutput exists, display error there
-    if(resultsOutput) {
-        resultsOutput.textContent = 'Error: UI elements not found.';
-        resultsOutput.className = 'error-message';
+    // Staleness check will handle the indicator color update
+}
+
+// Check for stale data
+function checkStaleness() {
+    const now = Date.now();
+    for (const channel in arincData) {
+        for (const labelOctal in arincData[channel]) {
+            const entry = arincData[channel][labelOctal];
+            if (entry.rowElement) {
+                const statusIndicator = entry.rowElement.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    const isStale = (now - entry.timestamp) > STALE_THRESHOLD_MS;
+                    statusIndicator.className = 'status-indicator ' + (isStale ? 'red' : 'green');
+                }
+            }
+        }
     }
 }
+
+// Setup interval for staleness check
+setInterval(checkStaleness, STALENESS_CHECK_INTERVAL_MS);
+
+// Handle ARINC data updates from main process
+window.electronAPI?.onArincDataUpdate((updates) => {
+    if (!Array.isArray(updates)) {
+        console.error('Received non-array data for ARINC update:', updates);
+        return;
+    }
+    // console.log(`Received ${updates.length} ARINC updates`);
+    const now = Date.now(); // Use a consistent timestamp for the batch
+    updates.forEach(update => {
+        if (update.channel === undefined || update.label === undefined || update.word === undefined) {
+            console.error('Invalid ARINC update received:', update);
+            return;
+        }
+
+        const channel = update.channel;
+        const labelOctal = update.label.toString(8).padStart(3, '0');
+
+        if (!arincData[channel]) {
+            console.warn(`Received data for unexpected channel ${channel}`);
+            arincData[channel] = {}; // Initialize if needed, though UI init should do this
+        }
+
+        if (!arincData[channel][labelOctal]) {
+            arincData[channel][labelOctal] = { rowElement: null }; // Initialize if first time seeing label
+        }
+
+        arincData[channel][labelOctal].word = update.word;
+        arincData[channel][labelOctal].timestamp = update.timestamp || now; // Use provided timestamp or batch time
+
+        renderLabelUpdate(channel, labelOctal);
+    });
+});
+
+// Handle ARINC error/status updates from main process
+window.electronAPI?.onArincErrorUpdate((errorInfo) => {
+    console.error('ARINC Error/Status Update:', errorInfo);
+    const errorDiv = document.getElementById('arinc-rx-error');
+    let statusIndicator = null;
+
+    if (errorInfo.channel !== null && errorInfo.channel >= 0 && errorInfo.channel < ARINC_CHANNEL_COUNT) {
+        // Channel-specific error
+        statusIndicator = document.getElementById(`channel-${errorInfo.channel}-status-indicator`);
+        if (errorDiv) {
+            errorDiv.textContent = `Channel ${errorInfo.channel}: [${errorInfo.status}] ${errorInfo.message || ''}`;
+            errorDiv.style.display = 'block';
+        }
+    } else {
+        // Global error or status - update all channel indicators?
+        if (errorDiv) {
+            errorDiv.textContent = `Global: [${errorInfo.status}] ${errorInfo.message || ''}`;
+            errorDiv.style.display = 'block';
+        }
+        // Potentially update all channel indicators, or add a global one
+        for (let i = 0; i < ARINC_CHANNEL_COUNT; i++) {
+             const indi = document.getElementById(`channel-${i}-status-indicator`);
+             if(indi) {
+                 indi.className = 'status-indicator ' + (errorInfo.status === 'OK' ? 'green' : 'red');
+             }
+        }
+        return; // Exit after handling global update
+    }
+
+    if (statusIndicator) {
+        statusIndicator.className = 'status-indicator ' + (errorInfo.status === 'OK' ? 'green' : 'red');
+    }
+});
+
+// --- End ARINC Receive Data Handling ---
+
+
+function updateDIOStatus(statuses) {
+    const container = document.getElementById('dio-status');
+    const errorDiv = document.getElementById('dio-error');
+    const lastUpdatedSpan = document.getElementById('dio-last-updated');
+    container.innerHTML = ''; // Clear previous content
+    errorDiv.style.display = 'none'; // Hide error initially
+    lastUpdatedSpan.textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
+
+    if (!Array.isArray(statuses)) {
+        console.error('Expected an array of DIO statuses, received:', statuses);
+        container.innerHTML = '<p class="text-danger">Error: Invalid data received.</p>';
+        return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'dio-container'; // Use flex container
+
+    statuses.forEach(dio => {
+        const dioElement = document.createElement('div');
+        dioElement.className = 'dio-indicator';
+        dioElement.id = `dio-${dio.apiDionum}`;
+
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'dio-label';
+        // Map apiDionum back to a user-friendly index or name if desired
+        labelSpan.textContent = `DIO ${dio.apiDionum}:`;
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'dio-status';
+
+        if (dio.status === 0) { // Assuming ERR_NONE is 0
+            statusSpan.textContent = dio.value ? 'ON' : 'OFF';
+            statusSpan.classList.add(dio.value ? 'on' : 'off');
+        } else {
+            statusSpan.textContent = 'ERR';
+            statusSpan.classList.add('error');
+            statusSpan.title = dio.error || `Error code: ${dio.status}`;
+            // Display individual DIO error inline or collectively
+            errorDiv.textContent = `Error on DIO ${dio.apiDionum}: ${dio.error || `Code ${dio.status}`}`;
+            errorDiv.style.display = 'block';
+        }
+
+        dioElement.appendChild(labelSpan);
+        dioElement.appendChild(statusSpan);
+        row.appendChild(dioElement);
+    });
+    container.appendChild(row);
+}
+
+async function refreshDIO() {
+    if (!hCore) {
+        console.error('Core not open. Cannot refresh DIO.');
+        const errorDiv = document.getElementById('dio-error');
+        errorDiv.textContent = 'Error: Hardware core is not open.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    try {
+        // console.log('Requesting DIO states from main process...');
+        const dioStatuses = await window.electronAPI.getAllDioStates(hCore);
+        // console.log('Received DIO states:', dioStatuses);
+        updateDIOStatus(dioStatuses);
+    } catch (error) {
+        console.error('Error getting DIO states:', error);
+        const errorDiv = document.getElementById('dio-error');
+        errorDiv.textContent = `Error refreshing DIO: ${error.message || error}`;
+        errorDiv.style.display = 'block';
+        updateDIOStatus([]); // Clear display on error
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const refreshButton = document.getElementById('refresh-dio');
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', refreshDIO);
+    } else {
+        console.error('Refresh DIO button not found');
+    }
+
+    // --- Initialization Sequence ---
+    console.log('Initializing hardware...');
+    window.electronAPI.initializeHardware()
+        .then(result => {
+            if (result.success) {
+                hCore = result.hCore; // Store the core handle
+                console.log('Hardware initialized successfully, Core Handle:', hCore);
+                // Initialize ARINC Receiver specific components
+                return window.electronAPI.initializeReceiver(hCore);
+            }
+             else {
+                throw new Error(`Failed to initialize hardware: ${result.message} (Code: ${result.resultCode})`);
+            }
+        })
+        .then(initResult => {
+             if (initResult.success) {
+                console.log('ARINC Receiver initialized successfully.');
+                // Now safe to refresh DIO or start ARINC monitoring
+                refreshDIO(); // Perform initial DIO read
+                // Start ARINC monitoring
+                 return window.electronAPI.startArincMonitoring(hCore);
+             } else {
+                  throw new Error(`Failed to initialize ARINC receiver: ${initResult.message || 'Unknown error'}`);
+             }
+        })
+         .then(monitorResult => {
+             if (monitorResult.success) {
+                console.log('ARINC Monitoring started successfully.');
+                 // Handle successful monitoring start (e.g., update UI indicator)
+                 const globalIndicator = document.getElementById('arinc-rx-error');
+                 if(globalIndicator) {
+                    globalIndicator.style.display = 'none'; // Hide error on successful start
+                 }
+                 // Indicate monitoring is active on channel indicators maybe?
+                 for (let i = 0; i < ARINC_CHANNEL_COUNT; i++) {
+                     const indi = document.getElementById(`channel-${i}-status-indicator`);
+                     if (indi) {
+                         indi.className = 'status-indicator green'; // Show green initially
+                         indi.title = 'Monitoring Active';
+                     }
+                 }
+            } else {
+                 throw new Error(`Failed to start ARINC monitoring: ${monitorResult.message || 'Unknown error'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Initialization or Monitoring Start Failed:', error);
+            const errorDiv = document.getElementById('dio-error'); // Or a more general error div
+            errorDiv.textContent = `Initialization Failed: ${error.message || error}`;
+            errorDiv.style.display = 'block';
+             const arincErrorDiv = document.getElementById('arinc-rx-error');
+            if(arincErrorDiv) {
+                arincErrorDiv.textContent = `Initialization Failed: ${error.message || error}`;
+                arincErrorDiv.style.display = 'block';
+            }
+        });
+
+        // Initial UI setup for ARINC
+        initializeArincUI();
+
+    // Stop polling/monitoring if the window is closed
+    window.addEventListener('beforeunload', () => {
+        if (dioPollingIntervalId) {
+            clearInterval(dioPollingIntervalId);
+        }
+        if(hCore) {
+            window.electronAPI.stopArincMonitoring(hCore).catch(console.error);
+        }
+    });
+});
 
 // Function to update discrete input status display
 async function updateDiscreteInputs() {
@@ -201,30 +481,4 @@ if (window.electronAPI && typeof window.electronAPI.getAllDioStates === 'functio
             if(statusSpan) statusSpan.textContent = 'Disabled';
         }
     }
-}
-
-// Add event listener for the stop button
-if (stopPollBtn) {
-    stopPollBtn.addEventListener('click', () => {
-        if (pollingIntervalId !== null) {
-            clearInterval(pollingIntervalId);
-            pollingIntervalId = null; // Clear the ID
-            console.log("Polling stopped by user.");
-            // Update UI to show stopped state
-            for (let i = 0; i < 8; i++) {
-                const indicatorDiv = discreteIndicators[i];
-                if (indicatorDiv) {
-                   const statusSpan = indicatorDiv.querySelector('.dio-status');
-                   if(statusSpan && !statusSpan.textContent.includes('(Stopped)')) {
-                       // Only append if not already showing error/disabled etc.
-                       if(!indicatorDiv.classList.contains('error')) {
-                           statusSpan.textContent += ' (Stopped)';
-                       }
-                   }
-                }
-            }
-        } else {
-            console.log("Polling is already stopped.");
-        }
-    });
 } 

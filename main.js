@@ -281,3 +281,113 @@ ipcMain.handle('bti:getAllDioStates', async (event) => {
     }
 });
 // --- END Get All DIO States Handler ---
+
+// --- IPC Handlers for ARINC Receiver Initialization, Start/Stop Monitoring, and Data/Error Forwarding ---
+
+// Handle DIO refresh request
+ipcMain.handle('get-all-dio-states', async (event, hCore) => {
+  if (!btiAddon) {
+    throw new Error('Addon not loaded');
+  }
+  if (!hCore) {
+      throw new Error('Invalid core handle provided for DIO read.');
+  }
+  try {
+    const hCoreNumber = BigInt(hCore); // Convert handle back to BigInt/Number as needed by addon
+    // console.log('main requesting getAllDioStates with hCore:', hCoreNumber);
+    const result = btiAddon.getAllDioStates(hCoreNumber); // Assuming handle passed as Number/BigInt
+    // console.log('main received getAllDioStates result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error calling getAllDioStates in addon:', error);
+    throw error; // Re-throw to be caught in renderer
+  }
+});
+
+// Handle Hardware Initialization
+ipcMain.handle('initialize-hardware', async () => {
+  if (!btiAddon) {
+    throw new Error('Addon not loaded');
+  }
+  try {
+    console.log('Calling addon.initializeHardware...');
+    const result = btiAddon.initializeHardware(); // Assuming this is synchronous for now
+    console.log('Addon initializeHardware result:', result);
+    // if (result.success) {
+    //   // Store handles globally if needed, though passing hCore around might be better
+    //   // globalHCard = result.hCard;
+    //   // globalHCore = result.hCore;
+    // }
+    return result;
+  } catch (error) {
+    console.error('Error calling initializeHardware in addon:', error);
+    throw error;
+  }
+});
+
+// Handle ARINC Receiver Initialization
+ipcMain.handle('initialize-receiver', async (event, hCore) => {
+    if (!btiAddon) throw new Error('Addon not loaded');
+    if (!hCore) throw new Error('Invalid core handle for receiver initialization.');
+    try {
+        console.log('Calling addon.initializeReceiver with hCore:', hCore);
+        // Define callbacks for the addon to send data back
+        const onDataUpdate = (dataBatch) => {
+            if (gCoreHandle && typeof btiAddon.sendARINCData === 'function') {
+                // console.log(`Forwarding ${dataBatch?.length} ARINC updates to renderer.`);
+                btiAddon.sendARINCData(gCoreHandle, dataBatch);
+            }
+        };
+        const onErrorUpdate = (errorInfo) => {
+            if (gCoreHandle && typeof btiAddon.sendARINCError === 'function') {
+                console.error('Forwarding ARINC error to renderer:', errorInfo);
+                btiAddon.sendARINCError(gCoreHandle, errorInfo);
+            }
+        };
+
+        // Pass handle and callbacks to the addon function
+        const result = btiAddon.initializeReceiver(BigInt(hCore), onDataUpdate, onErrorUpdate);
+        console.log('Addon initializeReceiver result:', result);
+        return result;
+    } catch (error) {
+        console.error('Error calling initializeReceiver in addon:', error);
+        throw error;
+    }
+});
+
+// Handle Start ARINC Monitoring
+ipcMain.handle('start-arinc-monitoring', async (event, hCore) => {
+    if (!btiAddon) throw new Error('Addon not loaded');
+    if (!hCore) throw new Error('Invalid core handle for starting monitoring.');
+    try {
+        console.log('Calling addon.startMonitoring with hCore:', hCore);
+        const result = btiAddon.startMonitoring(BigInt(hCore));
+        console.log('Addon startMonitoring result:', result);
+        return result;
+    } catch (error) {
+        console.error('Error calling startMonitoring in addon:', error);
+        throw error;
+    }
+});
+
+// Handle Stop ARINC Monitoring
+ipcMain.handle('stop-arinc-monitoring', async (event, hCore) => {
+    if (!btiAddon) {
+        console.warn('Attempted to stop monitoring, but addon not loaded.');
+        return { success: true, message: 'Addon not loaded, assuming stopped.' }; // Graceful handling
+    }
+    if (!hCore) {
+        console.warn('Attempted to stop monitoring with invalid core handle.');
+         return { success: false, message: 'Invalid core handle.' };
+    }
+    try {
+        console.log('Calling addon.stopMonitoring with hCore:', hCore);
+        const result = btiAddon.stopMonitoring(BigInt(hCore));
+        console.log('Addon stopMonitoring result:', result);
+        return result;
+    } catch (error) {
+        console.error('Error calling stopMonitoring in addon:', error);
+        return { success: false, message: error.message };
+    }
+});
+// --- End IPC Handlers for ARINC Receiver Initialization, Start/Stop Monitoring, and Data/Error Forwarding ---

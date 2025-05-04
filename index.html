@@ -2,64 +2,65 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- Minimal CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'"
-    />
-    <meta
-      http-equiv="X-Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';"
     />
     <title>UA2430 Test Interface</title>
+    <!-- REMOVED Bootstrap CSS -->
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <h1>UA2430 Test Interface</h1>
-    
-    <button id="runTestBtn">Run UA2430 Test</button>
-    <button id="stopPollBtn">Stop Polling</button>
+    <div class="container mt-3"> <!-- Keep container for padding -->
+        <h1>Ballard UA2430 Interface</h1>
 
-    <h2>Results:</h2>
-    <pre id="resultsOutput">Click the button to run the test.</pre>
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dio-tab" data-bs-toggle="tab" data-bs-target="#dio-tab-pane" type="button" role="tab" aria-controls="dio-tab-pane" aria-selected="true">DIO</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="arinc-rx-tab" data-bs-toggle="tab" data-bs-target="#arinc-rx-tab-pane" type="button" role="tab" aria-controls="arinc-rx-tab-pane" aria-selected="false">ARINC 429 Receive</button>
+            </li>
+        </ul>
 
-    <h2>Discrete Inputs:</h2>
-    <div id="discrete-inputs-container" class="dio-container">
-      <div id="discrete-in-0" class="dio-indicator">
-        <span class="dio-label">DIO 0:</span>
-        <span class="dio-status">---</span>
-      </div>
-      <div id="discrete-in-1" class="dio-indicator">
-        <span class="dio-label">DIO 1:</span>
-        <span class="dio-status">---</span>
-      </div>
-      <div id="discrete-in-2" class="dio-indicator">
-        <span class="dio-label">DIO 2:</span>
-        <span class="dio-status">---</span>
-      </div>
-      <div id="discrete-in-3" class="dio-indicator">
-        <span class="dio-label">DIO 3:</span>
-        <span class="dio-status">---</span>
-      </div>
-      <div id="discrete-in-4" class="dio-indicator">
-        <span class="dio-label">DIO 4:</span>
-        <span class="dio-status">---</span>
-      </div>
-      <div id="discrete-in-5" class="dio-indicator">
-        <span class="dio-label">DIO 5:</span>
-        <span class="dio-status">---</span>
-      </div>
-      <div id="discrete-in-6" class="dio-indicator">
-        <span class="dio-label">DIO 6:</span>
-        <span class="dio-status">---</span>
-      </div>
-      <div id="discrete-in-7" class="dio-indicator">
-        <span class="dio-label">DIO 7:</span>
-        <span class="dio-status">---</span>
-      </div>
+        <!-- Tab Content -->
+        <div class="tab-content" id="myTabContent">
+             <!-- DIO Tab Pane -->
+            <div class="tab-pane fade show active" id="dio-tab-pane" role="tabpanel" aria-labelledby="dio-tab" tabindex="0">
+                <h2 class="mt-3">Discrete I/O Status</h2>
+                <div class="row mt-3">
+                    <div class="col">
+                        <button id="refresh-dio" class="btn btn-primary">Refresh DIO Status</button>
+                        <span id="dio-last-updated" class="ms-3 text-muted"></span>
+                    </div>
+                </div>
+                <div id="dio-status" class="mt-3">
+                    <!-- DIO Status content will be loaded here by renderer.js -->
+                    <p>Loading DIO status...</p>
+                </div>
+                <div id="dio-error" class="mt-3 alert alert-danger" style="display: none;">
+                    <!-- Error messages will be displayed here -->
+                </div>
+            </div>
+            <!-- ARINC Receive Tab Pane -->
+            <div class="tab-pane fade" id="arinc-rx-tab-pane" role="tabpanel" aria-labelledby="arinc-rx-tab" tabindex="0">
+                <h2 class="mt-3">ARINC 429 Receive Status</h2>
+                <div id="arinc-rx-status" class="mt-3">
+                    <!-- ARINC Receive content will be generated here by renderer.js -->
+                    <div class="arinc-channels-container">
+                        </div>
+                </div>
+                 <div id="arinc-rx-error" class="mt-3 alert alert-danger" style="display: none;">
+                    <!-- Error messages will be displayed here -->
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Added script link to renderer.js -->
-    <script defer src="renderer.js"></script>
+    <!-- Custom JS -->
+    <script src="renderer.js"></script>
+    <!-- REMOVED Bootstrap JS -->
   </body>
 </html>
