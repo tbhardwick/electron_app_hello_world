@@ -39,8 +39,8 @@ extern "C" {
 
     // --- BTI429 Functions --- 
     ERRVAL BTI429_ChConfig(ULONG configval, int channum, HCORE hCore); // Added - Verify Signature!
-    ERRVAL BTI429_ChStart(int channum, HCORE hCore); // Added - Verify Signature!
-    ERRVAL BTI429_ChStop(int channum, HCORE hCore); // Added - Verify Signature!
+    BOOL BTI429_ChStart(int channum, HCORE hCore); // Corrected Return Type
+    BOOL BTI429_ChStop(int channum, HCORE hCore); // Corrected Return Type
     LISTADDR BTI429_ListXmtCreate(ULONG listconfigval, INT count, MSGADDR msgaddr, HCORE hCore); 
     BOOL BTI429_ListDataWr(ULONG value, LISTADDR listaddr, HCORE hCore); 
     BOOL BTI429_ListDataBlkWr(LPULONG listbuf, USHORT count, LISTADDR listaddr, HCORE hCore); 
@@ -459,11 +459,11 @@ Napi::Value ChStartWrapped(const Napi::CallbackInfo& info) {
     int channelNum = info[0].As<Napi::Number>().Int32Value();
     HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function
-    ERRVAL result = BTI429_ChStart(channelNum, coreHandle);
+    // Call the actual library function (Returns BOOL)
+    BOOL result = BTI429_ChStart(channelNum, coreHandle);
 
-    // Return the status code
-    return Napi::Number::New(env, result);
+    // Return the BOOL result as a JavaScript boolean
+    return Napi::Boolean::New(env, result);
 }
 
 // N-API Wrapper for BTI429_ChStop
@@ -480,11 +480,11 @@ Napi::Value ChStopWrapped(const Napi::CallbackInfo& info) {
     int channelNum = info[0].As<Napi::Number>().Int32Value();
     HCORE coreHandle = reinterpret_cast<HCORE>(info[1].As<Napi::Number>().Int64Value());
 
-    // Call the actual library function
-    ERRVAL result = BTI429_ChStop(channelNum, coreHandle);
+    // Call the actual library function (Returns BOOL)
+    BOOL result = BTI429_ChStop(channelNum, coreHandle);
 
-    // Return the status code
-    return Napi::Number::New(env, result);
+    // Return the BOOL result as a JavaScript boolean
+    return Napi::Boolean::New(env, result);
 }
 
 // N-API Wrapper for BTI429_ListXmtCreate
@@ -584,8 +584,9 @@ Napi::Value ListDataBlkWrWrapped(const Napi::CallbackInfo& info) {
         cppBuffer[i] = val.As<Napi::Number>().Uint32Value(); // Use Uint32 for ARINC words
     }
 
-    // Call the actual library function (Returns BOOL, takes USHORT count)
-    BOOL success = BTI429_ListDataBlkWr(cppBuffer.data(), count, listAddr, hCore);
+    // Call the actual library function (Returns BOOL, takes LPUSHORT count)
+    // Pass the address of count (&count) as required by LPUSHORT
+    BOOL success = BTI429_ListDataBlkWr(cppBuffer.data(), &count, listAddr, hCore);
 
     // Return the result code (BOOL treated as ERR_NONE or ERR_FAIL for consistency)
     return Napi::Number::New(env, success ? ERR_NONE : ERR_FAIL); 
