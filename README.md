@@ -137,7 +137,7 @@ This section details the functions currently wrapped in the C++ addon and expose
     *   **Returns:** `Object`
         *   `success: boolean`: True if the card was opened successfully.
         *   `handle: number | null`: The opaque card handle (as a number) if successful, otherwise null.
-        *   `message: string`: Status message.
+        *   `message: string`: Status message ("Card opened successfully." or "Failed to open card.").
         *   `resultCode: number`: The raw result code from the underlying `BTICard_CardOpen` function.
 
 *   **`coreOpen(coreNumber: number, cardHandle: number)`**
@@ -148,7 +148,7 @@ This section details the functions currently wrapped in the C++ addon and expose
     *   **Returns:** `Object`
         *   `success: boolean`: True if the core was opened successfully.
         *   `handle: number | null`: The opaque core handle (as a number) if successful, otherwise null.
-        *   `message: string`: Status message.
+        *   `message: string`: Status message ("Core opened successfully." or "Failed to open core.").
         *   `resultCode: number`: The raw result code from the underlying `BTICard_CoreOpen` function.
 
 *   **`cardTest(testLevel: number, coreHandle: number)`**
@@ -156,24 +156,24 @@ This section details the functions currently wrapped in the C++ addon and expose
     *   **Arguments:**
         *   `testLevel`: The integer code for the test level to run (e.g., 1 for Memory Interface Test). See `bti_constants.h`.
         *   `coreHandle`: The handle obtained from a successful `coreOpen` call.
-    *   **Returns:** `number` - The raw result code from the underlying `BTICard_CardTest` function (0 typically indicates success).
+    *   **Returns:** `number` - The raw result code (ERRVAL) from the underlying `BTICard_CardTest` function (0 typically indicates success).
 
 *   **`cardClose(cardHandle: number)`**
     *   **Description:** Closes the connection to the specified card. This implicitly closes any open cores on that card.
     *   **Arguments:**
         *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
-    *   **Returns:** `number` - The raw result code from the underlying `BTICard_CardClose` function (0 typically indicates success).
+    *   **Returns:** `number` - The raw result code (ERRVAL) from the underlying `BTICard_CardClose` function (0 typically indicates success).
 
 *   **`bitInitiate(cardHandle: number)`**
-    *   **Description:** Initiates the Built-In Test (BIT) for the specified card.
+    *   **Description:** Initiates the Built-In Test (BIT) for the specified card. Leaves the card in a reset state.
     *   **Arguments:**
         *   `cardHandle`: The handle obtained from a successful `cardOpen` call.
-    *   **Returns:** `number` - The raw result code from the underlying `BTICard_BITInitiate` function.
+    *   **Returns:** `number` - The raw result code (ERRVAL) from the underlying `BTICard_BITInitiate` function (0 typically indicates success).
 
 *   **`getErrorDescription(errorCode: number, coreHandle: number | null)`**
     *   **Description:** Retrieves a descriptive string for a given BTI error code.
     *   **Arguments:**
-        *   `errorCode`: The numerical error code returned by another BTI function.
+        *   `errorCode`: The numerical error code (ERRVAL) returned by another BTI function.
         *   `coreHandle`: The core handle associated with the error, if applicable (can be `null` if the error occurred before a core was opened or if the error is not core-specific).
     *   **Returns:** `string` - The error description, or a generic message if the code is unknown.
 
@@ -186,79 +186,79 @@ This section details the functions currently wrapped in the C++ addon and expose
 *   **`cardGetInfo(infoType: number, channelNum: number, coreHandle: number)`**
     *   **Description:** Retrieves specific information about the card or a channel.
     *   **Arguments:**
-        *   `infoType`: The integer code for the information requested (e.g., `INFOTYPE_429COUNT`). See `bti_constants.h`.
-        *   `channelNum`: The relevant channel number (use -1 for card-level info).
+        *   `infoType`: The integer code for the information requested (e.g., `INFOTYPE_429COUNT`). See `bti_constants.h` and `BTICard_CardGetInfo.md`.
+        *   `channelNum`: Reserved for future use (pass 0 or -1 as appropriate per BTI docs).
         *   `coreHandle`: The core handle.
-    *   **Returns:** `number` - The requested information value. (Error handling may depend on return value or require separate check - consult manual).
+    *   **Returns:** `number` - The requested information value (ULONG). Note: Error handling depends on interpreting the returned value based on `infoType`, as no separate status code is returned by this wrapper.
 
 *   **`chConfig(configVal: number, channelNum: number, coreHandle: number)`**
-    *   **Description:** Configures an ARINC 429 channel (e.g., speed, parity).
+    *   **Description:** Configures an ARINC 429 channel (e.g., speed, parity). Stops, configures, and potentially restarts the channel.
     *   **Arguments:**
-        *   `configVal`: Bitwise OR-ed configuration flags (e.g., `CHCFG429_HIGHSPEED`). See `bti_constants.h`.
+        *   `configVal`: Bitwise OR-ed configuration flags (e.g., `CHCFG429_HIGHSPEED`). See `bti_constants.h` and `BTI429_ChConfig.md`.
         *   `channelNum`: The channel number to configure.
         *   `coreHandle`: The core handle.
-    *   **Returns:** `number` - The raw result code from `BTI429_ChConfig` (0 indicates success).
+    *   **Returns:** `number` - The raw result code (ERRVAL) from `BTI429_ChConfig` (0 indicates success, negative for error).
 
 *   **`chStart(channelNum: number, coreHandle: number)`**
-    *   **Description:** Starts the ARINC 429 engine for the specified channel.
+    *   **Description:** Enables the operation of the specified ARINC 429 channel.
     *   **Arguments:**
         *   `channelNum`: The channel number to start.
         *   `coreHandle`: The core handle.
-    *   **Returns:** `number` - The raw result code from `BTI429_ChStart` (0 indicates success).
+    *   **Returns:** `boolean` - The result from `BTI429_ChStart` (TRUE if the channel was previously enabled, FALSE otherwise). Note: This indicates the previous state, not necessarily success/failure of the start command itself.
 
 *   **`chStop(channelNum: number, coreHandle: number)`**
-    *   **Description:** Stops the ARINC 429 engine for the specified channel.
+    *   **Description:** Disables operation of the specified ARINC 429 channel.
     *   **Arguments:**
         *   `channelNum`: The channel number to stop.
         *   `coreHandle`: The core handle.
-    *   **Returns:** `number` - The raw result code from `BTI429_ChStop` (0 indicates success).
+    *   **Returns:** `boolean` - The result from `BTI429_ChStop` (TRUE if the channel was previously enabled, FALSE otherwise). Note: This indicates the previous state.
 
 *   **`listXmtCreate(configVal: number, count: number, msgAddr: number, coreHandle: number)`**
     *   **Description:** Creates a transmit list buffer (e.g., FIFO) for a channel.
     *   **Arguments:**
-        *   `configVal`: List configuration flags (e.g., `LISTCRT429_FIFO`). See `bti_constants.h`.
-        *   `count`: The desired size of the buffer in words.
-        *   `msgAddr`: Address/handle for filter/message data (use 0 if not needed, check manual).
+        *   `configVal`: List configuration flags (e.g., `LISTCRT429_FIFO`). See `bti_constants.h` and `BTI429_ListXmtCreate.md`.
+        *   `count`: The desired number of entries + 1.
+        *   `msgAddr`: Message address/handle to associate (use 0 if not needed, check BTI docs).
         *   `coreHandle`: The core handle.
     *   **Returns:** `Object`
-        *   `status: number`: Result code (0 indicates success, `ERR_FAIL` on failure).
-        *   `listAddr: number | null`: The address/identifier of the created list buffer, or null on failure.
+        *   `status: number`: Result code (`ERR_NONE` (0) on success, `ERR_FAIL` (-1) on failure).
+        *   `listAddr: number | null`: The address/identifier (LISTADDR) of the created list buffer, or null on failure.
 
 *   **`listDataWr(value: number, listAddr: number, coreHandle: number)`**
     *   **Description:** Writes a single 32-bit ARINC 429 word to a transmit list buffer.
     *   **Arguments:**
-        *   `value`: The 32-bit word to transmit.
+        *   `value`: The 32-bit word (ULONG) to transmit.
         *   `listAddr`: The list buffer address obtained from `listXmtCreate`.
         *   `coreHandle`: The core handle.
-    *   **Returns:** `number` - Result code (0 indicates success, `ERR_FAIL` on failure/overflow).
+    *   **Returns:** `number` - Result code (`ERR_NONE` (0) if `BTI429_ListDataWr` returned TRUE, `ERR_FAIL` (-1) if it returned FALSE).
 
 *   **`listDataBlkWr(dataArray: number[], listAddr: number, coreHandle: number)`**
     *   **Description:** Writes an array of 32-bit ARINC 429 words to a transmit list buffer.
     *   **Arguments:**
-        *   `dataArray`: An array of numbers representing the 32-bit words.
+        *   `dataArray`: An array of numbers representing the 32-bit words (ULONG). Max length 65535.
         *   `listAddr`: The list buffer address.
         *   `coreHandle`: The core handle.
-    *   **Returns:** `number` - Result code (0 indicates success, `ERR_FAIL` on failure).
+    *   **Returns:** `number` - Result code (`ERR_NONE` (0) if `BTI429_ListDataBlkWr` returned TRUE, `ERR_FAIL` (-1) if it returned FALSE).
 
 *   **`listRcvCreate(configVal: number, count: number, msgAddr: number, coreHandle: number)`**
     *   **Description:** Creates a receive list buffer (e.g., FIFO, circular) for a channel.
     *   **Arguments:**
-        *   `configVal`: List configuration flags (e.g., `LISTCRT429_FIFO | LISTCRT429_CIRCULAR`). See `bti_constants.h`.
-        *   `count`: The desired size of the buffer in words.
-        *   `msgAddr`: Address/handle for filter/message data (use 0 if not needed, check manual).
+        *   `configVal`: List configuration flags (e.g., `LISTCRT429_FIFO | LISTCRT429_CIRCULAR`). See `bti_constants.h` and `BTI429_ListRcvCreate.md`.
+        *   `count`: The desired number of entries + 1.
+        *   `msgAddr`: Message address/handle to associate (use 0 if not needed, check BTI docs).
         *   `coreHandle`: The core handle.
     *   **Returns:** `Object`
-        *   `status: number`: Result code (0 indicates success, `ERR_FAIL` on failure).
-        *   `listAddr: number | null`: The address/identifier of the created list buffer, or null on failure.
+        *   `status: number`: Result code (`ERR_NONE` (0) on success, `ERR_FAIL` (-1) on failure).
+        *   `listAddr: number | null`: The address/identifier (LISTADDR) of the created list buffer, or null on failure.
 
 *   **`listDataRd(listAddr: number, coreHandle: number)`** (Synchronous)
-    *   **Description:** Reads a single 32-bit ARINC 429 word from a receive list buffer. This is a **blocking** call if no data is immediately available (may cause issues if used directly in the main thread, prefer `listDataRdAsync`). Checks status first to avoid blocking on empty list.
+    *   **Description:** Reads a single 32-bit ARINC 429 word from a receive list buffer. Checks status first to avoid ambiguity. Potentially blocking if used incorrectly (prefer async version).
     *   **Arguments:**
         *   `listAddr`: The list buffer address obtained from `listRcvCreate`.
         *   `coreHandle`: The core handle.
     *   **Returns:** `Object`
-        *   `status: number`: Result code (0 for success, `ERR_UNDERFLOW` if empty, or other BTI error codes).
-        *   `value: number | null`: The 32-bit word read, or null if status is not `ERR_NONE`.
+        *   `status: number`: Result code (`ERR_NONE` (0) for success, `ERR_UNDERFLOW` if empty, or other negative BTI error codes from status check).
+        *   `value: number | null`: The 32-bit word (ULONG) read, or null if status is not `ERR_NONE`.
 
 *   **`listDataRdAsync(listAddr: number, coreHandle: number, timeoutMs: number)`** (Asynchronous)
     *   **Description:** Reads a single 32-bit ARINC 429 word from a receive list buffer asynchronously. Uses a background thread to poll the list status and retrieve data.
@@ -268,37 +268,37 @@ This section details the functions currently wrapped in the C++ addon and expose
         *   `timeoutMs`: Maximum time in milliseconds to wait for data.
     *   **Returns:** `Promise<Object>`
         *   **Resolves with:** `Object`
-            *   `status: number`: Result code (0 for success, or other BTI error codes).
-            *   `value: number | null`: The 32-bit word read, or null if status is not `ERR_NONE`.
+            *   `status: number`: Result code (`ERR_NONE` (0) for success, or other BTI error codes from status check).
+            *   `value: number | null`: The 32-bit word (ULONG) read, or null if status is not `ERR_NONE`.
         *   **Rejects with:** `Object` (On timeout or error checking status)
             *   `status: number`: Error code (`ERR_TIMEOUT` or BTI error).
-            *   `message: string`: Error description.
+            *   `message: string`: Error description ("Timeout waiting for data." or "Error checking list status.").
             *   `value: null`.
 
 *   **`listDataBlkRd(listAddr: number, maxCount: number, coreHandle: number)`** (Synchronous)
-    *   **Description:** Reads a block of up to `maxCount` words from a receive list buffer. This is a **blocking** call if no data is immediately available (prefer `listDataBlkRdAsync`).
+    *   **Description:** Reads a block of up to `maxCount` words from a receive list buffer. Checks status after attempting read if needed. Potentially blocking (prefer async version).
     *   **Arguments:**
         *   `listAddr`: The list buffer address.
-        *   `maxCount`: The maximum number of words to read (must be <= 65535).
+        *   `maxCount`: The maximum number of words to read (0 to 65535).
         *   `coreHandle`: The core handle.
     *   **Returns:** `Object`
-        *   `status: number`: Result code (0 for success, `ERR_UNDERFLOW` if empty, or other BTI error codes).
-        *   `dataArray: number[] | null`: An array containing the words read (can be empty if 0 words were read successfully), or null on error.
+        *   `status: number`: Result code (`ERR_NONE` (0) for success (including reading 0 words), `ERR_UNDERFLOW` if read attempt failed due to empty list, or other negative BTI error codes).
+        *   `dataArray: number[] | null`: An array containing the words read (ULONGs). Can be empty if 0 words were read successfully. Null on error.
 
 *   **`listDataBlkRdAsync(listAddr: number, maxCount: number, coreHandle: number, timeoutMs: number)`** (Asynchronous)
     *   **Description:** Reads a block of up to `maxCount` words from a receive list buffer asynchronously. Uses a background thread to poll the list status and retrieve data.
     *   **Arguments:**
         *   `listAddr`: The list buffer address.
-        *   `maxCount`: The maximum number of words to attempt to read (must be <= 65535).
+        *   `maxCount`: The maximum number of words to attempt to read (0 to 65535).
         *   `coreHandle`: The core handle.
         *   `timeoutMs`: Maximum time in milliseconds to wait for data to become available.
     *   **Returns:** `Promise<Object>`
         *   **Resolves with:** `Object`
-            *   `status: number`: Result code (0 for success, `ERR_UNDERFLOW` if empty at time of check but no error, or other BTI error codes).
-            *   `dataArray: number[] | null`: An array containing the words read (can be empty if 0 words were read successfully), or null if status is not `ERR_NONE`.
-        *   **Rejects with:** `Object` (On timeout or error checking status)
+            *   `status: number`: Result code (`ERR_NONE` (0) for success (including reading 0 words), `ERR_UNDERFLOW` if poll timed out but list was empty, or other BTI error codes from status check).
+            *   `dataArray: number[] | null`: An array containing the words read (ULONGs). Can be empty if 0 words were read successfully. Null if status is not `ERR_NONE`.
+        *   **Rejects with:** `Object` (On timeout with non-empty list or error checking status)
             *   `status: number`: Error code (`ERR_TIMEOUT` or BTI error).
-            *   `message: string`: Error description.
+            *   `message: string`: Error description ("Timeout waiting for data block." or "Error checking list status." or "Error reading data block.").
             *   `dataArray: null`.
 
 *   **`listStatus(listAddr: number, coreHandle: number)`**
@@ -307,30 +307,30 @@ This section details the functions currently wrapped in the C++ addon and expose
         *   `listAddr`: The list buffer address.
         *   `coreHandle`: The core handle.
     *   **Returns:** `Object`
-        *   `status: number`: Result code of the check itself (0 indicates success, or BTI error code).
-        *   `listStatus: number | null`: The actual list status (`STAT_EMPTY`, `STAT_PARTIAL`, `STAT_FULL`) if the check succeeded, otherwise null.
+        *   `status: number`: Result code of the check itself (`ERR_NONE` (0) indicates success, or negative BTI error code).
+        *   `listStatus: number | null`: The actual list status (`STAT_EMPTY`, `STAT_PARTIAL`, `STAT_FULL`, `STAT_OFF`) if the check succeeded (`status === ERR_NONE`), otherwise null.
 
 *   **`filterSet(configVal: number, label: number, sdiMask: number, channelNum: number, coreHandle: number)`**
     *   **Description:** Sets up a filter based on label and SDI bits for a receive channel.
     *   **Arguments:**
-        *   `configVal`: Filter/message configuration flags (e.g., `MSGCRT429_TIMETAG`). See `bti_constants.h`.
+        *   `configVal`: Filter/message configuration flags (e.g., `MSGCRT429_TIMETAG`). See `bti_constants.h` and `BTI429_FilterSet.md`.
         *   `label`: The ARINC 429 label (octal) to filter on.
         *   `sdiMask`: Bitmask for SDI bits to match (e.g., `SDIALL`, `SDI01`). See `bti_constants.h`.
         *   `channelNum`: The receive channel number.
         *   `coreHandle`: The core handle.
     *   **Returns:** `Object`
-        *   `status: number`: Result code (0 indicates success, `ERR_FAIL` on failure).
-        *   `filterAddr: number | null`: The address/handle of the created filter message, or null on failure.
+        *   `status: number`: Result code (`ERR_NONE` (0) on success, `ERR_FAIL` (-1) on failure).
+        *   `filterAddr: number | null`: The address/handle (MSGADDR) of the created filter message, or null on failure.
 
 *   **`filterDefault(configVal: number, channelNum: number, coreHandle: number)`**
-    *   **Description:** Sets up a default filter (receives all data) for a channel.
+    *   **Description:** Sets up a default filter (receives all data) for a channel. Overwrites any existing filters for the channel.
     *   **Arguments:**
-        *   `configVal`: Filter/message configuration flags. See `bti_constants.h`.
+        *   `configVal`: Filter/message configuration flags. See `bti_constants.h` and `BTI429_FilterDefault.md`.
         *   `channelNum`: The receive channel number.
         *   `coreHandle`: The core handle.
     *   **Returns:** `Object`
-        *   `status: number`: Result code (0 indicates success, `ERR_FAIL` on failure).
-        *   `filterAddr: number | null`: The address/handle of the created filter message, or null on failure.
+        *   `status: number`: Result code (`ERR_NONE` (0) on success, `ERR_FAIL` (-1) on failure).
+        *   `filterAddr: number | null`: The address/handle (MSGADDR) of the created filter message, or null on failure.
 
 ## Development Notes
 
