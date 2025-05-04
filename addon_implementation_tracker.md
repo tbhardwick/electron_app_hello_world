@@ -43,5 +43,3 @@ Check the box when a function is implemented, tested, and integrated.
 - [x] Asynchronous Handling (for Receive)
 - [x] BTI Constants Definition
 - [x] N-API Setup & Module Exports
-- [ ] Basic Testing Implemented
-- [ ] Integration Testing 

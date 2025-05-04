@@ -1,0 +1,228 @@
+﻿Function Name,Description,Type
+BTI429_ChClear ,Clears either a transmit Schedule or a receiver Filter Table ,Channel Function
+BTI429_ChConfig ,Configures either a transmit or a receive channel ,Channel Function
+BTI429_ChGetCount ,Gets the receiver and transmitter channel count ,Channel Function
+BTI429_ChGetInfo ,Gets information about the specified channel on the specified core ,Channel Function
+BTI429_ChIs429 ,Checks to see if the specified channel is ARINC 429 ,Channel Function
+BTI429_ChIsRcv ,Checks if the specified channel is a receiver ,Channel Function
+BTI429_ChIsXmt ,Checks if the specified channels is a transmitter ,Channel Function
+BTI429_ChOutputStateSet ,Sets the output state of a Transmit Channel leg to Open/Ground/etc ,Channel Function
+BTI429_ChPause ,Pauses operation of a channel ,Channel Function
+BTI429_ChPauseCheck ,Checks to see if the specified channel is paused ,Channel Function
+BTI429_ChResume ,Resumes operation of a previously paused channel ,Channel Function
+BTI429_ChStart ,Starts operation of a previously stopped channel ,Channel Function
+BTI429_ChStop ,Stops operation of a channel ,Channel Function
+BTI429_ChSyncDefine ,Defines the sync pulse settings for the specified channel ,Channel Function
+BTI429_ChTriggerDefine ,Defines the transmit trigger settings for the specified channel ,Channel Function
+BTI429_CmdShotRd ,Reads the single-shot bit for the specified index ,Command Function
+BTI429_CmdShotWr ,Sets the single-shot bit for the specified index ,Command Function
+BTI429_CmdSkipRd ,Reads the skip bit for the specified index ,Command Function
+BTI429_CmdSkipWr ,Sets the skip bit for the specified index ,Command Function
+BTI429_CmdStepRd ,Reads the step bit for the specified index ,Command Function
+BTI429_CmdStepWr ,Sets the step bit for the specified index ,Command Function
+BTI429_FilterDefault ,"Creates a default message, and points the entire table to that message ",Filter Function
+BTI429_FilterRd ,Reads the message address associated with a filter location ,Filter Function
+BTI429_FilterSet ,"Creates a message, and points the specified filter location to that message ",Filter Function
+BTI429_FilterWr ,Writes a message address to the specified filter location ,Filter Function
+BTI429_ListAsyncCreate ,Creates an asynchronous transmit List Buffer ,List Function
+BTI429_ListDataBlkRd ,Reads multiple messages from the List Buffer ,List Function
+BTI429_ListDataBlkWr ,Writes multiple messages to the List Buffer ,List Function
+BTI429_ListDataRd ,Reads the next data value associated with a List Buffer ,List Function
+BTI429_ListDataWr ,Writes the next data value associated with a List Buffer ,List Function
+BTI429_ListRcvCreate ,Creates a receive List Buffer ,List Function
+BTI429_ListStatus ,Checks the status of the List Buffer ,List Function
+BTI429_ListXmtCreate ,Creates a transmit List Buffer ,List Function
+BTI429_MsgBlockRd ,Reads an entire Message Record on the Device ,Message Function
+BTI429_MsgBlockWr ,Writes an entire Message Record on the Device ,Message Function
+BTI429_MsgCountRd ,Reads the bitcount associated with a message ,Message Function
+BTI429_MsgCountWr ,Writes the bitcount associated with a message ,Message Function
+BTI429_MsgCommRd ,Reads an entire Message Record on the Device (non-contended access) ,Message Function
+BTI429_MsgCommWr ,Writes an entire Message Record on the Device (non-contended access) ,Message Function
+BTI429_MsgCreate ,Creates and initializes a Message Record ,Message Function
+BTI429_MsgDataCountWr ,Writes the data and bitcount associated with a message ,Message Function
+BTI429_MsgDataRd ,Reads the data associated with a message ,Message Function
+BTI429_MsgDataWr ,Writes the data associated with a message ,Message Function
+BTI429_MsgGroupBlockRd ,"Reads multiple, entire Message Records in a single operation ",Message Function
+BTI429_MsgGroupBlockWr ,"Writes multiple, entire Message Records in a single operation ",Message Function
+BTI429_MsgGroupRd ,Reads the data from multiple Message Records in a single operation ,Message Function
+BTI429_MsgGroupWr ,Writes the data from multiple Message Records in a single operation ,Message Function
+BTI429_MsgIsAccessed ,Returns the value of the Hit bit and then clears it ,Message Function
+BTI429_MsgMultiSkipWr ,Writes the state of the skip bit for multiple messages ,Message Function
+BTI429_MsgSkipRd ,Reads the state of the skip bit for the specified message ,Message Function
+BTI429_MsgSkipWr ,Writes the state of the skip bit for the specified message ,Message Function
+BTI429_MsgSyncDefine ,Defines the sync pulse settings for the specified message ,Message Function
+BTI429_MsgTriggerDefine ,Defines the transmit trigger settings for the specified message ,Message Function
+BTI429_ParamAmplitudeConfig,Configures parametric amplitude control on the specified transmit channel,Parametric Function
+BTI429_ParamBitCountBuild,Builds a paramflag field from a bitcount (for BTI429_MsgBlockWr),Parametric Function
+BTI429_ParamBitRateConfig,Configures parametric frequency control on the specified channel,Parametric Function
+BTI429_ParamWaveformConfig,Configures parametric waveform control on the specified transmit channel,Parametric Function
+BTI429_SchedBranch,Inserts a BRANCH command into the Schedule,Schedule Functions
+BTI429_SchedBuild,Builds a Schedule based on minimum and maximum transmit intervals,Schedule Functions
+BTI429_SchedCall,Inserts a CALL command into the Schedule,Schedule Functions
+BTI429_SchedData,Inserts a DATA Command Block into the Schedule,Schedule Functions
+BTI429_SchedEntry,Sets the starting point of the Schedule,Schedule Functions
+BTI429_SchedGap,Inserts an intermessage gap into the Schedule (calls either SchedGapFixed or SchedGapList based on the configuration of an asynchronous List Buffer),Schedule Functions
+BTI429_SchedGapFixed,Inserts a fixed gap into the Schedule.,Schedule Functions
+BTI429_SchedGapList,Inserts a conditional intermessage gap into the Schedule (used for asynchronous List Buffers),Schedule Functions
+BTI429_SchedHalt,Inserts a HALT Command Block into the Schedule,Schedule Functions
+BTI429_SchedLog,Inserts an LOG Command Block into the Schedule,Schedule Functions
+BTI429_SchedMode,Sets options for the SchedBuild function,Schedule Functions
+BTI429_SchedMsg,Inserts a message into the Schedule,Schedule Functions
+BTI429_SchedMsgEx,Inserts a message with a specified gap value (of less than 4 bit times),Schedule Functions
+BTI429_SchedPause,Inserts a PAUSE Command Block into the Schedule,Schedule Functions
+BTI429_SchedPulse,Inserts a discrete PULSE Command Block into the Schedule,Schedule Functions
+BTI429_SchedRestart,Inserts a RESTART Command Block into the Schedule,Schedule Functions
+BTI429_SchedReturn,Inserts a RETURN command into the Schedule,Schedule Functions
+BTI429_PlayBlockWr,Transfers a buffer of Command Blocks from the host to the Playback FIFO,Playback Functions
+BTI429_PlayPutData,Inserts a DATA Command Block into a host buffer of Command Blocks,Playback Functions
+BTI429_PlayPutGap,Inserts a GAP Command Block into a host buffer of Command Blocks,Playback Functions
+BTI429_PlayPutLog,Inserts a LOG Command Block into a host buffer of Command Blocks,Playback Functions
+BTI429_PlayPutPulse0,Inserts a PULSE0 Command Block into a host buffer of Command Blocks,Playback Functions
+BTI429_PlayPutPulse1,Inserts a PULSE1 Command Block into a host buffer of Command Blocks,Playback Functions
+BTI429_PlayStatus,Reads Playback FIFO Command Block capability/availability,Playback Functions
+BTI429_BCDGetData,Extracts data value from BCD word,Utility Functions
+BTI429_BCDGetMant,Extracts mantissa from a BCD word,Utility Functions
+BTI429_BCDGetSign,Extracts the sign from a BCD word,Utility Functions
+BTI429_BCDGetSSM,Extracts SSM field from BCD word,Utility Functions
+BTI429_BCDGetVal,Calculates the value of a BCD word,Utility Functions
+BTI429_BCDPutData,Inserts data value into BCD word,Utility Functions
+BTI429_BCDPutMant,Inserts mantissa value into BCD word,Utility Functions
+BTI429_BCDPutSign,Inserts the sign into a BCD word,Utility Functions
+BTI429_BCDPutSSM,Inserts SSM field into BCD word,Utility Functions
+BTI429_BCDPutVal,Inserts the value into a BCD word,Utility Functions
+BTI429_BNRGetData,Extracts data value from BNR word,Utility Functions
+BTI429_BNRGetMant,Extracts mantissa from a BNR word,Utility Functions
+BTI429_BNRGetSign,Extracts the sign from a BNR word,Utility Functions
+BTI429_BNRGetSSM,Extracts SSM field from BNR word,Utility Functions
+BTI429_BNRGetVal,Calculates the value of a BNR word,Utility Functions
+BTI429_BNRPutData,Inserts data value into BNR word,Utility Functions
+BTI429_BNRPutMant,Inserts mantissa value into BNR word,Utility Functions
+BTI429_BNRPutSign,Inserts the sign into a BNR word,Utility Functions
+BTI429_BNRPutSSM,Inserts the SSM field into a BNR word,Utility Functions
+BTI429_BNRPutVal,Inserts the value into a BNR word,Utility Functions
+BTI429_FldGetData,Extracts data field from ARINC 429 word,Utility Functions
+BTI429_FldGetLabel,Extracts label field from ARINC 429 word,Utility Functions
+BTI429_FldGetParity,Extracts parity bit from ARINC 429 word,Utility Functions
+BTI429_FldGetSDI,Extracts SDI field from ARINC 429 word,Utility Functions
+BTI429_FldGetValue,Extracts specified field from ARINC 429 word,Utility Functions
+BTI429_FldPutData,Inserts the data field into an ARINC 429 word,Utility Functions
+BTI429_FldPutLabel,Inserts the label field into an ARINC 429 word,Utility Functions
+BTI429_FldPutSDI,Inserts the SDI field into an ARINC 429 word,Utility Functions
+BTI429_FldPutValue,Inserts the specified field into an ARINC 429 word,Utility Functions
+BTICard_BITConfig ,Configures the Built-In Test functionality of the card ,BIT Function
+BTICard_BITInitiate ,Performs a hardware test on the specified card ,BIT Function
+BTICard_BITStatusClr ,Clears the historical maximum and minimum values ,BIT Function
+BTICard_BITStatusRd ,Reads the current status of Built-In Test (BIT) ,BIT Function
+BTICard_CardClose ,Disables access to a Device and releases its hardware resources ,Card Function
+BTICard_CardGetInfo ,Returns various information from the Device ,Card Function
+BTICard_CardIsRunning ,Checks whether core is running ,Card Function
+BTICard_CardOpen ,Enables access to a Device and secures hardware resources ,Card Function
+BTICard_CardProductStr ,Returns the name of the Device ,Card Function
+BTICard_CardReset ,Resets the core hardware; destroys all existing configuration data ,Card Function
+BTICard_CardResume ,Resumes operation of the core ,Card Function
+BTICard_CardStart ,Starts operation of the core ,Card Function
+BTICard_CardStop ,Stops operation of the core ,Card Function
+BTICard_CardSyncValid ,Returns all available sync lines for the specified core ,Card Function
+BTICard_CardTest ,Performs a hardware test on the specified core ,Card Function
+BTICard_CardTrigger ,Generates a software-simulated trigger signal on all available trigger lines ,Card Function
+BTICard_CardTriggerEx ,Generates a software-simulated trigger signal on the specified trigger line(s) ,Card Function
+BTICard_CardTriggerValid ,Returns all available trigger lines for the specified core ,Card Function
+BTICard_CardTypeStr ,Returns the type or model number of the Device ,Card Function
+BTICard_CoreOpen ,Enables access to a specified core ,Card Function
+BTICard_EventLogConfig ,Enables events and initializes the Event Log List ,Event. Function
+BTICard_EventLogRd ,Reads an entry from the Event Log List ,Event. Function
+BTICard_EventLogStatus ,Checks the status of the Event Log List ,Event. Function
+BTICard_ExtDIOMonConfig ,Enables Sequential monitoring on specific transitions of the digital I/O pins ,I/O Function
+BTICard_ExtDIOEnWr ,Sets both the value and output enable of the specified digital I/O pin ,I/O Function
+BTICard_ExtDIORd ,Reads the value of the specified digital I/O pin ,I/O Function
+BTICard_ExtDIOWr ,Sets the value of the specified digital I/O pin ,I/O Function
+BTICard_ExtLEDRd ,Reads the on/off value of the LED ,I/O Function
+BTICard_ExtLEDWr ,Sets the on/off value of the LED ,I/O Function
+BTICard_ExtStatusLEDRd ,Reads the on/off value and color of the Status LED ,I/O Function
+BTICard_ExtStatusLEDWr ,Sets the on/off value and color of the Status LED ,I/O Function
+BTICard_IntClear ,Clears the interrupt from the core (OS-dependent) ,Interrupt Function
+BTICard_IntInstall ,Associates an event object with interrupts from the core (OS-dependent) ,Interrupt Function
+BTICard_IntUninstall ,Removes association between event objects and interrupts (OS-dependent) ,Interrupt Function
+BTICard_IRIGConfig ,Configures the IRIG timer on the specified core ,IRG Time Function
+BTICard_IRIGFieldGet?? ,"Returns the ?? field (days, hours, etc.) from an IRIG time-tag ",IRG Time Function
+BTICard_IRIGFieldPut?? ,"Writes the ?? field (days, hours, etc.) to an IRIG time-tag ",IRG Time Function
+BTICard_IRIGInputThresholdGet ,Gets the threshold of the IRIG input circuitry ,IRG Time Function
+BTICard_IRIGInputThresholdSet ,Sets the threshold of the IRIG input circuitry ,IRG Time Function
+BTICard_IRIGRd ,Reads the current value of the IRIG timer on the specified core ,IRG Time Function
+BTICard_IRIGSyncStatus ,Reports whether the IRIG timer is locked in sync with the IRIG bus ,IRG Time Function
+BTICard_IRIGTimeBCDToBin ,Converts IRIG BCD value to a microsecond binary time ,IRG Time Function
+BTICard_IRIGTimeBCDToNanoBin ,Converts IRIG BCD value to a nanosecond binary time ,IRG Time Function
+BTICard_IRIGTimeBinToBCD ,Converts a microsecond binary time value to IRIG BCD value ,IRG Time Function
+BTICard_IRIGTimeNanoBinToBCD ,Converts a nanosecond binary time value to IRIG BCD value ,IRG Time Function
+BTICard_IRIGWr ,Sets (initializes) the IRIG timer on the specified core ,IRG Time Function
+BTICard_PXIStatus ,Returns user-requested status for PXIe cards ,PXIE Function
+BTICard_SeqBlkRd ,Reads multiple records out of the Sequential Record (use for few records) ,Sequential Record Function
+BTICard_SeqCommRd ,Reads multiple records out of the Sequential Record (use for many records) ,Sequential Record Function
+BTICard_SeqConfig ,Configures the Sequential Monitor ,Sequential Record Function
+BTICard_SeqDMARd ,Reads multiple records out of the Sequential Record (use for many records) ,Sequential Record Function
+BTICard_SeqFindCheckVersion ,Tests the version number of the specified record ,Sequential Record Function
+BTICard_SeqFindInit ,Initializes the BTICard_SeqFindNext?? functions ,Sequential Record Function
+BTICard_SeqFindMore1553 ,"Finds the extra 1553 record fields, when present ",Sequential Record Function
+BTICard_SeqFindNext ,Finds the next message in the Sequential Record buffer ,Sequential Record Function
+BTICard_SeqFindNext1553 ,Finds the next MIL-STD-1553 message in the Sequential Record buffer ,Sequential Record Function
+BTICard_SeqFindNext429 ,Finds the next ARINC 429 message in the Sequential Record buffer ,Sequential Record Function
+BTICard_SeqFindNext708 ,Finds the next ARINC 708 message in the Sequential Record buffer ,Sequential Record Function
+BTICard_SeqFindNext717 ,Finds the next ARINC 717 message in the Sequential Record buffer ,Sequential Record Function
+BTICard_SeqFindNextDIO ,Finds the next DIO message in the Sequential Record buffer ,Sequential Record Function
+BTICard_SeqFindNextEBR ,Finds the next EBR-1553 message in the Sequential Record buffer ,Sequential Record Function
+BTICard_SeqInterval ,Sets the interval value if using Interval mode ,Sequential Record Function
+BTICard_SeqIsRunning ,Determines whether the Sequential Record is running ,Sequential Record Function
+BTICard_SeqLogFrequency ,Specifies the period for Sequential Record Event Log List entries ,Sequential Record Function
+BTICard_SeqRd ,Reads a single record out of the Sequential Record ,Sequential Record Function
+BTICard_SeqResume ,Resumes recording of the Sequential Record where it stopped ,Sequential Record Function
+BTICard_SeqStart ,Starts recording at the beginning of the Sequential Record ,Sequential Record Function
+BTICard_SeqStatus ,Checks the status of the Sequential Record ,Sequential Record Function
+BTICard_SeqStop ,Stops data from being added to the Sequential Record ,Sequential Record Function
+BTICard_SysMonClear ,Resets the historic maximum and minimum values for all sensors ,SYSMON Function
+BTICard_SysMonDescGet ,Returns the description of a sensor ,SYSMON Function
+BTICard_SysMonMaxRd ,Reads the historical maximum value of a sensor ,SYSMON Function
+BTICard_SysMonMinRd ,Reads the historical minimum value of a sensor ,SYSMON Function
+BTICard_SysMonNomRd ,Reads the nominal value of a voltage sensor ,SYSMON Function
+BTICard_SysMonThresholdGet ,Reads the user thresholds of a temperature sensor ,SYSMON Function
+BTICard_SysMonThresholdSet ,Sets the user thresholds of a temperature sensor ,SYSMON Function
+BTICard_SysMonTypeGet ,Returns the type of sensor ,SYSMON Function
+BTICard_SysMonUserStr ,Returns a formatted value string of sensor data ,SYSMON Function
+BTICard_SysMonValRd ,Reads the current sensor value ,SYSMON Function
+BTICard_Timer64Rd ,Reads the current value of the Device timer (64 bit) ,Timer Function
+BTICard_Timer64Wr ,Writes a value to the Device timer (64 bit) ,Timer Function
+BTICard_TimerClear ,Clears the Device timer ,Timer Function
+BTICard_TimerRd ,Reads the current value of the Device timer (32 bit) ,Timer Function
+BTICard_TimerResolution ,Selects a time-tag timer resolution ,Timer Function
+BTICard_TimerStatus ,Checks status of the timer configuration ,Timer Function
+BTICard_TimerWr ,Writes the a value to the Device timer (32 bit) ,Timer Function
+BTICard_TSMDriftMaxGet,Reads the current maximum drift bias limit (ppt),Timing Synchronization Manager
+BTICard_TSMDriftMaxSet,Sets the maximum drift bias limit (ppt),Timing Synchronization Manager
+BTICard_TSMDriftRd,Reads the current commanded drift bias (ppt),Timing Synchronization Manager
+BTICard_TSMDriftWr,Sets the drift bias (ppt),Timing Synchronization Manager
+BTICard_TSMInputDelayCompGet,Reads the current input delay compensation (ns),Timing Synchronization Manager
+BTICard_TSMInputDelayCompSet,Sets the input delay compensation (adjusts timer to IRIG delays) (ns),Timing Synchronization Manager
+BTICard_TSMInputThresholdGet,Reads the DAC value for the requested input,Timing Synchronization Manager
+BTICard_TSMInputThresholdSet,Sets the DAC value for the requested input,Timing Synchronization Manager
+BTICard_TSMIRIGControlRd,Reads ‘control’ field from last received IRIG message,Timing Synchronization Manager
+BTICard_TSMIRIGControlWr,Writes ‘control’ field to outgoing IRIG messages,Timing Synchronization Manager
+BTICard_TSMIRIGYearsRd,"Reads ‘Years’ field from device, Set via IRIG if enabled",Timing Synchronization Manager
+BTICard_TSMIRIGYearsWr,"Writes (BCD) year to device, Sent via IRIG if enabled.",Timing Synchronization Manager
+BTICard_TSMJumpThresholdSet,Sets minimum value that forces device timer to ‘jump’ (ns),Timing Synchronization Manager
+BTICard_TSMJumpThresholdGet,Reads currently set value that forces device timer to ‘jump’ (ns),Timing Synchronization Manager
+BTICard_TSMReset,Resets the Timing Synchronization Manager,Timing Synchronization Manager
+BTICard_TSMSourceConfig,"Sets the output (source) configuration for the TSM (IRIG, PPS, 10 MHz)",Timing Synchronization Manager
+BTICard_TSMStatus,Queries the current TSM operating status,Timing Synchronization Manager
+BTICard_TSMSyncConfig,"Sets the input (sync) configuration for the TSM (IRIG, PPS, 10 MHz, Host)",Timing Synchronization Manager
+BTICard_TSMTimerRd,Reads the current device time (ns),Timing Synchronization Manager
+BTICard_TSMTimerRelWr,Jumps the current device time by the input amount (ns),Timing Synchronization Manager
+BTICard_TSMTimerRolloverGet,Reads the current year rollover value (ns),Timing Synchronization Manager
+BTICard_TSMTimerRolloverSet,Writes the year rollover value (ns),Timing Synchronization Manager
+BTICard_TSMTimerWr,Writes the value to the TSM (Core) Timer (ns),Timing Synchronization Manager
+BTICard_ErrDescStr,Returns the description of the specified error value,Utility Function
+BTICard_ValFromAscii,Creates an integer value from an ASCII string,Utility Function
+BTICard_ValGetBits,Extracts a bit field from an integer value,Utility Function
+BTICard_ValPutBits,Puts a bit field into an integer value,Utility Function
+BTICard_ValToAscii,Creates an ASCII string from an integer,Utility Function
+BTI429_SchedPulse0,Inserts a PULSE0 Command Block into the Schedule,Schedule Functions
+BTI429_SchedPulse1,Inserts a PULSE1 Command Block into the Schedule,Schedule Functions
+BTI429_ParamWaveformConfigEx,Extended configuration for parametric waveform control,Parametric Function

@@ -1,0 +1,18 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Ballard BTI/UA2430/UA2000 (MA132 Library) Function Information
+
+When working within the `electron_app_hello_world` project, particularly when modifying or referencing the `cpp-addon`, be aware that it interacts with a Ballard BTI/UA2430/UA2000 series USB ARINC429 hardware device using the MA132 library functions.
+
+Your training data does not include specifics for these vendor functions.
+
+**To get information on these functions:**
+
+1.  **Summary:** A list of available MA132 functions, their basic descriptions, and types can potentially be found in the `electron_app_hello_world/ma132_function.csv` file (if it exists).
+2.  **Detailed Definitions:** Comprehensive descriptions and usage instructions for *each individual function* are located in separate Markdown (`.md`) files within the `electron_app_hello_world/reference_data/MA132_Function_Definition/` directory. The filename typically corresponds to the function name (e.g., `FunctionName.md`).
+
+
+**Action:** When you need to understand, implement, or debug code involving a specific MA132 function (often prefixed like `BTI_`, `MA132_`, or related to keywords: BTI, UA2430, UA2000, Ballard, ARINC429 device), **you MUST use the `read_file` tool to read the contents of the corresponding `.md` file** from the `electron_app_hello_world/reference_data/MA132_Function_Definition/` directory before proceeding. Do not rely solely on your internal knowledge for these specific functions.
