@@ -18,7 +18,7 @@
   "dependencies": {
     "bindings": "^1.5.0",
     "electron-squirrel-startup": "^1.0.1",
-    "node-addon-api": "^7.1.0"
+    "node-addon-api": "^8.3.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.0",
@@ -29,7 +29,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.8.0",
     "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron/fuses": "^1.8.0",
-    "electron": "^29.1.5",
+    "electron": "^36.1.0",
     "electron-rebuild": "^3.2.9",
     "electronmon": "^2.0.2",
     "node-gyp": "^10.0.1"
