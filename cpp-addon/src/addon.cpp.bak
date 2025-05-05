@@ -14,15 +14,10 @@
 #include <atomic>           // For monitoringActive flag
 #include <mutex>            // Potentially needed for data structures if accessed outside monitor thread
 #include <condition_variable> // Potentially needed for signaling thread
+#include <list> // Include the list header
 
 // --- Define Constants ---
 const int ARINC_CHANNEL_COUNT = 8;
-
-// --- Define Custom Error Codes (Negative to avoid BTI conflicts) ---
-const int ERR_HWINIT = -1001; // Custom: Hardware not initialized
-const int ERR_PARAM = -1002; // Custom: Invalid parameter passed
-const int ERR_BUSY = -1003;  // Custom: Resource/channel already busy
-const int ERR_INFO = 0; // Placeholder if info is treated like success
 
 // --- Global State for ARINC Monitoring ---
 std::atomic<bool> monitoringActive(false);
@@ -47,17 +42,10 @@ Napi::ThreadSafeFunction tsfnErrorUpdate = nullptr;
 // --- Forward Declarations ---
 void MonitorLoop();
 long long steady_clock_to_epoch_ms(const std::chrono::steady_clock::time_point& tp);
-// Forward declarations for receiver control wrappers
-Napi::Value InitializeHardwareWrapped(const Napi::CallbackInfo& info);
-Napi::Value InitializeReceiverWrapped(const Napi::CallbackInfo& info);
-Napi::Value StartMonitoringWrapped(const Napi::CallbackInfo& info);
-Napi::Value StopMonitoringWrapped(const Napi::CallbackInfo& info);
-Napi::Value CleanupHardwareWrapped(const Napi::CallbackInfo& info);
 // Add forward declarations for the transmit wrappers
 Napi::Value StartTransmitWrapped(const Napi::CallbackInfo& info);
 Napi::Value StopTransmitWrapped(const Napi::CallbackInfo& info);
-// Forward declaration for Init
-Napi::Object Init(Napi::Env env, Napi::Object exports);
+// Add forward declarations for other wrapped functions if needed
 
 // Helper structure for passing data to JS callbacks
 struct ArincUpdateData {
@@ -1338,560 +1326,8 @@ Napi::Value ExtDIOWrWrapped(const Napi::CallbackInfo& info) {
     return Napi::Number::New(env, ERR_NONE); // Or return env.Undefined();
 }
 
-// --- NEW Function to read all DIOs at once ---
-Napi::Value GetAllDioStatesWrapped(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-    // Expect 1 argument: coreHandle (BigInt)
-    if (info.Length() != 1 || !info[0].IsBigInt()) { // Check for BigInt
-        Napi::TypeError::New(env, "Expected: coreHandle (BigInt)").ThrowAsJavaScriptException();
-        return env.Null();
-    }
+// ... (Existing forward declarations and other N-API wrappers) ...
 
-    bool lossless;
-    uint64_t coreHandleValue = info[0].As<Napi::BigInt>().Uint64Value(&lossless);
-    if (!lossless) {
-        Napi::Error::New(env, "Invalid core handle value.").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    HCORE coreHandle = reinterpret_cast<HCORE>(coreHandleValue);
-
-    const INT dionumMapping[] = {1, 2, 3, 4, 9, 10, 11, 12};
-    const int numDios = sizeof(dionumMapping) / sizeof(dionumMapping[0]);
-    Napi::Array resultsArray = Napi::Array::New(env, numDios);
-
-    for (int i = 0; i < numDios; ++i) {
-        INT dionum = dionumMapping[i];
-        Napi::Object dioResult = Napi::Object::New(env);
-        dioResult.Set("index", Napi::Number::New(env, i));
-        dioResult.Set("apiDionum", Napi::Number::New(env, dionum));
-
-        // Call BTI function
-        INT result = static_cast<INT>(BTICard_ExtDIORd(dionum, coreHandle));
-
-        if (result < 0) { // Assuming negative means error based on previous logic
-            dioResult.Set("status", Napi::Number::New(env, ERR_FAIL)); // Use a generic error code or map BTI errors
-            // Potentially use BTICard_ErrDescStr here if ExtDIORd sets last error
-            dioResult.Set("error", Napi::String::New(env, "Error reading DIO."));
-            dioResult.Set("value", env.Null());
-        } else {
-            dioResult.Set("status", Napi::Number::New(env, ERR_NONE));
-            dioResult.Set("value", Napi::Boolean::New(env, (result == 1))); // Assuming 1=ON, 0=OFF
-            dioResult.Set("error", env.Null());
-        }
-        resultsArray.Set(i, dioResult);
-    }
-
-    return resultsArray;
-}
-// --- END NEW Function ---
-
-// --- NEW ARINC Receive Functions ---
-
-// Exported Function: InitializeHardware
-Napi::Value InitializeHardwareWrapped(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-    Napi::Object resultObj = Napi::Object::New(env);
-
-    // Prevent re-initialization if already initialized
-    if (hCardGlobal != nullptr || hCoreGlobal != nullptr) {
-        resultObj.Set("success", Napi::Boolean::New(env, false));
-        resultObj.Set("hCard", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCardGlobal)));
-        resultObj.Set("hCore", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCoreGlobal)));
-        resultObj.Set("message", Napi::String::New(env, "Hardware already initialized."));
-        resultObj.Set("resultCode", Napi::Number::New(env, ERR_NONE)); // Or a custom code?
-        return resultObj;
-    }
-
-    int cardNum = 0; // Use Card 0 as confirmed by user
-    HCARD hCard = nullptr;
-    ERRVAL result = BTICard_CardOpen(&hCard, cardNum);
-
-    if (result != ERR_NONE || hCard == nullptr) {
-        const char* errStr = BTICard_ErrDescStr(result, nullptr);
-        resultObj.Set("success", Napi::Boolean::New(env, false));
-        resultObj.Set("hCard", env.Null());
-        resultObj.Set("hCore", env.Null());
-        resultObj.Set("message", Napi::String::New(env, errStr ? errStr : "Failed to open card."));
-        resultObj.Set("resultCode", Napi::Number::New(env, result));
-        hCardGlobal = nullptr;
-        hCoreGlobal = nullptr;
-        return resultObj;
-    }
-
-    hCardGlobal = hCard;
-
-    int coreNum = 0; // ARINC core
-    HCORE hCore = nullptr;
-    result = BTICard_CoreOpen(&hCore, coreNum, hCard);
-
-    if (result != ERR_NONE || hCore == nullptr) {
-        const char* errStr = BTICard_ErrDescStr(result, hCard);
-        resultObj.Set("success", Napi::Boolean::New(env, false));
-        resultObj.Set("hCard", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCard)));
-        resultObj.Set("hCore", env.Null());
-        resultObj.Set("message", Napi::String::New(env, errStr ? errStr : "Failed to open core."));
-        resultObj.Set("resultCode", Napi::Number::New(env, result));
-        // Don't null hCardGlobal here, it might be needed for cleanup attempt
-        hCoreGlobal = nullptr;
-        return resultObj;
-    }
-
-    hCoreGlobal = hCore;
-
-    // Optional Reset
-    BTICard_CardReset(hCore);
-
-    resultObj.Set("success", Napi::Boolean::New(env, true));
-    resultObj.Set("hCard", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCard)));
-    resultObj.Set("hCore", Napi::BigInt::New(env, reinterpret_cast<uint64_t>(hCore)));
-    resultObj.Set("message", Napi::String::New(env, "Hardware initialized successfully."));
-    resultObj.Set("resultCode", Napi::Number::New(env, ERR_NONE));
-
-    return resultObj;
-}
-
-// Exported Function: InitializeReceiver
-Napi::Value InitializeReceiverWrapped(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-    if (info.Length() != 3 || !info[0].IsBigInt() || !info[1].IsFunction() || !info[2].IsFunction()) {
-        Napi::TypeError::New(env, "Expected: hCore (BigInt), dataCallback (Function), errorCallback (Function)").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-
-    bool lossless;
-    HCORE hCore = reinterpret_cast<HCORE>(info[0].As<Napi::BigInt>().Uint64Value(&lossless));
-    if (!lossless || !hCore) {
-        Napi::TypeError::New(env, "Invalid core handle provided.").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-     // Ensure global core handle matches if already set
-    if (hCoreGlobal && hCoreGlobal != hCore) {
-         Napi::Error::New(env, "Core handle mismatch with global state.").ThrowAsJavaScriptException();
-        return env.Null();
-    } else if (!hCoreGlobal) {
-        hCoreGlobal = hCore; // Set if not already set
-    }
-
-     // Cleanup previous TSFNs if they exist
-    if (tsfnDataUpdate) {
-        // Check if acquire returns napi_ok before releasing, otherwise it might already be released/dead
-        if (tsfnDataUpdate.Acquire() == napi_ok) {
-            tsfnDataUpdate.Release();
-        }
-        tsfnDataUpdate = nullptr;
-    }
-    if (tsfnErrorUpdate) {
-        if (tsfnErrorUpdate.Acquire() == napi_ok) {
-             tsfnErrorUpdate.Release();
-        }
-        tsfnErrorUpdate = nullptr;
-    }
-
-    // Create new ThreadSafeFunctions with corrected argument count
-    Napi::Function jsDataCallback = info[1].As<Napi::Function>();
-    Napi::Function jsErrorCallback = info[2].As<Napi::Function>();
-
-    // Define the finalizer lambda explicitly
-    auto dataFinalizer = [](Napi::Env env, void* finalize_data) { // Simplified signature
-        std::cout << "tsfnDataUpdate finalized." << std::endl;
-    };
-
-    tsfnDataUpdate = Napi::ThreadSafeFunction::New(
-        env,
-        jsDataCallback,
-        "ARINC Data Update", // Resource Name
-        0, // Max Queue Size (0 = unlimited)
-        1, // Initial Thread Count
-        dataFinalizer,
-        (void*)nullptr // FinalizerDataType*
-    );
-
-    auto errorFinalizer = [](Napi::Env env, void* finalize_data) { // Simplified signature
-        std::cout << "tsfnErrorUpdate finalized." << std::endl;
-    };
-
-    tsfnErrorUpdate = Napi::ThreadSafeFunction::New(
-        env,
-        jsErrorCallback,
-        "ARINC Error Update", // Resource Name
-        0, // Max Queue Size
-        1, // Initial Thread Count
-        errorFinalizer,
-        (void*)nullptr // FinalizerDataType*
-    );
-
-    Napi::Object resultObj = Napi::Object::New(env);
-    bool success = true;
-    std::string errorMessage = "Receiver initialized successfully.";
-    int lastErrorCode = ERR_NONE;
-
-    // Configure Event Log first (Keep this)
-    ERRVAL logConfigResult = BTICard_EventLogConfig(LOGCFG_ENABLE, 1024, hCore);
-    if(logConfigResult != ERR_NONE) {
-        // ... (Handle event log config error)
-        goto end_init_receiver;
-    }
-
-    // Configure Channels & Lists
-    for (int i = 0; i < ARINC_CHANNEL_COUNT; ++i) {
-        // Config Channel
-        ULONG chFlags = CHCFG429_AUTOSPEED | CHCFG429_LOGERR;
-        ERRVAL chConfigResult = BTI429_ChConfig(chFlags, i, hCore);
-        if (chConfigResult != ERR_NONE) {
-            const char* errStr = BTICard_ErrDescStr(chConfigResult, hCore);
-            errorMessage = "Failed to configure channel " + std::to_string(i) + ": " + (errStr ? errStr : "Unknown error");
-            success = false;
-            lastErrorCode = chConfigResult;
-            break;
-        }
-
-        // Create Default Filter FIRST
-        MSGADDR defaultMsgAddr = BTI429_FilterDefault(MSGCRT429_DEFAULT, i, hCore);
-        if (defaultMsgAddr == 0) {
-             errorMessage = "Failed to create default filter for channel " + std::to_string(i);
-             std::cerr << "BTI429_FilterDefault failed for channel " << i << std::endl;
-             success = false;
-             lastErrorCode = ERR_FAIL; // Or get last error if possible
-             break;
-        }
-        std::cout << "Created default filter for channel " << i << " with msg addr: " << defaultMsgAddr << std::endl;
-
-        // Create Receive List, passing the message address from the default filter
-        ULONG listFlags = LISTCRT429_FIFO; // Use FIFO mode
-        LISTADDR listAddr = BTI429_ListRcvCreate(listFlags, 1024, defaultMsgAddr, hCore);
-        if (listAddr == 0) {
-            errorMessage = "Failed to create receive list for channel " + std::to_string(i) + " (linked to default filter)";
-            std::cerr << "BTI429_ListRcvCreate failed for channel " << i << " with flags: " << listFlags << " msgAddr: " << defaultMsgAddr << std::endl;
-            success = false;
-            lastErrorCode = ERR_FAIL;
-            break;
-        }
-        receiveListAddrs[i] = listAddr; // Still store list address for reading
-        std::cout << "Created receive list for channel " << i << " linked to msg " << defaultMsgAddr << " with list address: " << listAddr << std::endl;
-    }
-
-end_init_receiver:
-    resultObj.Set("success", Napi::Boolean::New(env, success));
-    resultObj.Set("message", Napi::String::New(env, errorMessage));
-    resultObj.Set("lastErrorCode", Napi::Number::New(env, lastErrorCode));
-
-    // If initialization failed, release TSFNs immediately
-    if (!success) {
-         if (tsfnDataUpdate) { tsfnDataUpdate.Release(); tsfnDataUpdate = nullptr; }
-         if (tsfnErrorUpdate) { tsfnErrorUpdate.Release(); tsfnErrorUpdate = nullptr; }
-    }
-
-    return resultObj;
-}
-
-// Exported Function: StartMonitoring
-Napi::Value StartMonitoringWrapped(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-    if (info.Length() != 1 || !info[0].IsBigInt()) {
-        Napi::TypeError::New(env, "Expected: hCore (BigInt)").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-
-    bool lossless;
-    HCORE hCore = reinterpret_cast<HCORE>(info[0].As<Napi::BigInt>().Uint64Value(&lossless));
-    if (!lossless || !hCore || hCore != hCoreGlobal) { // Ensure handle matches global
-        Napi::TypeError::New(env, "Invalid or mismatched core handle provided.").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-
-    Napi::Object resultObj = Napi::Object::New(env);
-
-    if (monitoringActive.load()) {
-        resultObj.Set("success", Napi::Boolean::New(env, false));
-        resultObj.Set("message", Napi::String::New(env, "Monitoring is already active."));
-        return resultObj;
-    }
-    if (!tsfnDataUpdate || !tsfnErrorUpdate) {
-         resultObj.Set("success", Napi::Boolean::New(env, false));
-        resultObj.Set("message", Napi::String::New(env, "Callbacks not initialized. Call InitializeReceiver first."));
-        return resultObj;
-    }
-
-    ERRVAL startResult = BTICard_CardStart(hCore);
-    if (startResult != ERR_NONE) {
-        const char* errStr = BTICard_ErrDescStr(startResult, hCore);
-        resultObj.Set("success", Napi::Boolean::New(env, false));
-        resultObj.Set("message", Napi::String::New(env, std::string("Failed to start card: ") + (errStr ? errStr : "Unknown error")));
-        return resultObj;
-    }
-
-    monitoringActive.store(true);
-    try {
-        // Ensure previous thread is joined if somehow still exists
-        if (monitorThread.joinable()) {
-             std::cout << "Warning: Previous monitor thread was still joinable. Joining now." << std::endl;
-            monitorThread.join();
-        }
-        monitorThread = std::thread(MonitorLoop);
-    } catch (const std::exception& e) {
-         monitoringActive.store(false);
-         BTICard_CardStop(hCore); // Attempt to stop card if thread creation failed
-         const char* errStr = BTICard_ErrDescStr(startResult, hCore);
-         resultObj.Set("success", Napi::Boolean::New(env, false));
-         resultObj.Set("message", Napi::String::New(env, std::string("Failed to start monitoring thread: ") + e.what()));
-         return resultObj;
-    }
-
-    resultObj.Set("success", Napi::Boolean::New(env, true));
-    resultObj.Set("message", Napi::String::New(env, "ARINC monitoring started."));
-    return resultObj;
-}
-
-// Exported Function: StopMonitoring
-Napi::Value StopMonitoringWrapped(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-    if (info.Length() != 1 || !info[0].IsBigInt()) {
-        Napi::TypeError::New(env, "Expected: hCore (BigInt)").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-
-    bool lossless;
-    HCORE hCore = reinterpret_cast<HCORE>(info[0].As<Napi::BigInt>().Uint64Value(&lossless));
-     if (!lossless || !hCore || hCore != hCoreGlobal) { // Check against global
-        Napi::TypeError::New(env, "Invalid or mismatched core handle provided.").ThrowAsJavaScriptException();
-        return env.Null();
-    }
-
-    Napi::Object resultObj = Napi::Object::New(env);
-
-    if (!monitoringActive.load()) {
-        resultObj.Set("success", Napi::Boolean::New(env, true)); // Already stopped
-        resultObj.Set("message", Napi::String::New(env, "Monitoring was not active."));
-        // Ensure TSFNs are released if somehow they weren't
-         if (tsfnDataUpdate) { tsfnDataUpdate.Abort(); tsfnDataUpdate.Release(); tsfnDataUpdate = nullptr; }
-         if (tsfnErrorUpdate) { tsfnErrorUpdate.Abort(); tsfnErrorUpdate.Release(); tsfnErrorUpdate = nullptr; }
-        return resultObj;
-    }
-
-    std::cout << "StopMonitoring called. Setting flag false." << std::endl;
-    monitoringActive.store(false);
-
-    // Abort TSFNs to unblock any pending calls immediately
-    if (tsfnDataUpdate) {
-        tsfnDataUpdate.Abort(); // Abort any queued calls
-    }
-    if (tsfnErrorUpdate) {
-        tsfnErrorUpdate.Abort();
-    }
-
-    if (monitorThread.joinable()) {
-        std::cout << "Joining monitor thread..." << std::endl;
-        try {
-             monitorThread.join();
-             std::cout << "Monitor thread joined." << std::endl;
-        } catch(const std::system_error& e) {
-            std::cerr << "Error joining monitor thread: " << e.what() << " (" << e.code() << ")" << std::endl;
-            // Proceed with stopping the card anyway
-        }
-    } else {
-         std::cout << "Monitor thread was not joinable." << std::endl;
-    }
-
-    // Stop the card
-     std::cout << "Stopping BTI Card..." << std::endl;
-    BTICard_CardStop(hCore);
-     std::cout << "BTI Card stopped." << std::endl;
-
-    // Release ThreadSafeFunctions - crucial to prevent leaks/crashes
-    if (tsfnDataUpdate) {
-        std::cout << "Releasing tsfnDataUpdate..." << std::endl;
-        tsfnDataUpdate.Release();
-        tsfnDataUpdate = nullptr;
-    }
-    if (tsfnErrorUpdate) {
-         std::cout << "Releasing tsfnErrorUpdate..." << std::endl;
-        tsfnErrorUpdate.Release();
-        tsfnErrorUpdate = nullptr;
-    }
-
-    resultObj.Set("success", Napi::Boolean::New(env, true));
-    resultObj.Set("message", Napi::String::New(env, "ARINC monitoring stopped."));
-    return resultObj;
-}
-
-// Exported Function: CleanupHardware
-Napi::Value CleanupHardwareWrapped(const Napi::CallbackInfo& info) {
-    Napi::Env env = info.Env();
-    Napi::Object resultObj = Napi::Object::New(env);
-
-    // Ensure monitoring is stopped first
-    if (monitoringActive.load() && hCoreGlobal) {
-         std::cout << "CleanupHardware: Stopping active monitoring first..." << std::endl;
-         // Need to recreate CallbackInfo or pass null if no args needed
-         // This is tricky. It's better if stop is called explicitly before cleanup.
-         // Forcing a stop here without proper JS context can be problematic.
-         // Let's just set the flag and rely on card close.
-         monitoringActive.store(false);
-         if (monitorThread.joinable()) monitorThread.join(); // Try to join if possible
-         BTICard_CardStop(hCoreGlobal);
-          if (tsfnDataUpdate) { tsfnDataUpdate.Abort(); tsfnDataUpdate.Release(); tsfnDataUpdate = nullptr; }
-         if (tsfnErrorUpdate) { tsfnErrorUpdate.Abort(); tsfnErrorUpdate.Release(); tsfnErrorUpdate = nullptr; }
-    }
-
-    if (hCardGlobal) {
-        std::cout << "CleanupHardware: Closing card..." << std::endl;
-        ERRVAL closeResult = BTICard_CardClose(hCardGlobal);
-        if (closeResult == ERR_NONE) {
-             resultObj.Set("success", Napi::Boolean::New(env, true));
-             resultObj.Set("message", Napi::String::New(env, "Hardware resources released."));
-        } else {
-            const char* errStr = BTICard_ErrDescStr(closeResult, hCardGlobal);
-            resultObj.Set("success", Napi::Boolean::New(env, false));
-            resultObj.Set("message", Napi::String::New(env, std::string("Error closing card: ") + (errStr ? errStr : "Unknown error")));
-        }
-        hCardGlobal = nullptr; // Clear global handles
-        hCoreGlobal = nullptr;
-    } else {
-         resultObj.Set("success", Napi::Boolean::New(env, true)); // No card was open
-         resultObj.Set("message", Napi::String::New(env, "No hardware card was open."));
-    }
-
-    return resultObj;
-}
-
-// --- ARINC Monitoring Thread Loop ---
-void MonitorLoop() {
-    if (!hCoreGlobal) {
-        std::cerr << "MonitorLoop started with null hCoreGlobal!" << std::endl;
-        return;
-    }
-
-    HCORE hCore = hCoreGlobal; // Use the global core handle
-    const int MAX_READ_COUNT = 512; // How many words to read per channel check
-    std::vector<ULONG> readBuffer(MAX_READ_COUNT);
-
-    std::cout << "ARINC Monitor Thread Started." << std::endl;
-
-    while (monitoringActive.load()) {
-        // Check if TSFNs are still valid before proceeding
-        if (!tsfnDataUpdate || !tsfnErrorUpdate) {
-             std::cerr << "MonitorLoop: TSFN became invalid. Exiting loop." << std::endl;
-             monitoringActive.store(false);
-             break;
-        }
-
-        bool dataProcessedInCycle = false;
-        auto updatesBatch = new std::vector<ArincUpdateData>(); // Allocate on heap for TSFN
-
-        // 1. Poll Event Log (Optional but good for responsiveness)
-        USHORT eventType = 0;
-        ULONG eventInfo = 0;
-        INT eventChannel = -1;
-        ULONG logEntryAddr = BTICard_EventLogRd(&eventType, &eventInfo, &eventChannel, hCore);
-
-        if (logEntryAddr != 0) {
-            dataProcessedInCycle = true; // Consider event log read as activity
-           // std::cout << "Event Logged: Type=" << eventType << ", Info=" << eventInfo << ", Chan=" << eventChannel << std::endl;
-            if (eventType == EVENTTYPE_429LIST) { // List full/empty
-                std::cout << "ARINC List event on channel " << eventChannel << " (Info: " << eventInfo << " -> " << (eventInfo == 0 ? "Empty?" : "Full?") << ")" << std::endl;
-                // Could potentially report this as a warning/info via tsfnErrorUpdate
-                // auto* errorData = new ArincErrorData{eventChannel, ERR_INFO, std::string("List Buffer Event: ") + (eventInfo == 0 ? "Empty/Underrun" : "Full/Overflow") };
-                // tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
-            }
-            else if (eventType == EVENTTYPE_429ERR) { // Decoder error
-                 auto* errorData = new ArincErrorData{eventChannel, ERR_FAIL, "ARINC Decoder Error (See message activity)" };
-                 tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
-            }
-            // Add more event handling here if needed
-        }
-
-        // 2. Periodically Check Receive Lists
-        for (int channel = 0; channel < ARINC_CHANNEL_COUNT; ++channel) { // Uses the new constant
-            if (!monitoringActive.load()) break; // Check flag again inside loop
-
-            LISTADDR listAddr = receiveListAddrs[channel];
-            if (listAddr == 0) continue; // Skip if list wasn't created
-
-            int listStatus = BTI429_ListStatus(listAddr, hCore);
-
-            if (listStatus < 0) {
-                 // Error checking list status
-                 const char* errStr = BTICard_ErrDescStr(listStatus, hCore);
-                 auto* errorData = new ArincErrorData{channel, listStatus, std::string("Error checking list status: ") + (errStr ? errStr : "Unknown error")};
-                 if (tsfnErrorUpdate) tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
-                 continue; // Skip this channel on error
-            }
-
-            if (listStatus == STAT_PARTIAL || listStatus == STAT_FULL) {
-                dataProcessedInCycle = true;
-                USHORT countActuallyRead = 0; // Initialize to 0 before passing address
-                // std::cout << "Ch " << channel << " Status: " << listStatus << ". Reading up to " << MAX_READ_COUNT << std::endl;
-                BOOL success = BTI429_ListDataBlkRd(readBuffer.data(), &countActuallyRead, listAddr, hCore);
-                 // std::cout << "Ch " << channel << " Read attempt done. Success: " << success << ", Count: " << countActuallyRead << std::endl;
-
-                if (success && countActuallyRead > 0) {
-                    //std::cout << "Read " << countActuallyRead << " words from Ch " << channel << std::endl;
-                    for (USHORT i = 0; i < countActuallyRead; ++i) {
-                        ULONG word = readBuffer[i];
-                        int label = BTI429_FldGetLabel(word); // Label is bits 0-7
-                        auto now = std::chrono::steady_clock::now();
-
-                        // Update map
-                        auto& lastWord = latestWords[channel][label];
-                        auto& lastTime = lastUpdateTimes[channel][label];
-
-                        // Store/update data and add to batch for JS update
-                        lastWord = word;
-                        lastTime = now;
-                        updatesBatch->push_back({channel, label, word, steady_clock_to_epoch_ms(now)});
-                    }
-                } else if (!success) {
-                    // Handle read failure - check status again?
-                    int postReadStatus = BTI429_ListStatus(listAddr, hCore);
-                    const char* errStr = BTICard_ErrDescStr(postReadStatus, hCore);
-                    std::string errMsg = "Error reading data block (ListDataBlkRd failed).";
-                    if(postReadStatus < 0) {
-                        errMsg += " BTI Error: " + (errStr ? std::string(errStr) : "Unknown");
-                    } else {
-                        errMsg += " Post-read status: " + std::to_string(postReadStatus);
-                    }
-                     auto* errorData = new ArincErrorData{channel, (postReadStatus < 0 ? postReadStatus : ERR_FAIL), errMsg};
-                     if (tsfnErrorUpdate) tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
-                } else if (countActuallyRead == 0 && listStatus == STAT_FULL) {
-                     // This case might indicate an issue, log or report it
-                     // std::cerr << "Warning: Ch " << channel << " status FULL but read 0 words." << std::endl;
-                     // auto* errorData = new ArincErrorData{channel, ERR_INFO, "List status FULL but read 0 words."};
-                     // if (tsfnErrorUpdate) tsfnErrorUpdate.BlockingCall(errorData, CallJsErrorUpdate);
-                }
-            }
-        }
-        if (!monitoringActive.load()) break; // Check flag again after loop
-
-        // 3. Send Batch Update if data was found/processed
-        if (!updatesBatch->empty()) {
-            if (tsfnDataUpdate) {
-               napi_status status = tsfnDataUpdate.BlockingCall(updatesBatch, CallJsDataUpdate);
-                if (status != napi_ok && status != napi_closing) { // Ignore error if stopping
-                    std::cerr << "Failed to call tsfnDataUpdate! Status: " << status << std::endl;
-                    delete updatesBatch; // Clean up if call failed
-                } else if (status == napi_closing) {
-                     std::cout << "tsfnDataUpdate closing, discarding batch." << std::endl;
-                      delete updatesBatch;
-                } // On napi_ok, updatesBatch is deleted inside CallJsDataUpdate
-            } else {
-                std::cerr << "tsfnDataUpdate is null, discarding batch." << std::endl;
-                delete updatesBatch; // Clean up if TSFN is null
-            }
-        } else {
-             delete updatesBatch; // Clean up if empty
-        }
-
-        // 4. Sleep
-        // Only sleep if no data was processed to stay responsive
-        if (!dataProcessedInCycle) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Polling interval when idle
-        } else {
-             std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Shorter sleep if busy
-        }
-    }
-
-    std::cout << "ARINC Monitor Thread Exiting." << std::endl;
-}
 // --- Helper function to construct a 32-bit ARINC word ---
 // Relies on hardware/library to calculate Parity based on ChConfig setting
 uint32_t ConstructArincWord(uint8_t label, uint8_t sdi, uint32_t data, uint8_t ssm) {
@@ -1903,26 +1339,21 @@ uint32_t ConstructArincWord(uint8_t label, uint8_t sdi, uint32_t data, uint8_t s
     // Parity (Bit 31) is handled by hardware via CHCFG429_PAREVEN/PARODD
     return word;
 }
+
 // --- NEW ARINC Transmit Functions ---
 
 // Exported Function: StartTransmit
 Napi::Value StartTransmitWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-    Napi::Object resultObj = Napi::Object::New(env);
      std::cout << "[C++ Addon] StartTransmitWrapped called." << std::endl; // DEBUG
 
     if (hCoreGlobal == NULL) {
         std::cerr << "[C++ Addon] Error: Hardware not initialized (Core handle is null)." << std::endl;
-        resultObj.Set("status", Napi::Number::New(env, ERR_HWINIT)); // Use a distinct error code
-        resultObj.Set("message", Napi::String::New(env, "Error: Hardware not initialized."));
-        return resultObj;
+        return Napi::String::New(env, "Error: Hardware not initialized.");
     }
-    // Expecting: channel(int), label(int), sdi(int), data(int), ssm(int), parity(int - currently ignored)
     if (info.Length() < 6 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber() || !info[3].IsNumber() || !info[4].IsNumber() || !info[5].IsNumber()) {
         std::cerr << "[C++ Addon] Error: Incorrect arguments for StartTransmit." << std::endl;
-        resultObj.Set("status", Napi::Number::New(env, ERR_PARAM)); // Use a distinct error code
-        resultObj.Set("message", Napi::String::New(env, "Error: Requires channel(int), label(int), sdi(int), data(int), ssm(int), parity(int)."));
-        return resultObj;
+        return Napi::String::New(env, "Error: Requires channel(int), label(int), sdi(int), data(int), ssm(int), parity(int).");
     }
 
     int channel = info[0].As<Napi::Number>().Int32Value();
@@ -1930,32 +1361,27 @@ Napi::Value StartTransmitWrapped(const Napi::CallbackInfo& info) {
     int sdi_in = info[2].As<Napi::Number>().Int32Value();
     uint32_t data_in = info[3].As<Napi::Number>().Uint32Value();
     int ssm_in = info[4].As<Napi::Number>().Int32Value();
-    // int parity_in = info[5].As<Napi::Number>().Int32Value(); // Parity handled by ChConfig
+    int parity_in = info[5].As<Napi::Number>().Int32Value(); // 0 = auto/even, 1 = odd? (Let ChConfig handle)
 
     std::lock_guard<std::mutex> lock(g_transmitMutex);
 
-    // Check if already transmitting using find to avoid inserting if not present
-    if (g_isTransmitting.count(channel) && g_isTransmitting.at(channel)) {
+    if (g_isTransmitting[channel]) {
          std::cerr << "[C++ Addon] Error: Already transmitting on channel " << channel << std::endl;
-         resultObj.Set("status", Napi::Number::New(env, ERR_BUSY)); // Use a distinct error code
-         resultObj.Set("message", Napi::String::New(env, "Error: Already transmitting on channel " + std::to_string(channel)));
-         return resultObj;
+        return Napi::String::New(env, "Error: Already transmitting on channel " + std::to_string(channel));
     }
 
     std::cout << "[C++ Addon] Attempting to start transmission on channel " << channel << "..." << std::endl;
 
     // 1. Configure Channel for Transmit
-    // Assuming High Speed, Schedule Mode, Even Parity, Active
     ULONG configFlags = CHCFG429_SCHEDULE | CHCFG429_HIGHSPEED | CHCFG429_PAREVEN | CHCFG429_ACTIVE;
     std::cout << "[C++ Addon] Calling BTI429_ChConfig(0x" << std::hex << configFlags << std::dec << ", " << channel << ", hCore=" << hCoreGlobal << ")" << std::endl; // DEBUG
     ERRVAL configResult = BTI429_ChConfig(configFlags, channel, hCoreGlobal);
     std::cout << "[C++ Addon] BTI429_ChConfig(Transmit) for Ch " << channel << " returned: " << configResult << std::endl;
-    if (configResult != ERR_NONE) {
-        std::string errorMsg = "Failed to configure channel " + std::to_string(channel) + " for transmit.";
-        std::cerr << "[C++ Addon] Error: " << errorMsg << " BTI Code: " << configResult << std::endl;
-        resultObj.Set("status", Napi::Number::New(env, configResult));
-        resultObj.Set("message", Napi::String::New(env, errorMsg + " BTI Code: " + std::to_string(configResult)));
-        return resultObj;
+    if (configResult < 0) {
+        std::string errorMsg = "Failed to configure channel " + std::to_string(channel) + " for transmit. Error: " + std::to_string(configResult);
+        std::cerr << "[C++ Addon] Error: " << errorMsg << std::endl;
+        // No resources allocated yet, just return
+        return Napi::String::New(env, "Error: " + errorMsg);
     }
 
     // 2. Create Message Record
@@ -1964,38 +1390,40 @@ Napi::Value StartTransmitWrapped(const Napi::CallbackInfo& info) {
     MSGADDR msgAddr = BTI429_MsgCreate(msgCreateFlags, hCoreGlobal);
     std::cout << "[C++ Addon] BTI429_MsgCreate for Ch " << channel << " returned MSGADDR: " << msgAddr << std::endl;
     if (msgAddr == 0) {
-        std::string errorMsg = "Failed to create message record for channel " + std::to_string(channel) + ".";
+        // Failed to create message record, attempt to revert ChConfig
+        ERRVAL lastErr = BTI429_MsgCreate(msgCreateFlags, hCoreGlobal); // Call again to potentially get error code if API supports it
+        std::string errorMsg = "Failed to create message record for channel " + std::to_string(channel) + ". Error: " + std::to_string(lastErr);
         std::cerr << "[C++ Addon] Error: " << errorMsg << std::endl;
-        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Attempt cleanup
-        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure for now
-        resultObj.Set("message", Napi::String::New(env, errorMsg));
-        return resultObj;
+        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Try to deactivate channel
+        return Napi::String::New(env, "Error: " + errorMsg);
     }
-    g_transmitMsgAddr[channel] = msgAddr; // Store only on success
+    g_transmitMsgAddr[channel] = msgAddr;
 
-    // 3. Create Transmit List (Circular, size 2 for 1 entry + loop)
+    // 3. Create Transmit List (Circular, size 2 for 1 entry)
     ULONG listCreateFlags = LISTCRT429_CIRCULAR; // Circular mode
      std::cout << "[C++ Addon] Calling BTI429_ListXmtCreate(0x" << std::hex << listCreateFlags << std::dec << ", Count=2, MsgAddr=" << msgAddr << ", hCore=" << hCoreGlobal << ")" << std::endl; // DEBUG
     LISTADDR listAddr = BTI429_ListXmtCreate(listCreateFlags, 2, msgAddr, hCoreGlobal);
      std::cout << "[C++ Addon] BTI429_ListXmtCreate for Ch " << channel << " returned LISTADDR: " << listAddr << std::endl;
     if (listAddr == 0) {
-        std::string errorMsg = "Failed to create transmit list for channel " + std::to_string(channel) + ".";
+        // Failed to create list, attempt cleanup
+        ERRVAL lastErr = BTI429_ListXmtCreate(listCreateFlags, 2, msgAddr, hCoreGlobal); // Call again for error code?
+        std::string errorMsg = "Failed to create transmit list for channel " + std::to_string(channel) + ". Error: " + std::to_string(lastErr);
         std::cerr << "[C++ Addon] Error: " << errorMsg << std::endl;
-        // TODO: Add BTI429_MsgRelease(msgAddr, hCoreGlobal) if available
+        // Cleanup message record? (Assuming no MsgRelease, rely on ChConfig)
         g_transmitMsgAddr.erase(channel);
-        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Attempt cleanup
-        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure
-        resultObj.Set("message", Napi::String::New(env, errorMsg));
-        return resultObj;
+        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Try to deactivate channel
+        return Napi::String::New(env, "Error: " + errorMsg);
     }
-    g_transmitListAddr[channel] = listAddr; // Store only on success
+    g_transmitListAddr[channel] = listAddr;
 
     // 4. Construct and Write Word to List
+    // NOTE: ConstructArincWord expects label in decimal, JS sent decimal 65 (0o101)
     uint32_t arincWord = ConstructArincWord(
-        static_cast<uint8_t>(label_in & 0xFF),
+        static_cast<uint8_t>(label_in & 0xFF), // Use label_in directly (already decimal)
         static_cast<uint8_t>(sdi_in & 0x03),
         data_in,
         static_cast<uint8_t>(ssm_in & 0x03)
+        // Parity bit removed, handled by hardware
     );
      std::cout << "[C++ Addon] Constructed ARINC Word for Ch " << channel << ": 0x" << std::hex << arincWord << std::dec << std::endl;
 
@@ -2003,16 +1431,15 @@ Napi::Value StartTransmitWrapped(const Napi::CallbackInfo& info) {
     BOOL writeResult = BTI429_ListDataWr(arincWord, listAddr, hCoreGlobal);
      std::cout << "[C++ Addon] BTI429_ListDataWr for Ch " << channel << " returned: " << writeResult << std::endl;
     if (!writeResult) {
-         std::string errorMsg = "Failed to write data to transmit list for channel " + std::to_string(channel) + ".";
+        // Failed to write data, attempt cleanup
+         ERRVAL lastErr = writeResult ? ERR_NONE : ERR_FAIL; // Simple error code
+         std::string errorMsg = "Failed to write data to transmit list for channel " + std::to_string(channel) + ". Error: " + std::to_string(lastErr);
         std::cerr << "[C++ Addon] Error: " << errorMsg << std::endl;
-        // TODO: Add BTI429_ListRelease(listAddr, hCoreGlobal) if available
-        // TODO: Add BTI429_MsgRelease(msgAddr, hCoreGlobal) if available
+        // Cleanup list and message (Rely on ChConfig)
          g_transmitListAddr.erase(channel);
          g_transmitMsgAddr.erase(channel);
-        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Attempt cleanup
-        resultObj.Set("status", Napi::Number::New(env, ERR_FAIL)); // Generic failure
-        resultObj.Set("message", Napi::String::New(env, errorMsg));
-        return resultObj;
+        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Try to deactivate channel
+        return Napi::String::New(env, "Error: " + errorMsg);
     }
 
     // 5. Add Message/List to Schedule
@@ -2021,147 +1448,85 @@ Napi::Value StartTransmitWrapped(const Napi::CallbackInfo& info) {
      std::cout << "[C++ Addon] BTI429_SchedMsg for Ch " << channel << " returned index: " << schedIndex << std::endl;
     if (schedIndex < 0) {
          ERRVAL err = schedIndex; // SchedMsg returns error code directly
-         std::string errorMsg = "Failed to schedule message for channel " + std::to_string(channel) + ".";
-         std::cerr << "[C++ Addon] Error: " << errorMsg << " BTI Code: " << err << std::endl;
-        // TODO: Add BTI429_ListRelease(listAddr, hCoreGlobal) if available
-        // TODO: Add BTI429_MsgRelease(msgAddr, hCoreGlobal) if available
+         std::string errorMsg = "Failed to schedule message for channel " + std::to_string(channel) + ". Error: " + std::to_string(err);
+         std::cerr << "[C++ Addon] Error: " << errorMsg << std::endl;
+        // Cleanup list and message (Rely on ChConfig)
          g_transmitListAddr.erase(channel);
          g_transmitMsgAddr.erase(channel);
-        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Attempt cleanup
-         resultObj.Set("status", Napi::Number::New(env, err));
-         resultObj.Set("message", Napi::String::New(env, errorMsg + " BTI Code: " + std::to_string(err)));
-        return resultObj;
+        BTI429_ChConfig(CHCFG429_INACTIVE, channel, hCoreGlobal); // Try to deactivate channel
+        return Napi::String::New(env, "Error: " + errorMsg);
     }
 
     // 6. Mark as transmitting (CardStart should already be active from receiver)
     g_isTransmitting[channel] = true;
      std::cout << "[C++ Addon] Transmission successfully started on channel " << channel << std::endl;
 
-    resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
-    resultObj.Set("message", Napi::String::New(env, "Transmission started successfully on channel " + std::to_string(channel)));
-    return resultObj;
+    return Napi::String::New(env, "Transmission started successfully on channel " + std::to_string(channel));
 }
 
 // Exported Function: StopTransmit
 Napi::Value StopTransmitWrapped(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-    Napi::Object resultObj = Napi::Object::New(env);
     std::cout << "[C++ Addon] StopTransmitWrapped called." << std::endl; // DEBUG
 
      if (hCoreGlobal == NULL) {
         std::cerr << "[C++ Addon] Error: Hardware not initialized (Core handle is null)." << std::endl;
-        resultObj.Set("status", Napi::Number::New(env, ERR_HWINIT));
-        resultObj.Set("message", Napi::String::New(env, "Error: Hardware not initialized."));
-        return resultObj;
+        return Napi::String::New(env, "Error: Hardware not initialized.");
      }
     if (info.Length() < 1 || !info[0].IsNumber()) {
          std::cerr << "[C++ Addon] Error: Incorrect arguments for StopTransmit." << std::endl;
-        resultObj.Set("status", Napi::Number::New(env, ERR_PARAM));
-        resultObj.Set("message", Napi::String::New(env, "Error: Requires channel(int)."));
-        return resultObj;
+        return Napi::String::New(env, "Error: Requires channel(int).");
     }
 
     int channel = info[0].As<Napi::Number>().Int32Value();
 
     std::lock_guard<std::mutex> lock(g_transmitMutex);
 
-    // Check if we were actually transmitting on this channel
-    if (!g_isTransmitting.count(channel) || !g_isTransmitting.at(channel)) {
+    if (!g_isTransmitting[channel]) {
         std::cout << "[C++ Addon] Warning: StopTransmit called for channel " << channel << " which is not marked as transmitting." << std::endl;
-        resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); // Not an error, just wasn't transmitting
-        resultObj.Set("message", Napi::String::New(env, "Warning: Channel " + std::to_string(channel) + " was not transmitting."));
-        return resultObj;
+        return Napi::String::New(env, "Warning: Channel was not transmitting.");
     }
 
      std::cout << "[C++ Addon] Attempting to stop transmission on channel " << channel << "..." << std::endl;
 
     // 1. Deactivate/Reconfigure the channel to stop transmission and release resources
-    //    Using CHCFG429_INACTIVE is simplest. Assumes receiver setup will handle re-enabling receive if needed.
-    ULONG inactiveFlags = CHCFG429_INACTIVE;
+    //    Using CHCFG429_INACTIVE is a safe bet. If receiver needs to be restored,
+    //    this would need more complex state management.
+    ULONG inactiveFlags = CHCFG429_INACTIVE; // Could also use a default receive config if needed
     std::cout << "[C++ Addon] Calling BTI429_ChConfig(0x" << std::hex << inactiveFlags << std::dec << ", " << channel << ", hCore=" << hCoreGlobal << ") to stop transmission." << std::endl; // DEBUG
     ERRVAL configResult = BTI429_ChConfig(inactiveFlags, channel, hCoreGlobal);
     std::cout << "[C++ Addon] BTI429_ChConfig(Inactive) for Ch " << channel << " returned: " << configResult << std::endl;
 
-    // TODO: Explicitly release list/msg if BTI functions exist?
-    // BTI429_ListRelease(g_transmitListAddr[channel], hCoreGlobal);
-    // BTI429_MsgRelease(g_transmitMsgAddr[channel], hCoreGlobal);
+    if (configResult < 0) {
+        std::string errorMsg = "Error stopping transmission (ChConfig failed) on channel " + std::to_string(channel) + ". Error: " + std::to_string(configResult);
+        std::cerr << "[C++ Addon] Error: " << errorMsg << std::endl;
+        // Even if ChConfig fails, clear our internal state
+        g_isTransmitting.erase(channel);
+        g_transmitMsgAddr.erase(channel);
+        g_transmitListAddr.erase(channel);
+        return Napi::String::New(env, "Error: " + errorMsg);
+    }
 
-    // 2. Clear internal state regardless of ChConfig result, as we are stopping logically
+    // 2. Clear internal state
     g_isTransmitting.erase(channel);
     g_transmitMsgAddr.erase(channel);
     g_transmitListAddr.erase(channel);
 
-    if (configResult != ERR_NONE) {
-        // Log the error, but still report logical success to JS, as we cleared internal state
-        std::string errorMsg = "Error during ChConfig(Inactive) on channel " + std::to_string(channel) + ".";
-        std::cerr << "[C++ Addon] Warning: " << errorMsg << " BTI Code: " << configResult << std::endl;
-         resultObj.Set("status", Napi::Number::New(env, ERR_NONE)); // Report logical success
-         resultObj.Set("message", Napi::String::New(env, "Transmission stopped on channel " + std::to_string(channel) + " (with potential ChConfig warning: " + std::to_string(configResult) + ")"));
-    } else {
-        std::cout << "[C++ Addon] Transmission stopped successfully on channel " << channel << std::endl;
-        resultObj.Set("status", Napi::Number::New(env, ERR_NONE));
-        resultObj.Set("message", Napi::String::New(env, "Transmission stopped successfully on channel " + std::to_string(channel)));
-    }
-
-    return resultObj;
+    std::cout << "[C++ Addon] Transmission stopped successfully on channel " << channel << std::endl;
+    return Napi::String::New(env, "Transmission stopped successfully on channel " + std::to_string(channel));
 }
-
-// --- Initializer function for the addon module ---
-Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  // Export the original wrapped functions
-  exports.Set(Napi::String::New(env, "cardOpen"), Napi::Function::New(env, CardOpenWrapped));
-  exports.Set(Napi::String::New(env, "coreOpen"), Napi::Function::New(env, CoreOpenWrapped));
-  exports.Set(Napi::String::New(env, "cardTest"), Napi::Function::New(env, CardTestWrapped));
-  exports.Set(Napi::String::New(env, "cardClose"), Napi::Function::New(env, CardCloseWrapped));
-  exports.Set(Napi::String::New(env, "bitInitiate"), Napi::Function::New(env, BitInitiateWrapped));
-  exports.Set(Napi::String::New(env, "getErrorDescription"), Napi::Function::New(env, GetErrorDescriptionWrapped));
-  exports.Set(Napi::String::New(env, "cardReset"), Napi::Function::New(env, CardResetWrapped));
-  exports.Set(Napi::String::New(env, "cardGetInfo"), Napi::Function::New(env, CardGetInfoWrapped));
-  exports.Set(Napi::String::New(env, "cardStart"), Napi::Function::New(env, CardStartWrapped));
-  exports.Set(Napi::String::New(env, "cardStop"), Napi::Function::New(env, CardStopWrapped));
-  exports.Set(Napi::String::New(env, "eventLogConfig"), Napi::Function::New(env, EventLogConfigWrapped));
-  exports.Set(Napi::String::New(env, "eventLogRd"), Napi::Function::New(env, EventLogRdWrapped));
-  exports.Set(Napi::String::New(env, "eventLogStatus"), Napi::Function::New(env, EventLogStatusWrapped));
-  exports.Set(Napi::String::New(env, "timer64Rd"), Napi::Function::New(env, Timer64RdWrapped));
-  exports.Set(Napi::String::New(env, "timer64Wr"), Napi::Function::New(env, Timer64WrWrapped));
-  exports.Set(Napi::String::New(env, "chConfig"), Napi::Function::New(env, ChConfigWrapped));
-  exports.Set(Napi::String::New(env, "chStart"), Napi::Function::New(env, ChStartWrapped));
-  exports.Set(Napi::String::New(env, "chStop"), Napi::Function::New(env, ChStopWrapped));
-  exports.Set(Napi::String::New(env, "listXmtCreate"), Napi::Function::New(env, ListXmtCreateWrapped));
-  exports.Set(Napi::String::New(env, "listDataWr"), Napi::Function::New(env, ListDataWrWrapped));
-  exports.Set(Napi::String::New(env, "listDataBlkWr"), Napi::Function::New(env, ListDataBlkWrWrapped));
-  exports.Set(Napi::String::New(env, "listRcvCreate"), Napi::Function::New(env, ListRcvCreateWrapped));
-  exports.Set(Napi::String::New(env, "listDataRd"), Napi::Function::New(env, ListDataRdWrapped));
-  exports.Set(Napi::String::New(env, "listDataBlkRd"), Napi::Function::New(env, ListDataBlkRdWrapped));
-  exports.Set(Napi::String::New(env, "listStatus"), Napi::Function::New(env, ListStatusWrapped));
-  exports.Set(Napi::String::New(env, "filterSet"), Napi::Function::New(env, FilterSetWrapped));
-  exports.Set(Napi::String::New(env, "filterDefault"), Napi::Function::New(env, FilterDefaultWrapped));
-  exports.Set(Napi::String::New(env, "listDataRdAsync"), Napi::Function::New(env, ListDataRdAsyncWrapped));
-  exports.Set(Napi::String::New(env, "listDataBlkRdAsync"), Napi::Function::New(env, ListDataBlkRdAsyncWrapped));
-  exports.Set(Napi::String::New(env, "msgCreate"), Napi::Function::New(env, MsgCreateWrapped));
-  exports.Set(Napi::String::New(env, "msgDataWr"), Napi::Function::New(env, MsgDataWrWrapped));
-  exports.Set(Napi::String::New(env, "msgDataRd"), Napi::Function::New(env, MsgDataRdWrapped));
-  exports.Set(Napi::String::New(env, "fldGetLabel"), Napi::Function::New(env, FldGetLabelWrapped));
-  exports.Set(Napi::String::New(env, "fldGetSDI"), Napi::Function::New(env, FldGetSDIWrapped));
-  exports.Set(Napi::String::New(env, "fldGetData"), Napi::Function::New(env, FldGetDataWrapped));
-  exports.Set(Napi::String::New(env, "bcdGetData"), Napi::Function::New(env, BCDGetDataWrapped));
-  exports.Set(Napi::String::New(env, "bnrGetData"), Napi::Function::New(env, BNRGetDataWrapped));
-  exports.Set(Napi::String::New(env, "msgBlockRd"), Napi::Function::New(env, MsgBlockRdWrapped));
-  exports.Set(Napi::String::New(env, "msgCommRd"), Napi::Function::New(env, MsgCommRdWrapped));
-  exports.Set(Napi::String::New(env, "msgIsAccessed"), Napi::Function::New(env, MsgIsAccessedWrapped));
-  exports.Set(Napi::String::New(env, "extDIOWr"), Napi::Function::New(env, ExtDIOWrWrapped));
-  exports.Set(Napi::String::New(env, "getAllDioStates"), Napi::Function::New(env, GetAllDioStatesWrapped));
 
   // --- Export NEW ARINC receiver control functions ---
   exports.Set(Napi::String::New(env, "initializeHardware"), Napi::Function::New(env, InitializeHardwareWrapped));
   exports.Set(Napi::String::New(env, "initializeReceiver"), Napi::Function::New(env, InitializeReceiverWrapped));
   exports.Set(Napi::String::New(env, "startMonitoring"), Napi::Function::New(env, StartMonitoringWrapped));
   exports.Set(Napi::String::New(env, "stopMonitoring"), Napi::Function::New(env, StopMonitoringWrapped));
-  exports.Set(Napi::String::New(env, "cleanupHardware"), Napi::Function::New(env, CleanupHardwareWrapped)); // Renamed for consistency
+  exports.Set(Napi::String::New(env, "cleanupHardware"), Napi::Function::New(env, CleanupHardwareWrapped));
+  // --- END Export ---
 
   // --- Export NEW ARINC Transmit control functions ---
-  exports.Set(Napi::String::New(env, "startTransmit"), Napi::Function::New(env, StartTransmitWrapped)); // Export StartTransmitWrapped as startTransmit
-  exports.Set(Napi::String::New(env, "stopTransmit"), Napi::Function::New(env, StopTransmitWrapped)); // Export StopTransmitWrapped as stopTransmit
+  exports.Set(Napi::String::New(env, "startTransmit"), Napi::Function::New(env, StartTransmitWrapped));
+  exports.Set(Napi::String::New(env, "stopTransmit"), Napi::Function::New(env, StopTransmitWrapped));
   // --- END Export Transmit ---
 
   return exports;
